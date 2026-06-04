@@ -1,0 +1,695 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>MaintenX — Cadastros</title>
+<link rel="stylesheet" href="_style.css" id="theme-link"/>
+<style>
+/* ── TABS ── */
+.cad-tabs{display:flex;border-bottom:1px solid #1e3a5f;margin-bottom:20px}
+.cad-tab{flex:1;padding:12px 8px;text-align:center;font-size:13px;font-weight:700;color:#64748b;cursor:pointer;border-bottom:2px solid transparent;transition:all .15s}
+.cad-tab.active{color:#60a5fa;border-bottom-color:#60a5fa}
+
+/* ── USER CARD ── */
+.user-card{background:var(--card-bg,#0d1929);border:1px solid var(--border,#1e3a5f);border-radius:14px;padding:14px 16px;margin-bottom:10px;display:flex;align-items:center;gap:14px;transition:border-color .15s}
+.user-card.inativo{opacity:.5}
+.user-av{width:42px;height:42px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:800;color:#fff;flex-shrink:0}
+.user-info{flex:1;min-width:0}
+.user-nome{font-size:14px;font-weight:700;margin-bottom:2px}
+.user-email{font-size:12px;color:#64748b;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.user-meta{font-size:11px;color:#94a3b8;margin-top:3px}
+.user-btns{display:flex;flex-direction:column;gap:6px;flex-shrink:0}
+
+/* ── CATEGORY CARD ── */
+.cat-card{background:var(--card-bg,#0d1929);border:1px solid var(--border,#1e3a5f);border-radius:14px;padding:14px 16px;margin-bottom:10px;display:flex;align-items:center;gap:14px}
+.cat-icon-box{width:42px;height:42px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0}
+.cat-info{flex:1;min-width:0}
+.cat-nome{font-size:14px;font-weight:700;margin-bottom:2px}
+.cat-desc{font-size:12px;color:#64748b;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.cat-btns{display:flex;flex-direction:column;gap:6px;flex-shrink:0}
+
+/* ── PERFIL SELECTOR ── */
+.perfil-opts{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:6px}
+.perfil-opt{padding:12px 6px;border-radius:10px;border:1px solid var(--border,#1e3a5f);background:var(--inner-bg,#060b12);cursor:pointer;text-align:center;transition:all .15s}
+.perfil-opt.selected{border-color:#3b82f6;background:rgba(59,130,246,.1)}
+.perfil-opt-icon{font-size:20px;margin-bottom:4px}
+.perfil-opt-label{font-size:11px;font-weight:700;color:#94a3b8}
+.perfil-opt.selected .perfil-opt-label{color:#60a5fa}
+
+/* ── STATUS TOGGLE ── */
+.status-opts{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:6px}
+.status-opt{padding:10px;border-radius:10px;border:1px solid var(--border,#1e3a5f);background:var(--inner-bg,#060b12);cursor:pointer;text-align:center;transition:all .15s;font-size:12px;font-weight:700;color:#64748b}
+.status-opt.selected-ativo{border-color:#4ade80;background:rgba(74,222,128,.08);color:#4ade80}
+.status-opt.selected-inativo{border-color:#f87171;background:rgba(248,113,113,.08);color:#f87171}
+
+/* ── COLOR PICKER ── */
+.color-opts{display:flex;gap:8px;flex-wrap:wrap;margin-top:6px}
+.color-opt{width:28px;height:28px;border-radius:50%;cursor:pointer;border:3px solid transparent;transition:all .15s;flex-shrink:0}
+.color-opt.selected{border-color:#334155;transform:scale(1.2)}
+
+/* ── ICON PICKER ── */
+.icon-opts{display:grid;grid-template-columns:repeat(8,1fr);gap:6px;margin-top:6px}
+.icon-opt{width:36px;height:36px;border-radius:8px;background:var(--inner-bg,#060b12);border:1px solid var(--border,#1e3a5f);display:flex;align-items:center;justify-content:center;font-size:16px;cursor:pointer;transition:all .15s}
+.icon-opt.selected{border-color:#3b82f6;background:rgba(59,130,246,.12)}
+
+/* ── PREVIEW ── */
+.cat-preview{display:flex;align-items:center;gap:12px;padding:14px;background:var(--inner-bg,#060b12);border:1px solid var(--border,#1e3a5f);border-radius:10px;margin-top:4px}
+.cat-preview-icon{width:42px;height:42px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:20px;transition:all .2s}
+
+/* ── EMPRESA CARD ── */
+.emp-card{background:var(--card-bg,#0d1929);border:1px solid var(--border,#1e3a5f);border-radius:14px;padding:16px;margin-bottom:12px}
+.emp-header{display:flex;align-items:flex-start;gap:12px;margin-bottom:12px}
+.emp-icon{width:42px;height:42px;border-radius:12px;background:linear-gradient(135deg,#2563eb,#7c3aed);display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;color:#fff}
+.emp-info{flex:1;min-width:0}
+.emp-nome{font-size:15px;font-weight:700;margin-bottom:2px}
+.emp-meta{font-size:12px;color:#64748b;margin-top:1px}
+.emp-btns{display:flex;gap:6px;flex-shrink:0}
+.unid-list{margin-top:8px}
+.unid-item{display:flex;align-items:center;justify-content:space-between;padding:10px 12px;background:var(--inner-bg,#060b12);border:1px solid var(--border,#1e3a5f);border-radius:10px;margin-bottom:6px}
+.unid-item:last-child{margin-bottom:0}
+.unid-left{flex:1;min-width:0}
+.unid-nome{font-size:13px;font-weight:600}
+.unid-end{font-size:11px;color:#64748b;margin-top:2px}
+.unid-btns{display:flex;gap:6px;flex-shrink:0;margin-left:10px}
+.add-unid-btn{display:flex;align-items:center;justify-content:center;gap:6px;padding:8px 12px;border-radius:8px;border:1px dashed var(--border,#1e3a5f);background:transparent;cursor:pointer;font-size:12px;font-weight:600;font-family:inherit;width:100%;margin-top:8px;transition:all .15s;color:#64748b}
+.add-unid-btn:hover{border-color:rgba(59,130,246,.5);color:#60a5fa}
+</style>
+</head>
+<body>
+<div id="app">
+  <div id="sidebar">
+    <a class="sl" href="dashboard.html"><div class="li">&#9881;</div><span class="sl-text">MaintenX</span></a>
+    <nav>
+      <a class="ni" href="dashboard.html"><span class="nx">&#9672;</span><span class="nl" data-i18n="nav_dashboard">Dashboard</span></a>
+      <a class="ni" href="ordens.html"><span class="nx">&#9874;</span><span class="nl" data-i18n="nav_ordens">Ordens de Servico</span></a>
+      <a class="ni" href="ativos.html"><span class="nx">&#11041;</span><span class="nl" data-i18n="nav_ativos">Gestao de Ativos</span></a>
+      <a class="ni active" href="cadastros.html"><span class="nx">&#9998;</span><span class="nl" data-i18n="nav_cadastros">Cadastros</span></a>
+      <a class="ni" href="calendario.html"><span class="nx">&#128197;</span><span class="nl">Calendario</span></a>
+    </nav>
+  </div>
+  <div id="main">
+    <div id="topbar">
+      <div id="topbar-left">
+        <span class="topbar-logo">&#9881;</span>
+        <div><div id="tt" data-i18n="cad_titulo">Cadastros</div></div>
+      </div>
+      <div class="avatar">G</div>
+    </div>
+    <div id="ct"></div>
+  </div>
+</div>
+
+<nav id="bottom-nav">
+  <a class="bn-item" href="dashboard.html"><span class="bn-icon">&#9672;</span><span class="bn-label">Dashboard</span></a>
+  <a class="bn-item" href="ordens.html"><span class="bn-icon">&#9874;</span><span class="bn-label" data-i18n="nav_os">OS</span></a>
+  <a class="bn-item" href="ativos.html"><span class="bn-icon">&#11041;</span><span class="bn-label" data-i18n="nav_ativos_short">Ativos</span></a>
+  <a class="bn-item active" href="cadastros.html"><span class="bn-icon">&#9998;</span><span class="bn-label" data-i18n="nav_cadastros">Cadastros</span></a>
+  <a class="bn-item" href="calendario.html"><span class="bn-icon">&#128197;</span><span class="bn-label">Cal.</span></a>
+</nav>
+
+<!-- ── MODAL USUARIO ── -->
+<div class="modal" id="modal-user"><div class="mc" onclick="event.stopPropagation()">
+  <div class="mt2" id="user-modal-title">Novo Usuario</div>
+  <input type="hidden" id="u-id"/>
+  <div class="fg"><label class="lbl" data-i18n="cad_f_nome">Nome completo *</label><input id="u-nome" placeholder="Ex: Joao da Silva"/></div>
+  <div class="fg"><label class="lbl" data-i18n="cad_f_email">E-mail *</label><input type="email" id="u-email" placeholder="joao@empresa.com"/></div>
+  <div class="g2">
+    <div class="fg"><label class="lbl" data-i18n="cad_f_telefone">Telefone</label><input id="u-tel" placeholder="(41) 99999-0000"/></div>
+    <div class="fg"><label class="lbl" data-i18n="cad_f_senha">Senha</label><input type="password" id="u-senha" placeholder="••••••••"/></div>
+  </div>
+  <div class="fg">
+    <label class="lbl" data-i18n="cad_f_perfil">Perfil</label>
+    <div class="perfil-opts">
+      <div class="perfil-opt selected" id="perfil-Coordenador" onclick="setPerfil('Coordenador',this)">
+        <div class="perfil-opt-icon">&#128101;</div>
+        <div class="perfil-opt-label" data-i18n="cad_f_perfil" data-i18n-perfil="Coordenador">Coordenador</div>
+      </div>
+      <div class="perfil-opt" id="perfil-Tecnico" onclick="setPerfil('Tecnico',this)">
+        <div class="perfil-opt-icon">&#128295;</div>
+        <div class="perfil-opt-label">Tecnico</div>
+      </div>
+      <div class="perfil-opt" id="perfil-Visualizador" onclick="setPerfil('Visualizador',this)">
+        <div class="perfil-opt-icon">&#128065;</div>
+        <div class="perfil-opt-label">Visualizador</div>
+      </div>
+    </div>
+    <input type="hidden" id="u-perfil" value="Coordenador"/>
+  </div>
+  <div class="fg" id="user-status-wrap" style="display:none">
+    <label class="lbl" data-i18n="cad_f_status">Status</label>
+    <div class="status-opts">
+      <div class="status-opt selected-ativo" id="st-ativo" onclick="setStatus(true)">&#10003; Ativo</div>
+      <div class="status-opt" id="st-inativo" onclick="setStatus(false)">&#10005; Inativo</div>
+    </div>
+    <input type="hidden" id="u-ativo" value="true"/>
+  </div>
+  <div class="mf">
+    <button class="btn bx" onclick="closeModal('modal-user')"><span data-i18n="btn_cancelar">Cancelar</span></button>
+    <button class="btn bp" onclick="saveUser()"><span data-i18n="btn_salvar">Salvar</span></button>
+  </div>
+</div></div>
+
+<!-- ── MODAL CATEGORIA ── -->
+<div class="modal" id="modal-cat"><div class="mc" onclick="event.stopPropagation()">
+  <div class="mt2" id="cat-modal-title">Nova Categoria</div>
+  <input type="hidden" id="c-id"/>
+  <div class="fg"><label class="lbl" data-i18n="cad_f_cat_nome">Nome *</label><input id="c-nome" placeholder="Ex: Robotica" oninput="updatePreview()"/></div>
+  <div class="fg"><label class="lbl" data-i18n="cad_f_cat_desc">Descricao</label><input id="c-desc" placeholder="Descricao breve..." oninput="updatePreview()"/></div>
+  <div class="fg">
+    <label class="lbl" data-i18n="cad_f_cat_icone">Icone</label>
+    <div class="icon-opts" id="icon-picker"></div>
+    <input type="hidden" id="c-icone" value="&#9881;"/>
+  </div>
+  <div class="fg">
+    <label class="lbl" data-i18n="cad_f_cat_cor">Cor</label>
+    <div class="color-opts" id="color-picker"></div>
+    <input type="hidden" id="c-cor" value="#60a5fa"/>
+  </div>
+  <div class="fg">
+    <label class="lbl" data-i18n="cad_f_cat_prev">Preview</label>
+    <div class="cat-preview">
+      <div class="cat-preview-icon" id="prev-icon" style="background:#60a5fa20;border:1px solid #60a5fa40">&#9881;</div>
+      <div>
+        <div id="prev-nome" style="font-size:14px;font-weight:700">Categoria</div>
+        <div id="prev-desc" style="font-size:12px;color:#64748b">Descricao</div>
+      </div>
+    </div>
+  </div>
+  <div class="mf">
+    <button class="btn bx" onclick="closeModal('modal-cat')"><span data-i18n="btn_cancelar">Cancelar</span></button>
+    <button class="btn bp" onclick="saveCat()"><span data-i18n="btn_salvar">Salvar</span></button>
+  </div>
+</div></div>
+
+<script src="_lang.js"></script>
+<script src="_shared.js"></script>
+<script>
+// ── DADOS ────────────────────────────────────────────────────────────────────
+var USUARIOS_KEY = "mx_usuarios";
+var CATS_KEY     = "mx_categorias";
+
+var DEMO_U = [
+  {id:1,nome:"Admin Coordenador",email:"coordenador@maintenx.com",senha:"1234",telefone:"(41) 99999-0001",perfil:"Coordenador",ativo:true},
+  {id:2,nome:"Joao Silva",       email:"joao@maintenx.com",       senha:"1234",telefone:"(41) 99999-0002",perfil:"Tecnico",     ativo:true},
+  {id:3,nome:"Maria Santos",     email:"maria@maintenx.com",      senha:"1234",telefone:"(41) 99999-0003",perfil:"Tecnico",     ativo:true},
+  {id:4,nome:"Carlos Pereira",   email:"carlos@maintenx.com",     senha:"1234",telefone:"(41) 99999-0004",perfil:"Tecnico",     ativo:true},
+  {id:5,nome:"Ana Lima",         email:"ana@maintenx.com",        senha:"1234",telefone:"(41) 99999-0005",perfil:"Tecnico",     ativo:true},
+  {id:6,nome:"Pedro Oliveira",   email:"pedro@maintenx.com",      senha:"1234",telefone:"(41) 99999-0006",perfil:"Tecnico",     ativo:false}
+];
+var DEMO_C = [
+  {id:1,nome:"Pneumatico",    icone:"&#128168;",cor:"#60a5fa",desc:"Compressores, valvulas, atuadores"},
+  {id:2,nome:"Hidraulico",    icone:"&#128167;",cor:"#3b82f6",desc:"Bombas, cilindros, valvulas hidraulicas"},
+  {id:3,nome:"Eletrico",      icone:"&#9889;",  cor:"#fbbf24",desc:"Motores, paineis, transformadores"},
+  {id:4,nome:"Producao",      icone:"&#9881;",  cor:"#f87171",desc:"Prensas, tornos, linhas de montagem"},
+  {id:5,nome:"Transporte",    icone:"&#128694;",cor:"#a78bfa",desc:"Esteiras, elevadores, pontes rolantes"},
+  {id:6,nome:"Utilidades",    icone:"&#127755;",cor:"#34d399",desc:"HVAC, caldeiras, sistemas de agua"},
+  {id:7,nome:"Instrumentacao",icone:"&#128207;",cor:"#f59e0b",desc:"Sensores, transmissores, analisadores"},
+  {id:8,nome:"Outros",        icone:"&#128295;",cor:"#9ca3af",desc:"Equipamentos nao categorizados"}
+];
+
+function loadU(){ var d=localStorage.getItem(USUARIOS_KEY); if(!d){localStorage.setItem(USUARIOS_KEY,JSON.stringify(DEMO_U));return DEMO_U;} return JSON.parse(d); }
+function saveU(d){ localStorage.setItem(USUARIOS_KEY,JSON.stringify(d)); }
+function loadC(){ var d=localStorage.getItem(CATS_KEY); if(!d){localStorage.setItem(CATS_KEY,JSON.stringify(DEMO_C));return DEMO_C;} return JSON.parse(d); }
+function saveC(d){ localStorage.setItem(CATS_KEY,JSON.stringify(d)); }
+
+var usuarios = loadU();
+var categorias = loadC();
+var cadTab = "usuarios";
+
+// ── MODAL ────────────────────────────────────────────────────────────────────
+function closeModal(id){ document.getElementById(id).classList.remove("open"); }
+function openModal(id){ document.getElementById(id).classList.add("open"); }
+document.querySelectorAll(".modal").forEach(function(m){
+  m.addEventListener("click",function(e){ if(e.target===this) this.classList.remove("open"); });
+});
+
+// ── TABS ─────────────────────────────────────────────────────────────────────
+function setTab(t){
+  cadTab = t;
+  document.querySelectorAll(".cad-tab").forEach(function(el,i){
+    el.classList.toggle("active",["usuarios","categorias","empresas"][i]===t);
+  });
+  render();
+}
+
+// ── RENDER ───────────────────────────────────────────────────────────────────
+function render(){
+  document.getElementById("ct").innerHTML = cadTab==="usuarios" ? renderUsuarios()
+    : cadTab==="categorias" ? renderCategorias() : renderEmpresas();
+}
+
+// ── USUARIOS ─────────────────────────────────────────────────────────────────
+function renderUsuarios(){
+  var ativos   = usuarios.filter(function(u){return u.ativo;}).length;
+  var inativos = usuarios.length - ativos;
+  var coords   = usuarios.filter(function(u){return u.perfil==="Coordenador";}).length;
+  var tecs     = usuarios.filter(function(u){return u.perfil==="Tecnico";}).length;
+
+  var summary = '<div style="display:flex;gap:20px;flex-wrap:wrap;margin-bottom:16px">'
+    +'<div style="text-align:center"><div style="font-size:22px;font-weight:800;color:#4ade80">'+ativos+'</div><div style="font-size:11px;color:#64748b">Ativos</div></div>'
+    +'<div style="text-align:center"><div style="font-size:22px;font-weight:800;color:#475569">'+inativos+'</div><div style="font-size:11px;color:#64748b">Inativos</div></div>'
+    +'<div style="text-align:center"><div style="font-size:22px;font-weight:800;color:#7c3aed">'+coords+'</div><div style="font-size:11px;color:#64748b">Coord.</div></div>'
+    +'<div style="text-align:center"><div style="font-size:22px;font-weight:800;color:#2563eb">'+tecs+'</div><div style="font-size:11px;color:#64748b">Tecnicos</div></div>'
+    +'</div>';
+
+  var PERFIL_COR = {Coordenador:"#7c3aed",Tecnico:"#2563eb",Visualizador:"#475569"};
+
+  var cards = usuarios.map(function(u){
+    var cor = PERFIL_COR[u.perfil]||"#475569";
+    var ini = u.nome.split(" ").slice(0,2).map(function(n){return n[0];}).join("");
+    return '<div class="user-card'+(u.ativo?"":" inativo")+'">'
+      +'<div class="user-av" style="background:'+cor+'">'+ini+'</div>'
+      +'<div class="user-info">'
+      +'<div class="user-nome">'+esc(u.nome)+'</div>'
+      +'<div class="user-email">'+esc(u.email)+'</div>'
+      +'<div class="user-meta">'
+      +(u.telefone?esc(u.telefone)+' &bull; ':"")+esc(u.perfil)
+      +(u.ativo?'':' &bull; <span style="color:#f87171">Inativo</span>')
+      +'</div></div>'
+      +'<div class="user-btns">'
+      +'<button class="btn bx bsm" onclick="editUser('+u.id+')" style="font-size:11px">Editar</button>'
+      +'<button class="btn bsm" onclick="toggleUser('+u.id+')" style="font-size:11px;'
+      +(u.ativo
+        ?'background:#7f1d1d30;color:#f87171;border:1px solid #f8717140">Inativar'
+        :'background:#14532d30;color:#4ade80;border:1px solid #4ade8040">Ativar')
+      +'</button>'
+      +'</div></div>';
+  }).join("");
+
+  return '<div class="cad-tabs">'
+    +'<div class="cad-tab active" onclick="setTab(\'usuarios\')">Usuarios ('+usuarios.length+')</div>'
+    +'<div class="cad-tab" onclick="setTab(\'categorias\')">Categorias ('+categorias.length+')</div>'
+    +'<div class="cad-tab" onclick="setTab(\'empresas\')">Empresas ('+empresas.length+')</div>'
+    +'</div>'
+    +'<div class="fr">'+summary+'<button class="btn bp" onclick="openNewUser()">+ Novo Usuario</button></div>'
+    +cards;
+}
+
+// ── CRUD USUARIOS ────────────────────────────────────────────────────────────
+var selectedPerfil = "Coordenador";
+var selectedAtivo  = true;
+
+function openNewUser(){
+  document.getElementById("user-modal-title").textContent = "Novo Usuario";
+  document.getElementById("u-id").value    = "";
+  document.getElementById("u-nome").value  = "";
+  document.getElementById("u-email").value = "";
+  document.getElementById("u-tel").value   = "";
+  document.getElementById("u-senha").value = "";
+  document.getElementById("user-status-wrap").style.display = "none";
+  setPerfil("Coordenador", document.getElementById("perfil-Coordenador"));
+  openModal("modal-user");
+}
+
+function editUser(id){
+  var u = usuarios.find(function(x){return x.id==id;});
+  if(!u) return;
+  document.getElementById("user-modal-title").textContent = "Editar Usuario";
+  document.getElementById("u-id").value    = u.id;
+  document.getElementById("u-nome").value  = u.nome;
+  document.getElementById("u-email").value = u.email;
+  document.getElementById("u-tel").value   = u.telefone||"";
+  document.getElementById("u-senha").value = u.senha||"";
+  document.getElementById("user-status-wrap").style.display = "block";
+  setPerfil(u.perfil, document.getElementById("perfil-"+u.perfil));
+  setStatus(u.ativo);
+  openModal("modal-user");
+}
+
+function setPerfil(val, el){
+  selectedPerfil = val;
+  document.getElementById("u-perfil").value = val;
+  ["Coordenador","Tecnico","Visualizador"].forEach(function(p){
+    var btn = document.getElementById("perfil-"+p);
+    if(btn) btn.classList.toggle("selected", p===val);
+  });
+}
+
+function setStatus(val){
+  selectedAtivo = val;
+  document.getElementById("u-ativo").value = String(val);
+  var sAt  = document.getElementById("st-ativo");
+  var sIn  = document.getElementById("st-inativo");
+  if(sAt)  sAt.className  = "status-opt" + (val  ? " selected-ativo"   : "");
+  if(sIn)  sIn.className  = "status-opt" + (!val ? " selected-inativo" : "");
+}
+
+function saveUser(){
+  var nome  = document.getElementById("u-nome").value.trim();
+  var email = document.getElementById("u-email").value.trim();
+  if(!nome || !email){ alert("Preencha nome e e-mail."); return; }
+
+  var id    = document.getElementById("u-id").value;
+  var perfil = document.getElementById("u-perfil").value;
+  var ativo  = document.getElementById("u-ativo").value === "true";
+  var tel    = document.getElementById("u-tel").value.trim();
+  var senha  = document.getElementById("u-senha").value || "1234";
+
+  if(id){
+    // Editar
+    usuarios = usuarios.map(function(u){
+      return u.id==parseInt(id)
+        ? {id:u.id, nome:nome, email:email, telefone:tel, senha:senha, perfil:perfil, ativo:ativo}
+        : u;
+    });
+  } else {
+    // Novo
+    if(usuarios.find(function(u){return u.email===email;})){
+      alert("Ja existe um usuario com este e-mail."); return;
+    }
+    usuarios.push({id:nextId(), nome:nome, email:email, telefone:tel, senha:senha, perfil:perfil, ativo:true});
+  }
+  saveU(usuarios);
+  closeModal("modal-user");
+  render();
+}
+
+function toggleUser(id){
+  usuarios = usuarios.map(function(u){
+    return u.id==id ? Object.assign({},u,{ativo:!u.ativo}) : u;
+  });
+  saveU(usuarios);
+  render();
+}
+
+// ── CATEGORIAS ───────────────────────────────────────────────────────────────
+var CORES = ["#60a5fa","#3b82f6","#7c3aed","#a78bfa","#f87171","#fb923c","#fbbf24","#4ade80","#34d399","#f59e0b","#ec4899","#9ca3af"];
+var ICONES = ["&#9881;","&#128168;","&#128167;","&#9889;","&#128694;","&#127755;","&#128207;","&#128295;","&#128200;","&#128170;","&#128736;","&#9978;","&#128299;","&#127981;","&#128268;","&#128269;"];
+var selIcone = "&#9881;", selCor = "#60a5fa";
+
+function renderCategorias(){
+  var D = loadData();
+  var cards = categorias.map(function(cat){
+    var count = D.ativos.filter(function(a){return a.categoria===cat.nome;}).length;
+    return '<div class="cat-card">'
+      +'<div class="cat-icon-box" style="background:'+cat.cor+'20;border:1px solid '+cat.cor+'40">'+cat.icone+'</div>'
+      +'<div class="cat-info">'
+      +'<div class="cat-nome">'+esc(cat.nome)+'</div>'
+      +'<div class="cat-desc">'+esc(cat.desc||"Sem descricao")+'</div>'
+      +'<div style="font-size:11px;color:#475569;margin-top:3px">'+count+' ativo(s)</div>'
+      +'</div>'
+      +'<div class="cat-btns">'
+      +'<button class="btn bx bsm" onclick="editCat('+cat.id+')" style="font-size:11px">Editar</button>'
+      +(count===0?'<button class="btn bsm" onclick="delCat('+cat.id+')" style="font-size:11px;background:#7f1d1d30;color:#f87171;border:1px solid #f8717140">Excluir</button>':"")
+      +'</div></div>';
+  }).join("");
+
+  return '<div class="cad-tabs">'
+    +'<div class="cad-tab" onclick="setTab(\'usuarios\')">Usuarios ('+usuarios.length+')</div>'
+    +'<div class="cad-tab active" onclick="setTab(\'categorias\')">Categorias ('+categorias.length+')</div>'
+    +'<div class="cad-tab" onclick="setTab(\'empresas\')">Empresas ('+empresas.length+')</div>'
+    +'</div>'
+    +'<div class="fr"><div style="font-size:13px;color:#64748b">'+categorias.length+' categorias cadastradas</div>'
+    +'<button class="btn bp" onclick="openNewCat()">+ Nova Categoria</button></div>'
+    +cards;
+}
+
+// ── CRUD CATEGORIAS ──────────────────────────────────────────────────────────
+function buildPickers(){
+  // Icones
+  var ip = document.getElementById("icon-picker"); ip.innerHTML = "";
+  ICONES.forEach(function(ic){
+    var d = document.createElement("div");
+    d.className = "icon-opt" + (ic===selIcone?" selected":"");
+    d.innerHTML = ic;
+    d.onclick = function(){
+      selIcone = ic;
+      document.getElementById("c-icone").value = ic;
+      document.querySelectorAll(".icon-opt").forEach(function(x){x.classList.remove("selected");});
+      d.classList.add("selected");
+      updatePreview();
+    };
+    ip.appendChild(d);
+  });
+  // Cores
+  var cp = document.getElementById("color-picker"); cp.innerHTML = "";
+  CORES.forEach(function(cor){
+    var d = document.createElement("div");
+    d.className = "color-opt" + (cor===selCor?" selected":"");
+    d.style.background = cor;
+    d.onclick = function(){
+      selCor = cor;
+      document.getElementById("c-cor").value = cor;
+      document.querySelectorAll(".color-opt").forEach(function(x){x.classList.remove("selected");});
+      d.classList.add("selected");
+      updatePreview();
+    };
+    cp.appendChild(d);
+  });
+}
+
+function updatePreview(){
+  var nome = document.getElementById("c-nome").value || "Categoria";
+  var desc = document.getElementById("c-desc").value || "Descricao";
+  var ic   = document.getElementById("c-icone").value || selIcone;
+  var cor  = document.getElementById("c-cor").value  || selCor;
+  document.getElementById("prev-nome").textContent = nome;
+  document.getElementById("prev-desc").textContent = desc;
+  document.getElementById("prev-icon").innerHTML   = ic;
+  document.getElementById("prev-icon").style.background = cor+"20";
+  document.getElementById("prev-icon").style.borderColor = cor+"40";
+}
+
+function openNewCat(){
+  document.getElementById("cat-modal-title").textContent = "Nova Categoria";
+  document.getElementById("c-id").value   = "";
+  document.getElementById("c-nome").value = "";
+  document.getElementById("c-desc").value = "";
+  selIcone = "&#9881;"; selCor = "#60a5fa";
+  document.getElementById("c-icone").value = selIcone;
+  document.getElementById("c-cor").value   = selCor;
+  buildPickers();
+  updatePreview();
+  openModal("modal-cat");
+}
+
+function editCat(id){
+  var cat = categorias.find(function(x){return x.id==id;});
+  if(!cat) return;
+  document.getElementById("cat-modal-title").textContent = "Editar Categoria";
+  document.getElementById("c-id").value   = cat.id;
+  document.getElementById("c-nome").value = cat.nome;
+  document.getElementById("c-desc").value = cat.desc||"";
+  selIcone = cat.icone; selCor = cat.cor;
+  document.getElementById("c-icone").value = cat.icone;
+  document.getElementById("c-cor").value   = cat.cor;
+  buildPickers();
+  updatePreview();
+  openModal("modal-cat");
+}
+
+function saveCat(){
+  var nome = document.getElementById("c-nome").value.trim();
+  if(!nome){ alert("Informe o nome da categoria."); return; }
+  var id   = document.getElementById("c-id").value;
+  var ic   = document.getElementById("c-icone").value;
+  var cor  = document.getElementById("c-cor").value;
+  var desc = document.getElementById("c-desc").value.trim();
+
+  if(id){
+    categorias = categorias.map(function(c){
+      return c.id==parseInt(id) ? {id:c.id,nome:nome,icone:ic,cor:cor,desc:desc} : c;
+    });
+  } else {
+    if(categorias.find(function(c){return c.nome.toLowerCase()===nome.toLowerCase();})){
+      alert("Ja existe uma categoria com este nome."); return;
+    }
+    categorias.push({id:nextId(),nome:nome,icone:ic,cor:cor,desc:desc});
+  }
+  saveC(categorias);
+  closeModal("modal-cat");
+  render();
+}
+
+function delCat(id){
+  if(!confirm("Excluir esta categoria?")) return;
+  categorias = categorias.filter(function(c){return c.id!=id;});
+  saveC(categorias);
+  render();
+}
+
+// ── EMPRESAS — dados ────────────────────────────────────────────────────────
+var EMP_KEY = "mx_empresas";
+var DEMO_EMP = [
+  {id:101,nome:"Atlas Industria S.A.",cnpj:"12.345.678/0001-00",telefone:"(41) 3333-0001",endereco:"Av. das Industrias, 1000 — Curitiba/PR",contato:"Carlos Diretor",unidades:[
+    {id:201,nome:"Planta Curitiba",  endereco:"Av. das Industrias, 1000 — CWB/PR",responsavel:"Joao Silva"},
+    {id:202,nome:"Filial Londrina",  endereco:"Rua do Comercio, 500 — Londrina/PR",responsavel:"Maria Santos"}
+  ]},
+  {id:102,nome:"Beta Manufatura Ltda",cnpj:"98.765.432/0001-11",telefone:"(41) 3444-0002",endereco:"Rod. BR-116, km 82 — SJP/PR",contato:"Ana Lima",unidades:[
+    {id:203,nome:"Fabrica Principal",endereco:"Rod. BR-116, km 82 — SJP/PR",responsavel:"Ana Lima"}
+  ]}
+];
+function loadEmp(){var d=localStorage.getItem(EMP_KEY);if(!d){localStorage.setItem(EMP_KEY,JSON.stringify(DEMO_EMP));return DEMO_EMP;}return JSON.parse(d);}
+function saveEmpData(d){localStorage.setItem(EMP_KEY,JSON.stringify(d));}
+var empresas = loadEmp();
+
+// ── RENDER EMPRESAS ──────────────────────────────────────────────────────────
+function renderEmpresas(){
+  var cards = empresas.map(function(e){
+    var unids = (e.unidades||[]).map(function(u){
+      return '<div class="unid-item">'
+        +'<div class="unid-left">'
+        +'<div class="unid-nome">&#127970; '+esc(u.nome)+'</div>'
+        +(u.endereco?'<div class="unid-end">'+esc(u.endereco)+'</div>':'')
+        +(u.responsavel?'<div class="unid-end">Resp: '+esc(u.responsavel)+'</div>':'')
+        +'</div>'
+        +'<div class="unid-btns">'
+        +'<button class="btn bx bsm" onclick="editUnid('+e.id+','+u.id+')" style="font-size:11px">Editar</button>'
+        +'<button class="btn bsm" onclick="delUnid('+e.id+','+u.id+')" style="font-size:11px;background:#7f1d1d30;color:#f87171;border:1px solid #f8717140">&#10005;</button>'
+        +'</div></div>';
+    }).join("");
+    return '<div class="emp-card">'
+      +'<div class="emp-header">'
+      +'<div class="emp-icon">&#127981;</div>'
+      +'<div class="emp-info">'
+      +'<div class="emp-nome">'+esc(e.nome)+'</div>'
+      +'<div class="emp-meta">'+(e.cnpj?esc(e.cnpj)+' &bull; ':'')+((e.unidades||[]).length)+' unidade(s)</div>'
+      +(e.contato?'<div class="emp-meta">Contato: '+esc(e.contato)+'</div>':'')
+      +'</div>'
+      +'<div class="emp-btns">'
+      +'<button class="btn bx bsm" onclick="editEmp('+e.id+')" style="font-size:11px">Editar</button>'
+      +'<button class="btn bsm" onclick="delEmp('+e.id+')" style="font-size:11px;background:#7f1d1d30;color:#f87171;border:1px solid #f8717140">&#10005;</button>'
+      +'</div></div>'
+      +'<div class="unid-list">'+unids+'</div>'
+      +'<button class="add-unid-btn" onclick="openNewUnid('+e.id+')">+ Adicionar Unidade</button>'
+      +'</div>';
+  }).join("")||'<div style="color:#64748b;text-align:center;padding:30px;font-size:14px">Nenhuma empresa cadastrada</div>';
+
+  return '<div class="cad-tabs">'
+    +'<div class="cad-tab" onclick="setTab(\'usuarios\')">Usuarios ('+usuarios.length+')</div>'
+    +'<div class="cad-tab" onclick="setTab(\'categorias\')">Categorias ('+categorias.length+')</div>'
+    +'<div class="cad-tab active" onclick="setTab(\'empresas\')">Empresas ('+empresas.length+')</div>'
+    +'</div>'
+    +'<div class="fr"><div style="font-size:13px;color:#64748b">'+empresas.length+' empresa(s)</div>'
+    +'<button class="btn bp" onclick="openNewEmp()">+ Nova Empresa</button></div>'
+    +cards;
+}
+
+// ── CRUD EMPRESAS ────────────────────────────────────────────────────────────
+function openNewEmp(){
+  document.getElementById("emp-modal-title").textContent="Nova Empresa";
+  ["e-id","e-nome","e-cnpj","e-tel","e-end","e-cont"].forEach(function(id){document.getElementById(id).value="";});
+  openModal("modal-emp");
+}
+function editEmp(id){
+  var e=empresas.find(function(x){return x.id==id;});if(!e)return;
+  document.getElementById("emp-modal-title").textContent="Editar Empresa";
+  document.getElementById("e-id").value=e.id;
+  document.getElementById("e-nome").value=e.nome;
+  document.getElementById("e-cnpj").value=e.cnpj||"";
+  document.getElementById("e-tel").value=e.telefone||"";
+  document.getElementById("e-end").value=e.endereco||"";
+  document.getElementById("e-cont").value=e.contato||"";
+  openModal("modal-emp");
+}
+function saveEmp(){
+  var nome=document.getElementById("e-nome").value.trim();
+  if(!nome){alert("Informe o nome da empresa.");return;}
+  var id=document.getElementById("e-id").value;
+  var obj={nome:nome,cnpj:document.getElementById("e-cnpj").value.trim(),telefone:document.getElementById("e-tel").value.trim(),endereco:document.getElementById("e-end").value.trim(),contato:document.getElementById("e-cont").value.trim()};
+  if(id){
+    empresas=empresas.map(function(e){return e.id==parseInt(id)?Object.assign({},e,obj):e;});
+  } else {
+    obj.id=nextId();obj.unidades=[];empresas.push(obj);
+  }
+  saveEmpData(empresas);closeModal("modal-emp");render();
+}
+function delEmp(id){
+  var e=empresas.find(function(x){return x.id==id;});
+  var nu=e&&e.unidades?e.unidades.length:0;
+  if(!confirm("Excluir a empresa"+(nu>0?" e suas "+nu+" unidade(s)":"")+"?"))return;
+  empresas=empresas.filter(function(x){return x.id!=id;});
+  saveEmpData(empresas);render();
+}
+
+// ── CRUD UNIDADES ────────────────────────────────────────────────────────────
+var _unidEmpId=null;
+function openNewUnid(empId){
+  _unidEmpId=empId;
+  document.getElementById("unid-modal-title").textContent="Nova Unidade";
+  ["un-id","un-nome","un-end","un-resp"].forEach(function(id){document.getElementById(id).value="";});
+  document.getElementById("un-emp-id").value=empId;
+  openModal("modal-unid");
+}
+function editUnid(empId,unidId){
+  var e=empresas.find(function(x){return x.id==empId;});if(!e)return;
+  var u=(e.unidades||[]).find(function(x){return x.id==unidId;});if(!u)return;
+  _unidEmpId=empId;
+  document.getElementById("unid-modal-title").textContent="Editar Unidade";
+  document.getElementById("un-id").value=u.id;
+  document.getElementById("un-emp-id").value=empId;
+  document.getElementById("un-nome").value=u.nome;
+  document.getElementById("un-end").value=u.endereco||"";
+  document.getElementById("un-resp").value=u.responsavel||"";
+  openModal("modal-unid");
+}
+function saveUnid(){
+  var nome=document.getElementById("un-nome").value.trim();
+  if(!nome){alert("Informe o nome da unidade.");return;}
+  var empId=parseInt(document.getElementById("un-emp-id").value);
+  var unidId=document.getElementById("un-id").value;
+  var obj={nome:nome,endereco:document.getElementById("un-end").value.trim(),responsavel:document.getElementById("un-resp").value.trim()};
+  empresas=empresas.map(function(e){
+    if(e.id!==empId)return e;
+    var unids=e.unidades||[];
+    if(unidId){unids=unids.map(function(u){return u.id==parseInt(unidId)?Object.assign({},u,obj):u;});}
+    else{obj.id=nextId();unids=unids.concat([obj]);}
+    return Object.assign({},e,{unidades:unids});
+  });
+  saveEmpData(empresas);closeModal("modal-unid");render();
+}
+function delUnid(empId,unidId){
+  if(!confirm("Excluir esta unidade?"))return;
+  empresas=empresas.map(function(e){
+    if(e.id!==empId)return e;
+    return Object.assign({},e,{unidades:(e.unidades||[]).filter(function(u){return u.id!==unidId;})});
+  });
+  saveEmpData(empresas);render();
+}
+
+render();
+</script>
+
+<!-- ── MODAL EMPRESA ── -->
+<div class="modal" id="modal-emp"><div class="mc" onclick="event.stopPropagation()">
+  <div class="mt2" id="emp-modal-title">Nova Empresa</div>
+  <input type="hidden" id="e-id"/>
+  <div class="fg"><label class="lbl" data-i18n="cad_f_emp_nome">Razao Social / Nome *</label><input id="e-nome" placeholder="Ex: Atlas Industria S.A."/></div>
+  <div class="g2">
+    <div class="fg"><label class="lbl" data-i18n="cad_f_emp_cnpj">CNPJ</label><input id="e-cnpj" placeholder="00.000.000/0000-00"/></div>
+    <div class="fg"><label class="lbl" data-i18n="cad_f_telefone">Telefone</label><input id="e-tel" placeholder="(41) 3333-0000"/></div>
+  </div>
+  <div class="fg"><label class="lbl" data-i18n="cad_f_emp_end">Endereco</label><input id="e-end" placeholder="Rua, numero, cidade"/></div>
+  <div class="fg"><label class="lbl" data-i18n="cad_f_emp_cont">Contato responsavel</label><input id="e-cont" placeholder="Nome do responsavel tecnico"/></div>
+  <div class="mf">
+    <button class="btn bx" onclick="closeModal('modal-emp')"><span data-i18n="btn_cancelar">Cancelar</span></button>
+    <button class="btn bp" onclick="saveEmp()"><span data-i18n="btn_salvar">Salvar</span></button>
+  </div>
+</div></div>
+
+<!-- ── MODAL UNIDADE ── -->
+<div class="modal" id="modal-unid"><div class="mc" onclick="event.stopPropagation()">
+  <div class="mt2" id="unid-modal-title">Nova Unidade</div>
+  <input type="hidden" id="un-id"/>
+  <input type="hidden" id="un-emp-id"/>
+  <div class="fg"><label class="lbl" data-i18n="cad_f_unid_nome">Nome da Unidade *</label><input id="un-nome" placeholder="Ex: Planta Curitiba"/></div>
+  <div class="fg"><label class="lbl" data-i18n="cad_f_unid_end">Endereco / Localizacao</label><input id="un-end" placeholder="Ex: Av. das Industrias, 1000 — CWB"/></div>
+  <div class="fg"><label class="lbl" data-i18n="cad_f_unid_resp">Responsavel</label><input id="un-resp" placeholder="Gerente ou supervisor da unidade"/></div>
+  <div class="mf">
+    <button class="btn bx" onclick="closeModal('modal-unid')"><span data-i18n="btn_cancelar">Cancelar</span></button>
+    <button class="btn bp" onclick="saveUnid()"><span data-i18n="btn_salvar">Salvar</span></button>
+  </div>
+</div></div>
+
+<script>
+window.addEventListener("langchange", function(){
+  document.querySelectorAll("[data-i18n]").forEach(function(el){
+    el.textContent = t(el.getAttribute("data-i18n"));
+  });
+  render();
+});
+</script>
+<script src="_theme.js"></script>
+</body>
+</html>

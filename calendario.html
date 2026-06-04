@@ -1,0 +1,446 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>MaintenX — Calendario</title>
+<link rel="stylesheet" href="_style.css" id="theme-link"/>
+<style>
+/* ── VIEW TOGGLE ── */
+.cal-view-toggle{display:flex;background:var(--inner-bg,#060b12);border-radius:10px;padding:3px;gap:3px;margin-bottom:14px}
+.cal-view-btn{flex:1;padding:9px;text-align:center;border-radius:8px;cursor:pointer;font-size:13px;font-weight:700;color:#64748b;transition:all .15s}
+.cal-view-btn.active{background:var(--card-bg,#0d1929);color:#60a5fa;box-shadow:0 1px 3px rgba(0,0,0,.2)}
+
+/* ── NAV ── */
+.cal-nav{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
+.cal-nav-center{display:flex;flex-direction:column;align-items:center;gap:2px}
+.cal-nav-title{font-size:17px;font-weight:800;line-height:1}
+.cal-nav-sub{font-size:11px;color:#64748b}
+
+/* ── MONTH GRID ── */
+.cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:1px;margin-bottom:12px}
+.cal-dow{font-size:10px;font-weight:800;text-align:center;padding:5px 0;color:#64748b;text-transform:uppercase}
+.cal-day{min-height:54px;padding:4px 2px;cursor:pointer;border-radius:8px;transition:background .15s;text-align:center;position:relative}
+.cal-day:active{background:var(--inner-bg,#060b12)}
+.cal-day.today .cal-day-num{background:#3b82f6;color:#fff;border-radius:50%;width:22px;height:22px;display:flex;align-items:center;justify-content:center;margin:0 auto 3px}
+.cal-day.selected{background:var(--inner-bg,#060b12);outline:2px solid #3b82f640;outline-offset:-2px;border-radius:8px}
+.cal-day.other-month{opacity:.3}
+.cal-day-num{font-size:12px;font-weight:700;margin-bottom:3px;line-height:1}
+.cal-dots{display:flex;flex-wrap:wrap;gap:2px;justify-content:center}
+.cal-dot{width:6px;height:6px;border-radius:50%;flex-shrink:0}
+
+/* ── DAY PANEL ── */
+.cal-day-panel{background:var(--card-bg,#0d1929);border:1px solid #3b82f660;border-radius:14px;padding:16px;margin-bottom:14px}
+.cal-day-panel-title{font-size:15px;font-weight:800;margin-bottom:12px;color:#60a5fa}
+.cal-ev-card{padding:12px;border-radius:10px;margin-bottom:8px;cursor:pointer;transition:opacity .15s;border-left:3px solid}
+.cal-ev-card:hover{opacity:.85}
+.cal-ev-card:last-child{margin-bottom:0}
+.cal-ev-tipo{font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.05em;margin-bottom:4px;opacity:.9}
+.cal-ev-title{font-size:14px;font-weight:700;margin-bottom:2px}
+.cal-ev-sub{font-size:12px;opacity:.8}
+.cal-ev-status{font-size:11px;margin-top:4px;font-weight:700}
+
+/* ── WEEK (list) ── */
+.week-day-block{background:var(--card-bg,#0d1929);border:1px solid var(--border,#1e3a5f);border-radius:12px;overflow:hidden;margin-bottom:10px}
+.week-day-header{display:flex;align-items:center;gap:12px;padding:12px 16px;border-bottom:1px solid var(--border,#1e3a5f)}
+.week-day-header.today{background:rgba(59,130,246,.06)}
+.week-day-dow{font-size:11px;font-weight:800;color:#64748b;text-transform:uppercase;width:28px}
+.week-day-num{font-size:26px;font-weight:800;line-height:1;width:34px;text-align:center}
+.week-day-header.today .week-day-num{color:#60a5fa}
+.week-day-info{flex:1;font-size:12px;color:#64748b}
+.week-day-body{padding:8px}
+.week-empty{font-size:13px;color:#475569;padding:10px 8px;text-align:center}
+.week-ev{padding:10px 12px;border-radius:8px;margin-bottom:6px;cursor:pointer;border-left:3px solid;transition:opacity .15s}
+.week-ev:last-child{margin-bottom:0}
+.week-ev:hover{opacity:.85}
+.week-ev-header{display:flex;align-items:center;gap:8px;margin-bottom:3px}
+.week-ev-tipo{font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.04em}
+.week-ev-title{font-size:13px;font-weight:700}
+.week-ev-sub{font-size:11px;opacity:.75}
+
+/* ── SUMMARY ── */
+.cal-summary{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-bottom:14px}
+.cal-sum-item{background:var(--card-bg,#0d1929);border:1px solid var(--border,#1e3a5f);border-radius:10px;padding:10px 6px;text-align:center}
+.cal-sum-val{font-size:20px;font-weight:800}
+.cal-sum-lbl{font-size:10px;color:#64748b;margin-top:1px}
+
+/* ── LEGEND ── */
+.cal-legend{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:14px}
+.cal-leg-item{display:flex;align-items:center;gap:4px;font-size:11px;color:#64748b}
+.cal-leg-dot{width:9px;height:9px;border-radius:3px;flex-shrink:0}
+</style>
+</head>
+<body>
+<div id="app">
+  <div id="sidebar">
+    <a class="sl" href="dashboard.html"><div class="li">&#9881;</div><span class="sl-text">MaintenX</span></a>
+    <nav>
+      <a class="ni" href="dashboard.html"><span class="nx">&#9672;</span><span class="nl" data-i18n="nav_dashboard">Dashboard</span></a>
+      <a class="ni" href="ordens.html"><span class="nx">&#9874;</span><span class="nl" data-i18n="nav_ordens">Ordens de Servico</span></a>
+      <a class="ni" href="ativos.html"><span class="nx">&#11041;</span><span class="nl" data-i18n="nav_ativos">Gestao de Ativos</span></a>
+      <a class="ni" href="cadastros.html"><span class="nx">&#9998;</span><span class="nl" data-i18n="nav_cadastros">Cadastros</span></a>
+      <a class="ni active" href="calendario.html"><span class="nx">&#128197;</span><span class="nl">Calendario</span></a>
+    </nav>
+  </div>
+  <div id="main">
+    <div id="topbar">
+      <div id="topbar-left">
+        <span class="topbar-logo">&#9881;</span>
+        <div><div id="tt">Calendario</div></div>
+      </div>
+      <div class="avatar">G</div>
+    </div>
+    <div id="ct"></div>
+  </div>
+</div>
+<nav id="bottom-nav">
+  <a class="bn-item" href="dashboard.html"><span class="bn-icon">&#9672;</span><span class="bn-label" data-i18n="nav_dashboard">Dashboard</span></a>
+  <a class="bn-item" href="ordens.html"><span class="bn-icon">&#9874;</span><span class="bn-label" data-i18n="nav_os">OS</span></a>
+  <a class="bn-item" href="ativos.html"><span class="bn-icon">&#11041;</span><span class="bn-label" data-i18n="nav_ativos_short">Ativos</span></a>
+  <a class="bn-item" href="cadastros.html"><span class="bn-icon">&#9998;</span><span class="bn-label" data-i18n="nav_cadastros">Cadastros</span></a>
+  <a class="bn-item active" href="calendario.html"><span class="bn-icon">&#128197;</span><span class="bn-label">Cal.</span></a>
+</nav>
+<script src="_lang.js"></script>
+<script src="_shared.js"></script>
+<script>
+var D = loadData();
+var ordens = D.ordens, ativos = D.ativos, fichas = D.fichas;
+
+var today      = new Date();
+var curYear    = today.getFullYear();
+var curMonth   = today.getMonth();
+var viewMode   = "month";
+var weekOffset = 0;
+var selDay     = null; // "YYYY-MM-DD" of selected day
+
+var MONTHS = ["Janeiro","Fevereiro","Marco","Abril","Maio","Junho",
+              "Julho","Agosto","Setembro","Outubro","Novembro","Dezembro"];
+var MONTHS_SHORT = ["Jan","Fev","Mar","Abr","Mai","Jun","Jul","Ago","Set","Out","Nov","Dez"];
+var DAYS   = ["Dom","Seg","Ter","Qua","Qui","Sex","Sab"];
+
+// ── EVENT COLORS ─────────────────────────────────────────────────────────────
+var EC = {
+  "Corretiva": {dot:"#f87171", bg:"rgba(248,113,113,.12)", border:"#f8717160"},
+  "Preventiva":{dot:"#4ade80", bg:"rgba(74,222,128,.12)",  border:"#4ade8060"},
+  "Preditiva": {dot:"#a78bfa", bg:"rgba(167,139,250,.12)", border:"#a78bfa60"},
+  "Mista":     {dot:"#60a5fa", bg:"rgba(96,165,250,.12)",  border:"#60a5fa60"},
+  "Plano":     {dot:"#f59e0b", bg:"rgba(245,158,11,.12)",  border:"#f59e0b60"},
+  "Atrasado":  {dot:"#f87171", bg:"rgba(248,113,113,.12)", border:"#f8717160"}
+};
+
+// ── BUILD EVENTS ─────────────────────────────────────────────────────────────
+function buildEvents() {
+  var evs = [];
+  ordens.forEach(function(o) {
+    if (!o.prazo || o.prazo === "--") return;
+    if (o.status === "Concluida" || o.status === "Cancelada") return;
+    var tipo = o.tipo || "Corretiva";
+    var col = EC[tipo] || EC["Corretiva"];
+    evs.push({date:o.prazo, title:o.titulo, sub:o.ativo+" • "+tipo,
+      col:col, tipo:tipo, kind:"os", id:o.id, prio:o.prioridade, status:o.status});
+  });
+  ativos.forEach(function(a) {
+    var f = fichas[a.id];
+    if (!f || !f.planos) return;
+    f.planos.forEach(function(p) {
+      if (!p.proxima_execucao || p.proxima_execucao === "--") return;
+      if (p.os_gerada_id) {
+        var osAberta = ordens.find(function(o){
+          return o.id==p.os_gerada_id && o.status!=="Concluida" && o.status!=="Cancelada";
+        });
+        if (osAberta) return;
+      }
+      var ps = calcPlanStatus(p.proxima_execucao);
+      var col = ps === "Atrasado" ? EC["Atrasado"] : EC[p.tipo] || EC["Plano"];
+      evs.push({date:p.proxima_execucao, title:p.nome, sub:a.nome+" • "+(p.tipo||"Preventiva"),
+        col:col, tipo:p.tipo||"Preventiva", kind:"plano",
+        ativoId:a.id, planoId:p.id, status:ps, freq:p.frequencia});
+    });
+  });
+  return evs;
+}
+
+function pad(n){return String(n).padStart(2,"0");}
+function todayKey(){return today.getFullYear()+"-"+pad(today.getMonth()+1)+"-"+pad(today.getDate());}
+function dateKey(y,m,d){return y+"-"+pad(m+1)+"-"+pad(d);}
+
+// ── RENDER ────────────────────────────────────────────────────────────────────
+function render() {
+  document.getElementById("ct").innerHTML = viewMode==="month" ? renderMonth() : renderWeek();
+}
+
+function viewToggle() {
+  return '<div class="cal-view-toggle">'
+    +'<div class="cal-view-btn'+(viewMode==="month"?" active":"")+'" onclick="setView(\'month\')">&#128197; M&ecirc;s</div>'
+    +'<div class="cal-view-btn'+(viewMode==="week"?" active":"")+'" onclick="setView(\'week\')">&#128198; Semana</div>'
+    +'</div>';
+}
+
+// ── MONTH VIEW ────────────────────────────────────────────────────────────────
+function renderMonth() {
+  var evs = buildEvents();
+  var byDate = {};
+  evs.forEach(function(e){if(!byDate[e.date])byDate[e.date]=[];byDate[e.date].push(e);});
+
+  // Summary
+  var me = evs.filter(function(e){return e.date&&e.date.startsWith(curYear+"-"+pad(curMonth+1));});
+  var summary = '<div class="cal-summary">'
+    +sumIt(me.filter(function(e){return e.kind==="os";}).length,"OS no M&ecirc;s","#60a5fa")
+    +sumIt(me.filter(function(e){return e.kind==="plano";}).length,"Planos","#f59e0b")
+    +sumIt(me.filter(function(e){return e.prio==="Critica";}).length,"Cr&iacute;ticas","#f87171")
+    +sumIt(me.filter(function(e){return e.status==="Atrasado";}).length,"Atrasados","#fb923c")
+    +'</div>';
+
+  // Nav
+  var nav = '<div class="cal-nav">'
+    +'<button class="btn bx bsm" onclick="prevMonth()">&#8592;</button>'
+    +'<div class="cal-nav-center">'
+    +'<div class="cal-nav-title">'+MONTHS[curMonth]+' '+curYear+'</div>'
+    +'</div>'
+    +'<div style="display:flex;gap:6px">'
+    +'<button class="btn bx bsm" onclick="goToday()">Hoje</button>'
+    +'<button class="btn bx bsm" onclick="nextMonth()">&#8594;</button>'
+    +'</div></div>';
+
+  // Legend
+  var legend = '<div class="cal-legend">'
+    +legIt("#f87171","Corretiva")+legIt("#4ade80","Preventiva")
+    +legIt("#a78bfa","Preditiva")+legIt("#60a5fa","OS Plano")+legIt("#f59e0b","Plano")
+    +'</div>';
+
+  // Grid
+  var dows = DAYS.map(function(d){return'<div class="cal-dow">'+d+'</div>';}).join("");
+  var firstDay = new Date(curYear, curMonth, 1).getDay();
+  var daysInMonth = new Date(curYear, curMonth+1, 0).getDate();
+  var daysInPrev  = new Date(curYear, curMonth, 0).getDate();
+  var cells = "";
+
+  for (var i=firstDay-1; i>=0; i--) {
+    var d=daysInPrev-i, m=curMonth-1, y=curYear;
+    if(m<0){m=11;y--;}
+    cells += mkCell(d, dateKey(y,m,d), byDate, true);
+  }
+  for (var d=1; d<=daysInMonth; d++) {
+    cells += mkCell(d, dateKey(curYear,curMonth,d), byDate, false);
+  }
+  var total=firstDay+daysInMonth, rem=total%7===0?0:7-(total%7);
+  for (var d=1; d<=rem; d++) {
+    var m=curMonth+1, y=curYear;
+    if(m>11){m=0;y++;}
+    cells += mkCell(d, dateKey(y,m,d), byDate, true);
+  }
+
+  // Selected day panel
+  var panel = "";
+  if (selDay && byDate[selDay] && byDate[selDay].length > 0) {
+    var dParts = selDay.split("-");
+    var dLabel = parseInt(dParts[2])+" de "+MONTHS[parseInt(dParts[1])-1];
+    var cards = byDate[selDay].map(function(e){
+      var typeLabel = e.kind==="os" ? e.tipo : (e.tipo+" — Plano");
+      return '<div class="cal-ev-card" '
+        +'style="background:'+e.col.bg+';border-left-color:'+e.col.dot+'" '
+        +'onclick="goToEvent(\''+e.kind+'\','+(e.kind==="os"?e.id:e.ativoId+','+e.planoId)+')">'
+        +'<div class="cal-ev-tipo" style="color:'+e.col.dot+'">'+typeLabel+'</div>'
+        +'<div class="cal-ev-title">'+esc(e.title)+'</div>'
+        +'<div class="cal-ev-sub">'+esc(e.sub)+'</div>'
+        +(e.status?'<div class="cal-ev-status" style="color:'+e.col.dot+'">'+esc(e.status)+'</div>':"")
+        +'</div>';
+    }).join("");
+    panel = '<div class="cal-day-panel">'
+      +'<div class="cal-day-panel-title">&#128197; '+dLabel+'</div>'
+      +cards+'</div>';
+  }
+
+  return summary+nav+viewToggle()+legend
+    +'<div class="cal-grid">'+dows+cells+'</div>'
+    +panel;
+}
+
+function mkCell(d, dk, byDate, other) {
+  var evs = byDate[dk] || [];
+  var isToday = dk === todayKey();
+  var isSel   = dk === selDay;
+  var cls = "cal-day"+(isToday?" today":"")+(other?" other-month":"")+(isSel?" selected":"");
+  var numHtml = isToday
+    ? '<div class="cal-day-num"><div style="background:#3b82f6;color:#fff;border-radius:50%;width:22px;height:22px;display:flex;align-items:center;justify-content:center;margin:0 auto 2px;font-size:11px">'+d+'</div></div>'
+    : '<div class="cal-day-num">'+d+'</div>';
+  var dots = evs.slice(0,5).map(function(e){
+    return '<div class="cal-dot" style="background:'+e.col.dot+'"></div>';
+  }).join("");
+  var moreHtml = evs.length>5?'<div style="font-size:8px;color:#64748b">+'+( evs.length-5)+'</div>':"";
+  return '<div class="'+cls+'" onclick="selectDay(\''+dk+'\','+!other+')">'
+    +numHtml
+    +'<div class="cal-dots">'+dots+'</div>'
+    +moreHtml+'</div>';
+}
+
+function selectDay(dk, hasContent) {
+  selDay = (selDay===dk) ? null : dk;
+  render();
+  if (selDay) {
+    setTimeout(function(){
+      var panel = document.querySelector(".cal-day-panel");
+      if(panel) panel.scrollIntoView({behavior:"smooth", block:"nearest"});
+    }, 50);
+  }
+}
+
+// ── WEEK VIEW (list) ──────────────────────────────────────────────────────────
+function renderWeek() {
+  var evs = buildEvents();
+  var byDate = {};
+  evs.forEach(function(e){if(!byDate[e.date])byDate[e.date]=[];byDate[e.date].push(e);});
+
+  var start = new Date(today);
+  start.setDate(today.getDate() - today.getDay() + weekOffset*7);
+
+  var days = [];
+  for (var i=0; i<7; i++) {
+    var d = new Date(start);
+    d.setDate(start.getDate()+i);
+    days.push(d);
+  }
+
+  var startStr = days[0].getDate()+" "+MONTHS_SHORT[days[0].getMonth()];
+  var endStr   = days[6].getDate()+" "+MONTHS_SHORT[days[6].getMonth()]+" "+days[6].getFullYear();
+
+  var nav = '<div class="cal-nav">'
+    +'<button class="btn bx bsm" onclick="prevWeek()">&#8592;</button>'
+    +'<div class="cal-nav-center">'
+    +'<div class="cal-nav-title" style="font-size:14px">'+startStr+' &mdash; '+endStr+'</div>'
+    +'<div class="cal-nav-sub">Semana</div>'
+    +'</div>'
+    +'<div style="display:flex;gap:6px">'
+    +'<button class="btn bx bsm" onclick="goToday()">Hoje</button>'
+    +'<button class="btn bx bsm" onclick="nextWeek()">&#8594;</button>'
+    +'</div></div>';
+
+  var blocks = days.map(function(d) {
+    var dk  = d.getFullYear()+"-"+pad(d.getMonth()+1)+"-"+pad(d.getDate());
+    var isT = dk === todayKey();
+    var dayEvs = byDate[dk] || [];
+    var evCards = dayEvs.length===0
+      ? '<div class="week-empty">Sem eventos</div>'
+      : dayEvs.map(function(e){
+          var typeLabel = e.kind==="os" ? e.tipo : (e.tipo+" — Plano");
+          return '<div class="week-ev" style="background:'+e.col.bg+';border-left-color:'+e.col.dot+'" '
+            +'onclick="goToEvent(\''+e.kind+'\','+(e.kind==="os"?e.id:e.ativoId+','+e.planoId)+')">'
+            +'<div class="week-ev-header">'
+            +'<span class="week-ev-tipo" style="color:'+e.col.dot+'">'+typeLabel+'</span>'
+            +(e.status&&e.status!="OK"?'<span style="font-size:10px;font-weight:700;color:'+e.col.dot+';margin-left:auto">'+esc(e.status)+'</span>':"")
+            +'</div>'
+            +'<div class="week-ev-title">'+esc(e.title)+'</div>'
+            +'<div class="week-ev-sub">'+esc(e.sub)+'</div>'
+            +'</div>';
+        }).join("");
+
+    return '<div class="week-day-block">'
+      +'<div class="week-day-header'+(isT?" today":"")+'">'
+      +'<div class="week-day-dow">'+DAYS[d.getDay()]+'</div>'
+      +'<div class="week-day-num"'+(isT?' style="color:#60a5fa"':'')+'>'+d.getDate()+'</div>'
+      +'<div class="week-day-info">'
+      +MONTHS_SHORT[d.getMonth()]+(dayEvs.length>0?' &bull; <b>'+dayEvs.length+' evento(s)</b>':"")
+      +'</div></div>'
+      +'<div class="week-day-body">'+evCards+'</div>'
+      +'</div>';
+  }).join("");
+
+  return nav+viewToggle()+blocks;
+}
+
+// ── HELPERS ───────────────────────────────────────────────────────────────────
+function sumIt(v,l,c){return'<div class="cal-sum-item"><div class="cal-sum-val" style="color:'+c+'">'+v+'</div><div class="cal-sum-lbl">'+l+'</div></div>';}
+function legIt(c,l){return'<div class="cal-leg-item"><div class="cal-leg-dot" style="background:'+c+'40;border:1px solid '+c+'80"></div>'+l+'</div>';}
+
+function prevMonth(){curMonth--;if(curMonth<0){curMonth=11;curYear--;}selDay=null;render();}
+function nextMonth(){curMonth++;if(curMonth>11){curMonth=0;curYear++;}selDay=null;render();}
+function prevWeek(){weekOffset--;render();}
+function nextWeek(){weekOffset++;render();}
+function goToday(){curYear=today.getFullYear();curMonth=today.getMonth();weekOffset=0;selDay=todayKey();render();}
+function setView(v){viewMode=v;render();}
+
+function goToEvent(kind, idOrAtivo, planoId) {
+  if (kind === "os") {
+    localStorage.setItem("mx_cal_os", idOrAtivo);
+    window.location.href = "ordens.html";
+  } else {
+    // Plano: verifica se ja tem OS gerada aberta
+    var ativoId = idOrAtivo;
+    var ficha = fichas[ativoId];
+    var plano = ficha && ficha.planos
+      ? ficha.planos.find(function(p){return p.id==planoId;})
+      : null;
+
+    if (plano && plano.os_gerada_id) {
+      // Verifica se a OS ainda esta aberta
+      var osAberta = ordens.find(function(o){
+        return (o.id===plano.os_gerada_id || o.id==plano.os_gerada_id)
+          && o.status !== "Concluida" && o.status !== "Cancelada";
+      });
+      if (osAberta) {
+        // Vai direto para a OS
+        localStorage.setItem("mx_cal_os", osAberta.id);
+        window.location.href = "ordens.html";
+        return;
+      }
+    }
+
+    // Sem OS aberta — gera uma e vai para ela
+    if (plano) {
+      var hoje = new Date().toISOString().slice(0,10);
+      var ativo = ativos.find(function(a){return a.id==ativoId;});
+      var osId = nextId();
+      var novaOS = {
+        id: osId,
+        titulo: (ativo?ativo.nome:"Ativo") + " — " + (plano.tipo||"Preventiva") + " (" + plano.nome + ")",
+        ativo: ativo ? ativo.nome : "",
+        ativo_id: ativoId,
+        tipo: plano.tipo || "Preventiva",
+        prioridade: "Normal",
+        status: "Aberta",
+        tecnico: plano.responsavel || "",
+        abertura: hoje,
+        prazo: plano.proxima_execucao || "",
+        descricao: "OS gerada do plano: " + plano.nome,
+        origem: "plano",
+        planos_ids: [plano.id],
+        planos_exec: [{
+          plano_id: plano.id,
+          plano_nome: plano.nome,
+          tipo: plano.tipo || "Preventiva",
+          acoes: (plano.acoes||[]).map(function(a){
+            return Object.assign({}, a, {concluida:false, valor_exec:null, obs_exec:""});
+          })
+        }],
+        execLog: []
+      };
+      ordens.unshift(novaOS);
+      saveOrdens(ordens);
+      // Marca plano com os_gerada_id
+      ficha.planos = ficha.planos.map(function(p){
+        return p.id==planoId ? Object.assign({},p,{os_gerada_id:osId}) : p;
+      });
+      saveFichas(fichas);
+      localStorage.setItem("mx_cal_os", osId);
+      window.location.href = "ordens.html";
+    } else {
+      // Fallback: vai para a ficha do ativo
+      localStorage.setItem("mx_cal_ativo", ativoId);
+      window.location.href = "ativos.html";
+    }
+  }
+}
+
+render();
+</script>
+<script>
+window.addEventListener("langchange", function(){
+  document.querySelectorAll("[data-i18n]").forEach(function(el){
+    el.textContent = t(el.getAttribute("data-i18n"));
+  });
+  render();
+});
+</script>
+<script src="_theme.js"></script>
+</body>
+</html>

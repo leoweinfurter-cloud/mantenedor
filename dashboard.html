@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>MaintenX — Dashboard</title>
+<link rel="stylesheet" href="_style.css" id="theme-link"/>
+</head>
+<body>
+<div id="app">
+  <div id="sidebar">
+    <a class="sl" href="dashboard.html"><div class="li">&#9881;</div><span class="sl-text">MaintenX</span></a>
+    <nav>
+      <a class="ni active" href="dashboard.html"><span class="nx">&#9672;</span><span class="nl" data-i18n="nav_dashboard">Dashboard</span></a>
+      <a class="ni" href="ordens.html"><span class="nx">&#9874;</span><span class="nl" data-i18n="nav_ordens">Ordens de Servico</span></a>
+      <a class="ni" href="ativos.html"><span class="nx">&#11041;</span><span class="nl" data-i18n="nav_ativos">Gestao de Ativos</span></a>
+      <a class="ni" href="cadastros.html"><span class="nx">&#9998;</span><span class="nl" data-i18n="nav_cadastros">Cadastros</span></a>
+      <a class="ni" href="calendario.html"><span class="nx">&#128197;</span><span class="nl">Calendario</span></a>
+</nav>
+  </div>
+  <div id="main">
+    <div id="topbar">
+      <div id="topbar-left">
+        <span class="topbar-logo">&#9881;</span>
+        <div><div id="tt">Dashboard</div><div id="ta"></div></div>
+      </div>
+      <div class="avatar">G</div>
+    </div>
+    <div id="ct"></div>
+  </div>
+</div>
+<nav id="bottom-nav">
+  <a class="bn-item active" href="dashboard.html"><span class="bn-icon">&#9672;</span><span class="bn-label">Dashboard</span></a>
+  <a class="bn-item" href="ordens.html"><span class="bn-icon">&#9874;</span><span class="bn-label" data-i18n="nav_os">OS</span></a>
+  <a class="bn-item" href="ativos.html"><span class="bn-icon">&#11041;</span><span class="bn-label" data-i18n="nav_ativos_short">Ativos</span></a>
+  <a class="bn-item" href="cadastros.html"><span class="bn-icon">&#9998;</span><span class="bn-label" data-i18n="nav_cadastros">Cadastros</span></a>
+  <a class="bn-item" href="calendario.html"><span class="bn-icon">&#128197;</span><span class="bn-label">Cal.</span></a>
+</nav>
+<script src="_lang.js"></script>
+<script src="_shared.js"></script>
+<script>
+var D=loadData(), ordens=D.ordens, ativos=D.ativos, fichas=D.fichas;
+
+function kpis(){
+  return{
+    abertas:ordens.filter(function(o){return o.status=="Aberta";}).length,
+    andamento:ordens.filter(function(o){return o.status=="Em Andamento";}).length,
+    concluidas:ordens.filter(function(o){return o.status=="Concluida";}).length,
+    criticas:ordens.filter(function(o){return o.prioridade=="Critica"&&o.status!="Concluida"&&o.status!="Cancelada";}).length,
+    ativosOp:ativos.filter(function(a){return a.status=="Operacional";}).length,
+    total:ordens.length,totalAt:ativos.length
+  };
+}
+
+function calcGlobal(){
+  var allH=[];ativos.forEach(function(a){var f=fichas[a.id];if(f&&f.historico)allH=allH.concat(f.historico);});
+  var corr=allH.filter(function(h){return h.tipo=="Corretiva";}),plan=allH.filter(function(h){return h.tipo=="Preventiva"||h.tipo=="Preditiva";});
+  var nC=corr.length,nT=allH.length,hC=corr.reduce(function(s,h){return s+(h.horas||0);},0);
+  var per=8760*Math.max(ativos.length,1);
+  var mtbf=nC>0?Math.round((per-hC)/nC):per,mttr=nC>0?Math.round(hC/nC*10)/10:0;
+  var disp=mttr>0?Math.round(mtbf/(mtbf+mttr)*1000)/10:99;
+  var mp=nT>0?Math.round(plan.length/nT*100):0;
+  var allP=[];ativos.forEach(function(a){var f=fichas[a.id];if(f&&f.planos)allP=allP.concat(f.planos);});
+  var comp=allP.length>0?Math.round(allP.filter(function(p){return p.status=="OK";}).length/allP.length*100):100;
+  var bkl=ordens.filter(function(o){return o.status=="Aberta"||o.status=="Em Andamento";}).length;
+  var atrasados=allP.filter(function(p){return p.status!="OK";});
+  return{mtbf:mtbf,mttr:mttr,disp:disp,mp:mp,comp:comp,bkl:bkl,nCorr:nC,atrasados:atrasados};
+}
+
+function calcCriticidadeGlobal(){
+  var counts={A:0,B:0,C:0,D:0};
+  var list=[];
+  ativos.forEach(function(a){
+    var f=fichas[a.id];
+    if(f&&f.crit){
+      var score=calcCritScore(f.crit);
+      var cl=getCritClass(score);
+      counts[cl]++;
+      list.push({id:a.id,nome:a.nome,status:a.status,score:score,cl:cl,crit:f.crit});
+    }
+  });
+  list.sort(function(a,b){return b.score-a.score;});
+  var total=list.length;
+  var pctA=total>0?Math.round(counts.A/total*100):0;
+  var superClass=total>=3&&pctA>30;
+  return{counts:counts,list:list,total:total,pctA:pctA,superClass:superClass};
+}
+
+function buildMatrix(critList){
+  var matClasses=[
+    ['mx-3','mx-3','mx-4','mx-4','mx-4'],
+    ['mx-2','mx-2','mx-3','mx-3','mx-4'],
+    ['mx-1','mx-2','mx-2','mx-3','mx-3'],
+    ['mx-1','mx-1','mx-2','mx-2','mx-2'],
+    ['mx-1','mx-1','mx-1','mx-1','mx-2']
+  ];
+  var matDots=[[],[], [],[], []];
+  for(var r=0;r<5;r++){matDots[r]=["","","","",""];}
+  var classColors={"A":"#f87171","B":"#fb923c","C":"#fbbf24","D":"#4ade80"};
+  critList.forEach(function(item){
+    var s=item.crit;
+    var cons=(s.hse*2.5+s.prod*2.0+s.custo*1.0)/(5*2.5+5*2.0+5*1.0);
+    var prob=(s.freq*2.0+s.det*1.5+s.red*1.0)/(5*2.0+5*1.5+5*1.0);
+    var r=4-Math.min(4,Math.round(cons*4));
+    var c=Math.min(4,Math.round(prob*4));
+    var col=classColors[item.cl]||"#9ca3af";
+    matDots[r][c]+='<span class="mx-dot" style="background:'+col+';margin:1px" title="'+item.nome+' ('+item.cl+')"></span>';
+  });
+  var html='<div class="risk-matrix">';
+  html+='<div class="mx-hdr"></div>';
+  for(var p=1;p<=5;p++) html+='<div class="mx-hdr">P'+p+'</div>';
+  for(var r=0;r<5;r++){
+    html+='<div class="mx-row-hdr">C'+(5-r)+'</div>';
+    for(var c=0;c<5;c++){
+      html+='<div class="mx-cell '+matClasses[r][c]+'">'+(matDots[r][c]||'')+'</div>';
+    }
+  }
+  html+='</div>';
+  html+='<div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:6px;font-size:10px;color:#64748b">'
+    +'<span>'+t('crit_eixo_y')+'</span><span>&bull;</span><span>'+t('crit_eixo_x')+'</span></div>'
+    +'<div class="matrix-legend">'
+    +[["A","#f87171",t("crit_classes").A],["B","#fb923c",t("crit_classes").B],["C","#fbbf24",t("crit_classes").C],["D","#4ade80",t("crit_classes").D]].map(function(x){
+      return'<div class="matrix-legend-item"><span class="mx-dot" style="background:'+x[1]+'"></span>'+x[0]+' &mdash; '+x[2]+'</div>';
+    }).join("")
+    +"</div>";
+  return html;
+}
+
+function kc(label,val,color,sub,norma){
+  return'<div class="kc" style="border-left:3px solid '+color+'"><div class="kv" style="color:'+color+'">'+val+'</div><div class="kl">'+label+'</div><div class="ks">'+(sub||"")+(norma?' &bull; '+norma:'')+'</div></div>';
+}
+
+function render(){
+  var k=kpis(),g=calcGlobal(),cr=calcCriticidadeGlobal();
+  var al=document.getElementById("ta");
+  if(k.criticas>0){al.style.display="block";al.textContent=k.criticas+t("topbar_alert_criticas");}
+  else al.style.display="none";
+
+  var dCol=g.disp>=90?"#4ade80":g.disp>=70?"#fbbf24":"#f87171";
+  var mpCol=g.mp>=80?"#4ade80":g.mp>=60?"#fbbf24":"#f87171";
+  var compCol=g.comp>=80?"#4ade80":g.comp>=60?"#fbbf24":"#f87171";
+  var bkCol=g.bkl==0?"#4ade80":g.bkl<=3?"#fbbf24":"#f87171";
+
+  // OS recentes
+  var ohHtml=ordens.slice(0,5).map(function(o){
+    return'<a class="mi" href="ordens.html" style="text-decoration:none">'
+      +'<div><div class="mn">'+esc(o.titulo)+'</div><div class="ms">'+esc(o.ativo)+' &bull; '+esc(o.tipo)+'</div></div>'
+      +'<div class="mb">'+bdg(o.status,SC)+bdg(o.prioridade,PC)+'</div></a>';
+  }).join("")||'<div style="color:#64748b;padding:16px;text-align:center;font-size:13px">'+ t("ord_nenhuma_cad") +'</div>';
+
+  // Equipamentos
+  var ahHtml=ativos.map(function(a){
+    var f=fichas[a.id];
+    var critBadge="";
+    if(f&&f.crit){var sc=calcCritScore(f.crit);var cl=getCritClass(sc);var col=CRIT_CLASS_COLORS[cl];critBadge='<span style="font-size:10px;font-weight:800;color:'+col+';background:'+col+'18;border:1px solid '+col+'35;padding:2px 7px;border-radius:10px;margin-left:6px">'+cl+'</span>';}
+    return'<a class="mi" href="ativos.html" style="text-decoration:none">'
+      +'<div><div class="mn">'+esc(a.nome)+critBadge+'</div><div class="ms">'+esc(a.localizacao)+' &bull; '+esc(a.categoria)+'</div></div>'
+      +bdg(a.status,AC)+'</a>';
+  }).join("");
+
+  // Planos atrasados
+  var upHtml=g.atrasados.length==0
+    ?'<div style="color:#4ade80;padding:12px;text-align:center;font-size:13px">'+t('dash_planos_ok')+'</div>'
+    :g.atrasados.map(function(p){return'<div class="plan-item"><div><div class="mn">'+esc(p.nome)+'</div><div class="ms">Prox: '+esc(p.proxima_execucao)+'</div></div>'+bdg(p.status,LP)+'</div>';}).join("");
+
+  // Criticidade global
+  var critHtml="";
+  if(cr.total==0){
+    critHtml='<div style="color:#64748b;text-align:center;padding:20px;font-size:13px">'+t('crit_vazio')+'</div>';
+  } else {
+    var superWarn=cr.superClass?'<div class="aw" style="margin-bottom:14px">&#9888; '+cr.pctA+t('crit_warn_super')+'</div>':"";
+    var okWarn=(!cr.superClass&&cr.pctA>=5&&cr.pctA<=15&&cr.total>=3)?'<div style="background:#14532d20;border:1px solid #4ade8040;border-radius:10px;padding:10px 14px;margin-bottom:14px;font-size:12px;color:#86efac">'+t('crit_ok_bench')+'</div>':"";
+    var dist='<div class="crit-dist" style="margin-bottom:14px">'
+      +["A","B","C","D"].map(function(cl){
+        var col=CRIT_CLASS_COLORS[cl];
+        var pct=cr.total>0?Math.round(cr.counts[cl]/cr.total*100):0;
+        return'<div class="crit-dist-col" style="border-color:'+col+'30"><div class="crit-dist-val" style="color:'+col+'">'+cr.counts[cl]+'</div><div class="crit-dist-lbl" style="color:'+col+'">'+cl+' ('+pct+'%)</div></div>';
+      }).join("")+'</div>';
+    var matrixHtml=buildMatrix(cr.list);
+    var topList=cr.list.slice(0,5).map(function(a){
+      var col=CRIT_CLASS_COLORS[a.cl];
+      return'<div class="crit-asset-row"><div><div style="font-size:13px;font-weight:700">'+esc(a.nome)+'</div><div style="font-size:11px;color:#64748b">Score: '+a.score+'/100</div></div>'
+        +'<span style="padding:4px 12px;border-radius:12px;font-size:12px;font-weight:800;background:'+col+'18;color:'+col+';border:1px solid '+col+'35">'+a.cl+' — '+t('crit_classes')[a.cl]+'</span>'
+        +'</div>';
+    }).join("");
+    critHtml=superWarn+okWarn+dist
+      +'<div style="font-size:11px;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px">'+t("crit_matriz")+'</div>'
+      +matrixHtml
+      +'<div style="margin-top:14px;font-size:11px;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px">'+t("crit_ativos")+'</div>'
+      +topList+(cr.list.length>5?'<div style="font-size:11px;text-align:center;margin-top:8px;color:#64748b">'+t('crit_mais')+(cr.list.length-5)+t('crit_avaliados')+'</div>':"");
+  }
+
+  document.getElementById("ct").innerHTML=
+    '<div class="ks2">'+t('dash_status')+'</div>'
+    +'<div class="kg">'
+    +kc(t("kpi_abertas"),k.abertas,"#fbbf24",t("kpi_aguardando"))
+    +kc(t("kpi_andamento"),k.andamento,"#60a5fa",t("kpi_em_exec"))
+    +kc(t("kpi_criticas"),k.criticas,"#f87171",t("kpi_prio_max"))
+    +kc(t("kpi_equipamentos"),k.ativosOp+"/"+k.totalAt,"#4ade80",t("kpi_operando"))
+    +'</div>'
+    +'<div class="ks2">'+t('dash_confiab')+'</div>'
+    +'<div class="kg3">'
+    +kc(t("kpi_mtbf"),g.mtbf+"h","#60a5fa","EN 13306")
+    +kc(t("kpi_mttr"),g.mttr+"h","#f59e0b","EN 13306")
+    +kc(t("kpi_disponib"),g.disp+"%",dCol,"ISO 14224")
+    +'</div>'
+    +'<div class="ks2">'+t('dash_gestao')+'</div>'
+    +'<div class="kg">'
+    +kc(t("kpi_manuplan"),g.mp+"%",mpCol,"NBR 5462")
+    +kc(t("kpi_compliance"),g.comp+"%",compCol,"SMRP")
+    +kc(t("kpi_backlog"),g.bkl+" OS",bkCol,"SMRP")
+    +kc(t("kpi_falhas"),g.nCorr,g.nCorr<=3?"#4ade80":g.nCorr<=6?"#fbbf24":"#f87171","ISO 14224")
+    +'</div>'
+    +'<div class="card"><div class="card-title">'+t("dash_criticidade")+'</div>'+critHtml+'<a href="ativos.html" class="btn bx bsm" style="margin-top:8px;display:inline-block;font-size:11px">'+t("dash_calcular")+'</a></div>'
+    +'<div class="card"><div class="card-title">'+t("dash_ultimas_os")+'</div>'+ohHtml+'<a href="ordens.html" class="btn bx bsm" style="margin-top:8px;display:inline-block">'+t("dash_ver_todas")+'</a></div>'
+    +'<div class="card"><div class="card-title">'+t("dash_equipamentos")+'</div>'+ahHtml+'</div>'
+    +'<div class="card"><div class="card-title">'+t("dash_planos")+'</div>'+upHtml+'</div>';
+}
+render();
+</script>
+<script>
+window.addEventListener("langchange", function(){
+  document.querySelectorAll("[data-i18n]").forEach(function(el){
+    el.textContent = t(el.getAttribute("data-i18n"));
+  });
+  render();
+});
+</script>
+<script src="_theme.js"></script>
+</body>
+</html>
