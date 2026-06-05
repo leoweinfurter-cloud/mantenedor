@@ -87,10 +87,19 @@ function initApp(renderFn){
     if(Array.isArray(dbUsers)&&dbUsers.length>0){
       localStorage.setItem("mx_usuarios",JSON.stringify(dbUsers));
     } else {
-      localStorage.removeItem("mx_usuarios"); // limpa usuarios demo do localStorage
+      localStorage.removeItem("mx_usuarios");
     }
-    if(Array.isArray(dbCats)&&dbCats.length>0)localStorage.setItem("mx_categorias",JSON.stringify(dbCats));
-    if(Array.isArray(dbEmps)&&dbEmps.length>0){var emps=dbEmps.map(function(e){return Object.assign({},e,{unidades:(dbUnids||[]).filter(function(u){return u.empresa_id===e.id;})});});localStorage.setItem("mx_empresas",JSON.stringify(emps));}
+    if(Array.isArray(dbCats)&&dbCats.length>0){
+      localStorage.setItem("mx_categorias",JSON.stringify(dbCats));
+    } else {
+      localStorage.removeItem("mx_categorias");
+    }
+    if(Array.isArray(dbEmps)&&dbEmps.length>0){
+      var emps=dbEmps.map(function(e){return Object.assign({},e,{unidades:(dbUnids||[]).filter(function(u){return u.empresa_id===e.id;})});});
+      localStorage.setItem("mx_empresas",JSON.stringify(emps));
+    } else {
+      localStorage.removeItem("mx_empresas");
+    }
     var novasOS=gerarOSProgramadas(7);
     if(novasOS.length>0)console.log("[MaintenX] "+novasOS.length+" OS gerada(s) automaticamente.");
     console.log("[Supabase] Carregado: "+ativos.length+" ativos, "+ordens.length+" ordens");
