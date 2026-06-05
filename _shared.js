@@ -1,19 +1,106 @@
+// ── SUPABASE CONFIG ──────────────────────────────────────────────────
+var SB_URL="https://mtmcrpigiwsxfwxkqdkz.supabase.co/rest/v1";
+var SB_KEY="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im10bWNycGlnaXdzeGZ3eGtxZGt6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODAzNTYxNTYsImV4cCI6MjA5NTkzMjE1Nn0.U3_-Fh35p-l3ZYSApbmn-7KRLlF1voZWS5Pbm0_LQ7A";
+var SB_H={"apikey":SB_KEY,"Authorization":"Bearer "+SB_KEY,"Content-Type":"application/json","Prefer":"resolution=merge-duplicates,return=minimal"};
+function sbGet(table,qs){return fetch(SB_URL+"/"+table+"?"+(qs||"select=*"),{headers:SB_H}).then(function(r){return r.json();});}
+function sbUpsert(table,data){if(!data||(Array.isArray(data)&&!data.length))return Promise.resolve();return fetch(SB_URL+"/"+table,{method:"POST",headers:SB_H,body:JSON.stringify(data)}).catch(function(e){console.warn("[SB] upsert "+table,e);});}
+function sbDelete(table,field,value){return fetch(SB_URL+"/"+table+"?"+field+"=eq."+value,{method:"DELETE",headers:SB_H}).catch(function(e){console.warn("[SB] delete "+table,e);});}
+
+// ── SAVE FUNCTIONS (localStorage + Supabase) ─────────────────────────
+function saveOrdens(arr){
+  localStorage.setItem("mx_ordens",JSON.stringify(arr));
+  sbUpsert("ordens",arr.map(function(o){return{id:o.id,titulo:o.titulo||"",ativo_nome:o.ativo||"",ativo_id:o.ativo_id||null,tipo:o.tipo||"Corretiva",prioridade:o.prioridade||"Normal",status:o.status||"Aberta",tecnico:o.tecnico||"",abertura:o.abertura||"",prazo:o.prazo||"",descricao:o.descricao||"",origem:o.origem||"manual",planos_ids:o.planos_ids||[],planos_exec:o.planos_exec||[],exec_log:o.execLog||[]};}));
+}
+function saveAtivos(arr){
+  localStorage.setItem("mx_ativos",JSON.stringify(arr));
+  sbUpsert("ativos",arr.map(function(a){return{id:a.id,nome:a.nome,categoria:a.categoria||"",empresa:a.empresa||"",unidade:a.unidade||"",localizacao:a.localizacao||"",fabricante:a.fabricante||"",modelo:a.modelo||"",serie:a.serie||"",ano:a.ano||"",tag:a.tag||"",patrimonio:a.patrimonio||"",status:a.status||"Operacional"};}));
+}
+function saveFichas(fichasObj){
+  localStorage.setItem("mx_fichas",JSON.stringify(fichasObj));
+  Object.keys(fichasObj).forEach(function(ativoIdStr){
+    var ativoId=parseInt(ativoIdStr);
+    var f=fichasObj[ativoIdStr];
+    if(!f)return;
+    sbUpsert("ativos",[{id:ativoId,indicadores:f.indicadores||["mtbf","mttr","disp","manuplan"],crit:f.crit||{},docs:f.docs||[]}]);
+    sbDelete("planos","ativo_id",ativoId).then(function(){if(f.planos&&f.planos.length)sbUpsert("planos",f.planos.map(function(p){return{id:p.id,ativo_id:ativoId,nome:p.nome,tipo:p.tipo||"Preventiva",frequencia:p.frequencia||"Mensal",ultima_execucao:p.ultima_execucao||"--",proxima_execucao:p.proxima_execucao||"--",responsavel:p.responsavel||"",status:p.status||"OK",os_gerada_id:p.os_gerada_id||null,acoes:p.acoes||[]};}));});
+    sbDelete("historico","ativo_id",ativoId).then(function(){if(f.historico&&f.historico.length)sbUpsert("historico",f.historico.map(function(h){return{id:h.id,ativo_id:ativoId,descricao:h.desc||"",data:h.data||"",tipo:h.tipo||"Corretiva",tecnico:h.tecnico||"",horas:h.horas||0,custo:h.custo||0,obs:h.obs||"",analise:h.analise||null};}));});
+    sbDelete("medicoes","ativo_id",ativoId).then(function(){if(f.preditiva&&f.preditiva.length)sbUpsert("medicoes",f.preditiva.map(function(m){return{id:m.id,ativo_id:ativoId,data:m.data||"",param:m.param||"",valor:m.valor||0,limite:m.limite||0,obs:m.obs||""};}));});
+  });
+}
+function saveUsuarios(d){localStorage.setItem("mx_usuarios",JSON.stringify(d));sbUpsert("usuarios",d.map(function(u){return{id:u.id,nome:u.nome,email:u.email||"",telefone:u.telefone||"",perfil:u.perfil||"Tecnico",ativo:u.ativo!==false};}));}
+function saveCategorias(d){localStorage.setItem("mx_categorias",JSON.stringify(d));sbUpsert("categorias",d.map(function(c){return{id:c.id,nome:c.nome,descricao:c.descricao||"",icone:c.icone||"⚙",cor:c.cor||"#60a5fa"};}));}
+function saveEmpresas(d){
+  localStorage.setItem("mx_empresas",JSON.stringify(d));
+  var empRows=[],unidRows=[];
+  d.forEach(function(e){empRows.push({id:e.id,nome:e.nome,cnpj:e.cnpj||"",endereco:e.endereco||"",contato:e.contato||""});(e.unidades||[]).forEach(function(u){unidRows.push({id:u.id,empresa_id:e.id,nome:u.nome,endereco:u.endereco||"",responsavel:u.responsavel||""}); });});
+  if(empRows.length)sbUpsert("empresas",empRows);
+  if(unidRows.length)sbUpsert("unidades",unidRows);
+}
+
+// ── INIT APP ──────────────────────────────────────────────────────────
+var ordens=[],ativos=[],fichas={},empresas=[];
+function initApp(renderFn){
+  Promise.all([
+    sbGet("ativos","select=*&order=id.asc"),
+    sbGet("ordens","select=*&order=criado_em.desc"),
+    sbGet("planos","select=*"),
+    sbGet("historico","select=*"),
+    sbGet("medicoes","select=*"),
+    sbGet("usuarios","select=*"),
+    sbGet("categorias","select=*"),
+    sbGet("empresas","select=*"),
+    sbGet("unidades","select=*")
+  ]).then(function(res){
+    var dbAt=res[0],dbOrd=res[1],dbPl=res[2],dbHist=res[3],dbMed=res[4],dbUsers=res[5],dbCats=res[6],dbEmps=res[7],dbUnids=res[8];
+    if(Array.isArray(dbAt)&&dbAt.length>0){
+      ativos=dbAt.map(function(a){return{id:a.id,nome:a.nome,categoria:a.categoria,empresa:a.empresa,unidade:a.unidade,localizacao:a.localizacao,fabricante:a.fabricante,modelo:a.modelo,serie:a.serie,ano:a.ano,tag:a.tag,patrimonio:a.patrimonio,status:a.status};});
+      // Merge localStorage ativos not in Supabase
+      var lsAt=JSON.parse(localStorage.getItem("mx_ativos")||"[]");
+      var sbIds=ativos.map(function(a){return a.id;});
+      var extra=lsAt.filter(function(a){return sbIds.indexOf(a.id)<0;});
+      if(extra.length){ativos=ativos.concat(extra);sbUpsert("ativos",extra);}
+      fichas={};
+      ativos.forEach(function(a){
+        fichas[a.id]={historico:[],preditiva:[],planos:[],docs:[],indicadores:["mtbf","mttr","disp","manuplan"],crit:{}};
+        var dbA=dbAt.find(function(x){return x.id===a.id;});
+        if(dbA){fichas[a.id].indicadores=dbA.indicadores||["mtbf","mttr","disp","manuplan"];fichas[a.id].crit=dbA.crit||{};fichas[a.id].docs=dbA.docs||[];}
+      });
+      (dbPl||[]).forEach(function(p){if(fichas[p.ativo_id])fichas[p.ativo_id].planos.push({id:p.id,nome:p.nome,tipo:p.tipo,frequencia:p.frequencia,ultima_execucao:p.ultima_execucao,proxima_execucao:p.proxima_execucao,responsavel:p.responsavel,status:p.status||calcPlanStatus(p.proxima_execucao),os_gerada_id:p.os_gerada_id||null,acoes:p.acoes||[]});});
+      (dbHist||[]).forEach(function(h){if(fichas[h.ativo_id])fichas[h.ativo_id].historico.push({id:h.id,desc:h.descricao,data:h.data,tipo:h.tipo,tecnico:h.tecnico,horas:h.horas,custo:h.custo,obs:h.obs,analise:h.analise||null});});
+      (dbMed||[]).forEach(function(m){if(fichas[m.ativo_id])fichas[m.ativo_id].preditiva.push({id:m.id,data:m.data,param:m.param,valor:m.valor,limite:m.limite,obs:m.obs});});
+      localStorage.setItem("mx_ativos",JSON.stringify(ativos));
+      localStorage.setItem("mx_fichas",JSON.stringify(fichas));
+    }else{ativos=[];fichas={};}
+    if(Array.isArray(dbOrd)&&dbOrd.length>0){
+      ordens=dbOrd.map(function(o){return{id:o.id,titulo:o.titulo,ativo:o.ativo_nome,ativo_id:o.ativo_id,tipo:o.tipo,prioridade:o.prioridade,status:o.status,tecnico:o.tecnico,abertura:o.abertura,prazo:o.prazo,descricao:o.descricao,origem:o.origem||"manual",planos_ids:o.planos_ids||[],planos_exec:o.planos_exec||[],execLog:o.exec_log||[]};});
+      // Merge localStorage ordens
+      var lsOrd=JSON.parse(localStorage.getItem("mx_ordens")||"[]");
+      var sbOrdIds=ordens.map(function(o){return o.id;});
+      var extraOrd=lsOrd.filter(function(o){return sbOrdIds.indexOf(o.id)<0;});
+      if(extraOrd.length){ordens=extraOrd.concat(ordens);saveOrdens(ordens);}
+      localStorage.setItem("mx_ordens",JSON.stringify(ordens));
+    }else{
+      var lsOrd2=JSON.parse(localStorage.getItem("mx_ordens")||"[]");
+      ordens=lsOrd2;
+      if(ordens.length)saveOrdens(ordens);
+    }
+    if(Array.isArray(dbUsers)&&dbUsers.length>0)localStorage.setItem("mx_usuarios",JSON.stringify(dbUsers));
+    if(Array.isArray(dbCats)&&dbCats.length>0)localStorage.setItem("mx_categorias",JSON.stringify(dbCats));
+    if(Array.isArray(dbEmps)&&dbEmps.length>0){var emps=dbEmps.map(function(e){return Object.assign({},e,{unidades:(dbUnids||[]).filter(function(u){return u.empresa_id===e.id;})});});localStorage.setItem("mx_empresas",JSON.stringify(emps));}
+    var novasOS=gerarOSProgramadas(7);
+    if(novasOS.length>0)console.log("[MaintenX] "+novasOS.length+" OS gerada(s) automaticamente.");
+    console.log("[Supabase] Carregado: "+ativos.length+" ativos, "+ordens.length+" ordens");
+    if(renderFn)renderFn();
+  }).catch(function(err){
+    console.warn("[Supabase] Offline:",err);
+    var D=loadData();ativos=D.ativos;ordens=D.ordens;fichas=D.fichas;
+    if(renderFn)renderFn();
+  });
+}
+
 // ── SHARED: dados iniciais e utilitários ──────────────────────────────────
-var DEMO_ORDENS=[
-  {id:1,titulo:"Troca de rolamento",ativo:"Compressor 2",tipo:"Corretiva",prioridade:"Alta",status:"Em Andamento",tecnico:"Joao Silva",abertura:"2026-05-01",prazo:"2026-05-10",descricao:"Ruido anormal detectado."},
-  {id:2,titulo:"Lubrificacao geral",ativo:"Esteira Principal",tipo:"Preventiva",prioridade:"Normal",status:"Aberta",tecnico:"Maria Santos",abertura:"2026-05-03",prazo:"2026-05-12",descricao:"Lubrificacao mensal."},
-  {id:3,titulo:"Troca de filtro HVAC",ativo:"Sistema HVAC",tipo:"Preventiva",prioridade:"Baixa",status:"Concluida",tecnico:"Carlos Pereira",abertura:"2026-04-20",prazo:"2026-04-25",descricao:"Troca mensal."},
-  {id:4,titulo:"Vazamento hidraulico",ativo:"Prensa Hidraulica 1",tipo:"Corretiva",prioridade:"Critica",status:"Aberta",tecnico:"Joao Silva",abertura:"2026-05-09",prazo:"2026-05-09",descricao:"Vazamento no cilindro."},
-  {id:5,titulo:"Calibracao sensores",ativo:"Forno Industrial",tipo:"Preditiva",prioridade:"Normal",status:"Concluida",tecnico:"Ana Lima",abertura:"2026-04-15",prazo:"2026-04-20",descricao:"Calibracao semestral."},
-  {id:6,titulo:"Revisao geral",ativo:"Compressor 2",tipo:"Preventiva",prioridade:"Normal",status:"Concluida",tecnico:"Joao Silva",abertura:"2026-03-01",prazo:"2026-03-05",descricao:"Revisao trimestral."}
-];
-var DEMO_ATIVOS=[
-  {id:1,nome:"Compressor 2",categoria:"Pneumatico",localizacao:"Galpao A",fabricante:"Atlas Copco",modelo:"GA37",serie:"AC-2019-037",ano:"2019",status:"Em Manutencao",ultima_manutencao:"2026-05-01",proxima_manutencao:"2026-08-01"},
-  {id:2,nome:"Esteira Principal",categoria:"Transporte",localizacao:"Linha 1",fabricante:"Intral",modelo:"ET-500",serie:"IN-2020-112",ano:"2020",status:"Operacional",ultima_manutencao:"2026-04-01",proxima_manutencao:"2026-05-01"},
-  {id:3,nome:"Sistema HVAC",categoria:"Utilidades",localizacao:"Cobertura",fabricante:"Carrier",modelo:"30XA",serie:"CA-2018-089",ano:"2018",status:"Operacional",ultima_manutencao:"2026-04-25",proxima_manutencao:"2026-05-25"},
-  {id:4,nome:"Prensa Hidraulica 1",categoria:"Producao",localizacao:"Galpao B",fabricante:"Romi",modelo:"PH-200T",serie:"RO-2017-045",ano:"2017",status:"Parado",ultima_manutencao:"2026-03-01",proxima_manutencao:"2026-05-09"},
-  {id:5,nome:"Forno Industrial",categoria:"Producao",localizacao:"Galpao A",fabricante:"Brafer",modelo:"FI-800",serie:"BR-2021-023",ano:"2021",status:"Operacional",ultima_manutencao:"2026-04-15",proxima_manutencao:"2026-10-15"}
-];
+
+
 var DEMO_FICHAS={
   1:{historico:[
     {id:101,desc:"Troca de rolamento dianteiro",data:"2026-05-01",tipo:"Corretiva",tecnico:"Joao Silva",horas:6,custo:850,obs:"Rolamento SKF substituido."},
@@ -55,39 +142,13 @@ function loadData(){
   var o=localStorage.getItem("mx_ordens");
   var a=localStorage.getItem("mx_ativos");
   var f=localStorage.getItem("mx_fichas");
-  if(!o){localStorage.setItem("mx_ordens",JSON.stringify(DEMO_ORDENS));}
-  if(!a){localStorage.setItem("mx_ativos",JSON.stringify(DEMO_ATIVOS));}
-  if(!f){localStorage.setItem("mx_fichas",JSON.stringify(DEMO_FICHAS));}
-  var ordens = o?JSON.parse(o):DEMO_ORDENS;
-  var ativos = a?JSON.parse(a):DEMO_ATIVOS;
-  var fichas = f?JSON.parse(f):DEMO_FICHAS;
-  // Normaliza fichas — garante que todos os campos existam
-  ativos.forEach(function(at){
-    if(!fichas[at.id]) fichas[at.id]={};
-    var fi=fichas[at.id];
-    if(!fi.historico) fi.historico=[];
-    if(!fi.preditiva) fi.preditiva=[];
-    if(!fi.planos)    fi.planos=[];
-    if(!fi.docs)      fi.docs=[];
-    if(!fi.indicadores) fi.indicadores=["mtbf","mttr","disp","manuplan"];
-    // Normaliza planos — garante que acoes exista
-    fi.planos=fi.planos.map(function(p){
-      if(!p.acoes) p.acoes=[];
-      if(!p.tipo)  p.tipo="Preventiva";
-      if(!p.status) p.status=calcPlanStatus(p.proxima_execucao);
-      return p;
-    });
-    // Normaliza OS — garante que execLog exista
-  });
-  ordens=ordens.map(function(o){
-    if(!o.execLog) o.execLog=[];
-    return o;
-  });
-  return{ordens:ordens, ativos:ativos, fichas:fichas};
+  return{
+    ordens:o?JSON.parse(o):[],
+    ativos:a?JSON.parse(a):[],
+    fichas:f?JSON.parse(f):{}
+  };
 }
-function saveOrdens(d){localStorage.setItem("mx_ordens",JSON.stringify(d));}
-function saveAtivos(d){localStorage.setItem("mx_ativos",JSON.stringify(d));}
-function saveFichas(d){localStorage.setItem("mx_fichas",JSON.stringify(d));}
+// save functions defined above with Supabase sync
 function nextId(){var n=parseInt(localStorage.getItem("mx_nextid")||"700");localStorage.setItem("mx_nextid",n+1);return n+1;}
 
 function bdg(t,m){var c=m[t]||"#9ca3af";return'<span class="badge" style="background:'+c+'18;color:'+c+';border:1px solid '+c+'35">'+t+'</span>';}
@@ -160,17 +221,11 @@ function getCritClass(score){if(score>=70)return"A";if(score>=45)return"B";if(sc
 
 // ── USUARIOS ──────────────────────────────────────────────────────────────────
 
-function loadUsuarios(){
-  var d=localStorage.getItem("mx_usuarios");
-  return d ? JSON.parse(d) : [];
-}
+function loadUsuarios(){var d=localStorage.getItem("mx_usuarios");return d?JSON.parse(d):[];}
 function saveUsuarios(d){localStorage.setItem("mx_usuarios",JSON.stringify(d));}
 
 // ── CATEGORIAS ────────────────────────────────────────────────────────────────
-function loadCategorias(){
-  var d=localStorage.getItem("mx_categorias");
-  return d ? JSON.parse(d) : [];
-}
+function loadCategorias(){var d=localStorage.getItem("mx_categorias");return d?JSON.parse(d):[];}
 function saveCategorias(d){localStorage.setItem("mx_categorias",JSON.stringify(d));}
 
 // ── AUTH ──────────────────────────────────────────────────────────────────────
