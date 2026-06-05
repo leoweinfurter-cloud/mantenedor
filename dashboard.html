@@ -16,6 +16,7 @@
       <a class="ni" href="ativos.html"><span class="nx">&#11041;</span><span class="nl" data-i18n="nav_ativos">Gestao de Ativos</span></a>
       <a class="ni" href="cadastros.html"><span class="nx">&#9998;</span><span class="nl" data-i18n="nav_cadastros">Cadastros</span></a>
       <a class="ni" href="calendario.html"><span class="nx">&#128197;</span><span class="nl">Calendario</span></a>
+      <a class="bn-item" href="calendario.html"><span class="bn-icon">&#128197;</span><span class="bn-label">Cal.</span></a>
 </nav>
   </div>
   <div id="main">
@@ -35,6 +36,7 @@
   <a class="bn-item" href="ativos.html"><span class="bn-icon">&#11041;</span><span class="bn-label" data-i18n="nav_ativos_short">Ativos</span></a>
   <a class="bn-item" href="cadastros.html"><span class="bn-icon">&#9998;</span><span class="bn-label" data-i18n="nav_cadastros">Cadastros</span></a>
   <a class="bn-item" href="calendario.html"><span class="bn-icon">&#128197;</span><span class="bn-label">Cal.</span></a>
+  <a class="bn-item" href="relatorios.html"><span class="bn-icon">&#128202;</span><span class="bn-label">Rel.</span></a>
 </nav>
 <script src="_lang.js"></script>
 <script src="_shared.js"></script>
@@ -56,14 +58,20 @@ function calcGlobal(){
   var allH=[];ativos.forEach(function(a){var f=fichas[a.id];if(f&&f.historico)allH=allH.concat(f.historico);});
   var corr=allH.filter(function(h){return h.tipo=="Corretiva";}),plan=allH.filter(function(h){return h.tipo=="Preventiva"||h.tipo=="Preditiva";});
   var nC=corr.length,nT=allH.length,hC=corr.reduce(function(s,h){return s+(h.horas||0);},0);
-  var per=8760*Math.max(ativos.length,1);
-  var mtbf=nC>0?Math.round((per-hC)/nC):per,mttr=nC>0?Math.round(hC/nC*10)/10:0;
-  var disp=mttr>0?Math.round(mtbf/(mtbf+mttr)*1000)/10:99;
-  var mp=nT>0?Math.round(plan.length/nT*100):0;
-  var allP=[];ativos.forEach(function(a){var f=fichas[a.id];if(f&&f.planos)allP=allP.concat(f.planos);});
-  var comp=allP.length>0?Math.round(allP.filter(function(p){return p.status=="OK";}).length/allP.length*100):100;
   var bkl=ordens.filter(function(o){return o.status=="Aberta"||o.status=="Em Andamento";}).length;
+  var allP=[];ativos.forEach(function(a){var f=fichas[a.id];if(f&&f.planos)allP=allP.concat(f.planos);});
   var atrasados=allP.filter(function(p){return p.status!="OK";});
+  // Sem historico — nao calcula indicadores
+  if(nT===0){
+    var comp2=allP.length>0?Math.round(allP.filter(function(p){return p.status=="OK";}).length/allP.length*100):0;
+    return{mtbf:"--",mttr:"--",disp:"--",mp:0,comp:comp2,bkl:bkl,nCorr:0,atrasados:atrasados};
+  }
+  var per=8760*Math.max(ativos.length,1);
+  var mtbf=nC>0?Math.round((per-hC)/nC):"--";
+  var mttr=nC>0?Math.round(hC/nC*10)/10:"--";
+  var disp=(mtbf!=="--"&&mttr!=="--")?Math.round(mtbf/(mtbf+mttr)*1000)/10:"--";
+  var mp=Math.round(plan.length/nT*100);
+  var comp=allP.length>0?Math.round(allP.filter(function(p){return p.status=="OK";}).length/allP.length*100):0;
   return{mtbf:mtbf,mttr:mttr,disp:disp,mp:mp,comp:comp,bkl:bkl,nCorr:nC,atrasados:atrasados};
 }
 
@@ -200,9 +208,9 @@ function render(){
     +'</div>'
     +'<div class="ks2">'+t('dash_confiab')+'</div>'
     +'<div class="kg3">'
-    +kc(t("kpi_mtbf"),g.mtbf+"h","#60a5fa","EN 13306")
-    +kc(t("kpi_mttr"),g.mttr+"h","#f59e0b","EN 13306")
-    +kc(t("kpi_disponib"),g.disp+"%",dCol,"ISO 14224")
+    +kc(t("kpi_mtbf"),(g.mtbf==="--"?"--":g.mtbf+"h"),"#60a5fa","EN 13306")
+    +kc(t("kpi_mttr"),(g.mttr==="--"?"--":g.mttr+"h"),"#f59e0b","EN 13306")
+    +kc(t("kpi_disponib"),(g.disp==="--"?"--":g.disp+"%"),dCol,"ISO 14224")
     +'</div>'
     +'<div class="ks2">'+t('dash_gestao')+'</div>'
     +'<div class="kg">'
@@ -216,7 +224,7 @@ function render(){
     +'<div class="card"><div class="card-title">'+t("dash_equipamentos")+'</div>'+ahHtml+'</div>'
     +'<div class="card"><div class="card-title">'+t("dash_planos")+'</div>'+upHtml+'</div>';
 }
-render();
+initApp(render);
 </script>
 <script>
 window.addEventListener("langchange", function(){
