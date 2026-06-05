@@ -37,6 +37,36 @@ function saveEmpresas(d){
   if(unidRows.length)sbUpsert("unidades",unidRows);
 }
 
+
+// ── DADOS INICIAIS (executados quando banco está vazio) ───────────────
+var DEFAULT_CATEGORIAS = [
+  {id:1,nome:"Pneumatico",   descricao:"Compressores, valvulas, atuadores",icone:"💨",cor:"#60a5fa"},
+  {id:2,nome:"Hidraulico",   descricao:"Bombas, cilindros, valvulas",       icone:"💧",cor:"#3b82f6"},
+  {id:3,nome:"Eletrico",     descricao:"Motores, paineis, transformadores", icone:"⚡",cor:"#fbbf24"},
+  {id:4,nome:"Mecanico",     descricao:"Redutores, rolamentos, correias",   icone:"⚙",cor:"#f87171"},
+  {id:5,nome:"Transporte",   descricao:"Esteiras, elevadores, pontes",      icone:"🚛",cor:"#a78bfa"},
+  {id:6,nome:"Utilidades",   descricao:"HVAC, caldeiras, agua",             icone:"🌿",cor:"#34d399"},
+  {id:7,nome:"Instrumentacao",descricao:"Sensores, transmissores",          icone:"📡",cor:"#f59e0b"},
+  {id:8,nome:"Outros",       descricao:"Equipamentos nao categorizados",    icone:"🔧",cor:"#9ca3af"}
+];
+var DEFAULT_USUARIOS = [
+  {id:1,nome:"Admin",email:"admin@maintenx.com",senha:"admin123",perfil:"Coordenador",ativo:true,telefone:""}
+];
+
+function setupInicial(){
+  // Cria categorias padrão
+  localStorage.setItem("mx_categorias", JSON.stringify(DEFAULT_CATEGORIAS));
+  sbUpsert("categorias", DEFAULT_CATEGORIAS.map(function(c){
+    return {id:c.id,nome:c.nome,descricao:c.descricao,icone:c.icone||"⚙",cor:c.cor};
+  }));
+  // Cria usuário admin padrão
+  localStorage.setItem("mx_usuarios", JSON.stringify(DEFAULT_USUARIOS));
+  sbUpsert("usuarios", DEFAULT_USUARIOS.map(function(u){
+    return {id:u.id,nome:u.nome,email:u.email,telefone:"",perfil:u.perfil,ativo:true};
+  }));
+  console.log("[MaintenX] Setup inicial: categorias e usuario admin criados.");
+}
+
 // ── INIT APP ──────────────────────────────────────────────────────────
 var ordens=[],ativos=[],fichas={},empresas=[];
 function initApp(renderFn){
@@ -99,6 +129,10 @@ function initApp(renderFn){
       localStorage.setItem("mx_empresas",JSON.stringify(emps));
     } else {
       localStorage.removeItem("mx_empresas");
+    }
+    // Se usuarios e categorias estao vazios, cria dados iniciais
+    if((!Array.isArray(dbUsers)||!dbUsers.length) && (!Array.isArray(dbCats)||!dbCats.length)){
+      setupInicial();
     }
     var novasOS=gerarOSProgramadas(7);
     if(novasOS.length>0)console.log("[MaintenX] "+novasOS.length+" OS gerada(s) automaticamente.");
