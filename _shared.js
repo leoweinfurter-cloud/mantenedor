@@ -273,6 +273,7 @@ function saveUsuarios(d){localStorage.setItem("mx_usuarios",JSON.stringify(d));}
 
 // ── CATEGORIAS ────────────────────────────────────────────────────────────────
 function loadCategorias(){var d=localStorage.getItem("mx_categorias");return d?JSON.parse(d):[];}
+function loadEmpresas(){var d=localStorage.getItem("mx_empresas");return d?JSON.parse(d):[];}
 function saveCategorias(d){localStorage.setItem("mx_categorias",JSON.stringify(d));}
 
 // ── AUTH ──────────────────────────────────────────────────────────────────────
