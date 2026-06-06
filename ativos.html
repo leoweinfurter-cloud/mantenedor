@@ -590,8 +590,6 @@ function abrirDesativarPlano(planoId){
 
 function abrirDesativarAtivo(){
   if(!selAtivo) return;
-  document.getElementById("desativ-titulo").textContent = "Desativar Ativo: "+selAtivo.nome;
-  document.getElementById("desativ-tipo").value = "ativo";
   document.getElementById("desativ-id").value = selAtivo.id;
   document.getElementById("desativ-motivo").value = "";
   openModal("modal-desativar");
