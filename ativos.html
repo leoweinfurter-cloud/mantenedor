@@ -581,8 +581,21 @@ function buildAnaliseView(an){
 function abrirDesativarPlano(planoId){
   if(!confirm("Desativar este plano? Ele não gerará novas OS enquanto inativo.")) return;
   var f = fichas[selAtivo.id];
+  var plano = f.planos.find(function(p){return p.id==planoId;});
+
+  // Cancela OS aberta vinculada ao plano
+  if(plano && plano.os_gerada_id){
+    ordens = ordens.map(function(o){
+      if(o.id==plano.os_gerada_id && o.status!=="Concluida" && o.status!=="Cancelada"){
+        return Object.assign({},o,{status:"Cancelada",descricao:o.descricao+" [OS cancelada: plano desativado]"});
+      }
+      return o;
+    });
+    saveOrdens(ordens);
+  }
+
   f.planos = f.planos.map(function(p){
-    return p.id==planoId ? Object.assign({},p,{ativo:false}) : p;
+    return p.id==planoId ? Object.assign({},p,{ativo:false,os_gerada_id:null}) : p;
   });
   saveFichas(fichas);
   render();
@@ -600,10 +613,34 @@ function confirmarDesativacao(){
   if(!motivo){alert("Informe a justificativa para desativar o ativo.");return;}
   var id   = parseInt(document.getElementById("desativ-id").value);
   var hoje = new Date().toISOString().slice(0,10);
+
+  // 1. Desativa o ativo
   ativos = ativos.map(function(a){
     return a.id===id ? Object.assign({},a,{status:"Desativado",motivo_desativacao:motivo,desativado_em:hoje}) : a;
   });
   saveAtivos(ativos);
+
+  // 2. Cancela todas as OS abertas do ativo
+  var osAfetadas = 0;
+  ordens = ordens.map(function(o){
+    if(o.ativo_id==id && o.status!=="Concluida" && o.status!=="Cancelada"){
+      osAfetadas++;
+      return Object.assign({},o,{status:"Cancelada",descricao:o.descricao+" [OS cancelada: ativo desativado — "+motivo+"]"});
+    }
+    return o;
+  });
+  if(osAfetadas > 0) saveOrdens(ordens);
+
+  // 3. Desativa todos os planos do ativo
+  var f = fichas[id];
+  if(f && f.planos && f.planos.length){
+    f.planos = f.planos.map(function(p){
+      return Object.assign({},p,{ativo:false,os_gerada_id:null});
+    });
+    saveFichas(fichas);
+  }
+
+  if(osAfetadas > 0) alert(osAfetadas+" OS aberta(s) cancelada(s) por desativação do ativo.");
   selAtivo = null;
   closeModal("modal-desativar");
   render();
