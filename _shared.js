@@ -146,7 +146,7 @@ function saveOrdens(arr){
 }
 function saveAtivos(arr){
   localStorage.setItem("mx_ativos",JSON.stringify(arr));
-  sbUpsert("ativos",arr.map(function(a){return{id:a.id,nome:a.nome,categoria:a.categoria||"",empresa:a.empresa||"",unidade:a.unidade||"",localizacao:a.localizacao||"",fabricante:a.fabricante||"",modelo:a.modelo||"",serie:a.serie||"",ano:a.ano||"",tag:a.tag||"",patrimonio:a.patrimonio||"",status:a.status||"Operacional"};}));
+  sbUpsert("ativos",arr.map(function(a){return{id:a.id,nome:a.nome,categoria:a.categoria||"",empresa:a.empresa||"",unidade:a.unidade||"",localizacao:a.localizacao||"",fabricante:a.fabricante||"",modelo:a.modelo||"",serie:a.serie||"",ano:a.ano||"",tag:a.tag||"",patrimonio:a.patrimonio||"",status:a.status||"Operacional",motivo_desativacao:a.motivo_desativacao||"",desativado_em:a.desativado_em||""};}));
 }
 function saveFichas(fichasObj){
   localStorage.setItem("mx_fichas",JSON.stringify(fichasObj));
@@ -154,7 +154,7 @@ function saveFichas(fichasObj){
     var ativoId=parseInt(aid),f=fichasObj[aid];
     if(!f)return;
     sbUpsert("ativos",[{id:ativoId,indicadores:f.indicadores||["mtbf","mttr","disp","manuplan"],crit:f.crit||{},docs:f.docs||[]}]);
-    sbDelete("planos","ativo_id",ativoId).then(function(){if(f.planos&&f.planos.length)sbUpsert("planos",f.planos.map(function(p){return{id:p.id,ativo_id:ativoId,nome:p.nome,tipo:p.tipo||"Preventiva",frequencia:p.frequencia||"Mensal",ultima_execucao:p.ultima_execucao||"--",proxima_execucao:p.proxima_execucao||"--",responsavel:p.responsavel||"",status:p.status||"OK",os_gerada_id:p.os_gerada_id||null,acoes:p.acoes||[]};}));});
+    sbDelete("planos","ativo_id",ativoId).then(function(){if(f.planos&&f.planos.length)sbUpsert("planos",f.planos.map(function(p){return{id:p.id,ativo_id:ativoId,nome:p.nome,tipo:p.tipo||"Preventiva",frequencia:p.frequencia||"Mensal",ultima_execucao:p.ultima_execucao||"--",proxima_execucao:p.proxima_execucao||"--",responsavel:p.responsavel||"",status:p.status||"OK",os_gerada_id:p.os_gerada_id||null,acoes:p.acoes||[],ativo:p.ativo!==false,motivo_desativacao:p.motivo_desativacao||"",desativado_em:p.desativado_em||""};}));});
     sbDelete("historico","ativo_id",ativoId).then(function(){if(f.historico&&f.historico.length)sbUpsert("historico",f.historico.map(function(h){return{id:h.id,ativo_id:ativoId,descricao:h.desc||"",data:h.data||"",tipo:h.tipo||"Corretiva",tecnico:h.tecnico||"",horas:h.horas||0,custo:h.custo||0,obs:h.obs||"",analise:h.analise||null};}));});
     sbDelete("medicoes","ativo_id",ativoId).then(function(){if(f.preditiva&&f.preditiva.length)sbUpsert("medicoes",f.preditiva.map(function(m){return{id:m.id,ativo_id:ativoId,data:m.data||"",param:m.param||"",valor:m.valor||0,limite:m.limite||0,obs:m.obs||""};}));});
   });
@@ -189,6 +189,7 @@ function gerarOSProgramadas(tol){
     var f=fichas[ativo.id];
     if(!f||!f.planos||!f.planos.length)return;
     var dev=f.planos.filter(function(p){
+      if(p.ativo===false) return false;
       if(p.os_gerada_id){var ex=ordens.find(function(o){return o.id==p.os_gerada_id&&o.status!=="Concluida"&&o.status!=="Cancelada";});if(ex)return false;}
       if(!p.proxima_execucao||p.proxima_execucao==="--")return false;
       var prox=new Date(p.proxima_execucao);prox.setHours(0,0,0,0);

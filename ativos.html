@@ -21,10 +21,6 @@
 .plan-acao-chip{font-size:11px;padding:3px 8px;border-radius:8px;font-weight:600;display:inline-block;margin:2px}
 .plan-acao-chip.acao{background:#2563eb15;color:#60a5fa;border:1px solid #2563eb30}
 .plan-acao-chip.medicao{background:#7c3aed15;color:#a78bfa;border:1px solid #7c3aed30}
-
-/* ── AD BANNER ── */
-.ad-banner{display:none;background:var(--inner-bg,#060b12);border:1px solid var(--border,#1e3a5f);border-radius:10px;padding:10px;margin:0 0 12px;text-align:center;font-size:11px;color:#64748b;}
-.ad-banner ins{display:block;}
 </style>
 </head>
 <body>
@@ -38,7 +34,6 @@
       
       <a class="ni" href="cadastros.html"><span class="nx">&#9998;</span><span class="nl" data-i18n="nav_cadastros">Cadastros</span></a>
       <a class="ni" href="calendario.html"><span class="nx">&#128197;</span><span class="nl">Calendario</span></a>
-      <a class="ni" href="relatorios.html"><span class="nx">&#128202;</span><span class="nl">Relatorios</span></a>
     </nav>
     <div class="sb">
       <div class="ni" onclick="toggleSidebar()"><span class="nx" id="tico">&#9664;</span><span class="nl">Recolher</span></div>
@@ -50,10 +45,8 @@
         <span class="topbar-logo">&#9881;</span>
         <div><div id="tt" data-i18n="nav_ativos">Gestao de Ativos</div></div>
       </div>
-      <div class="avatar" onclick="if(confirm('Sair do MaintenX?'))authLogout()" style="cursor:pointer" title="Sair">G</div>
+      <div class="avatar">G</div>
     </div>
-    
-  <div class="ad-banner" id="ad-top"><!-- Anuncio MaintenX Free --></div>
     <div id="ct"></div>
   </div>
 </div>
@@ -457,21 +450,6 @@ function savePlano(){
   }
   saveFichas(fichas);
   closeModal("modal-plano");
-
-  // Auto-gera OS se plano vence em ate 7 dias ou ja venceu
-  var status = calcPlanStatus(prox);
-  if(status === "Atrasado" || status === "Vence Hoje" || status === "Vence em Breve" || status === "OK"){
-    // Verifica se ja tem OS aberta para este plano
-    var planoSalvo = fichas[selAtivo.id].planos.find(function(p){
-      return p.nome === n && p.proxima_execucao === prox;
-    });
-    if(planoSalvo && !planoSalvo.os_gerada_id &&
-       (status === "Atrasado" || status === "Vence Hoje" || status === "Vence em Breve")){
-      gerarOSPlano(selAtivo.id, planoSalvo.id);
-      return; // gerarOSPlano ja chama render()
-    }
-  }
-
   render();
 }
 
@@ -598,6 +576,68 @@ function buildAnaliseView(an){
 }
 
 // ── RENDER ──────────────────────────────────────────────────────────────────
+
+// ── DESATIVAÇÃO ───────────────────────────────────────────────────────
+function abrirDesativarPlano(planoId){
+  document.getElementById("desativ-titulo").textContent = "Desativar Plano";
+  document.getElementById("desativ-tipo").value = "plano";
+  document.getElementById("desativ-id").value = planoId;
+  document.getElementById("desativ-motivo").value = "";
+  openModal("modal-desativar");
+}
+
+function abrirDesativarAtivo(){
+  if(!selAtivo) return;
+  document.getElementById("desativ-titulo").textContent = "Desativar Ativo: "+selAtivo.nome;
+  document.getElementById("desativ-tipo").value = "ativo";
+  document.getElementById("desativ-id").value = selAtivo.id;
+  document.getElementById("desativ-motivo").value = "";
+  openModal("modal-desativar");
+}
+
+function confirmarDesativacao(){
+  var motivo = document.getElementById("desativ-motivo").value.trim();
+  if(!motivo){alert("Informe a justificativa.");return;}
+  var tipo  = document.getElementById("desativ-tipo").value;
+  var id    = parseInt(document.getElementById("desativ-id").value);
+  var hoje  = new Date().toISOString().slice(0,10);
+
+  if(tipo === "plano"){
+    var f = fichas[selAtivo.id];
+    f.planos = f.planos.map(function(p){
+      return p.id==id ? Object.assign({},p,{ativo:false,motivo_desativacao:motivo,desativado_em:hoje}) : p;
+    });
+    saveFichas(fichas);
+  } else {
+    ativos = ativos.map(function(a){
+      return a.id===id ? Object.assign({},a,{status:"Desativado",motivo_desativacao:motivo,desativado_em:hoje}) : a;
+    });
+    saveAtivos(ativos);
+    selAtivo = null;
+  }
+  closeModal("modal-desativar");
+  render();
+}
+
+function reativarPlano(planoId){
+  if(!confirm("Reativar este plano?")) return;
+  var f = fichas[selAtivo.id];
+  f.planos = f.planos.map(function(p){
+    return p.id==planoId ? Object.assign({},p,{ativo:true,motivo_desativacao:"",desativado_em:""}) : p;
+  });
+  saveFichas(fichas);
+  render();
+}
+
+function reativarAtivo(ativoId){
+  if(!confirm("Reativar este ativo?")) return;
+  ativos = ativos.map(function(a){
+    return a.id===ativoId ? Object.assign({},a,{status:"Operacional",motivo_desativacao:"",desativado_em:""}) : a;
+  });
+  saveAtivos(ativos);
+  render();
+}
+
 function render(){
   try {
     document.getElementById("tt").textContent=selAtivo?t('at_ficha')+selAtivo.nome:"Gestao de Ativos";
@@ -609,27 +649,21 @@ function render(){
 }
 
 function renderList(){
-  var cards=ativos.length==0
-    ?'<div style="color:#64748b;text-align:center;padding:40px;font-size:14px">Nenhum ativo cadastrado</div>'
-    :ativos.map(function(a){
-        var f=fichas[a.id];
-        var critBadge="";
-        if(f&&f.crit){
-          var sc=calcCritScore(f.crit);var cl=getCritClass(sc);var col=CRIT_CLASS_COLORS[cl];
-          critBadge='<span style="font-size:10px;font-weight:800;color:'+col+';background:'+col+'18;border:1px solid '+col+'35;padding:2px 7px;border-radius:10px;margin-left:6px">'+cl+'</span>';
-        }
-        return'<div class="asset-card" onclick="selAti('+a.id+')">'
-          +'<div class="asset-card-left">'
-          +'<div class="asset-card-name">'+esc(a.nome)+critBadge+'</div>'
-          +'<div class="asset-card-sub">'+esc(a.categoria)+(a.empresa?' &bull; '+esc(a.empresa):'')+(a.unidade?' &bull; '+esc(a.unidade):'')+(a.localizacao?' &bull; '+esc(a.localizacao):'')+(a.tag?' &bull; <span style="color:#60a5fa;font-weight:700">'+esc(a.tag)+'</span>':'')+'</div>'
-          +'<div class="asset-card-sub" style="margin-top:3px">Prox. manut: '+esc(a.proxima_manutencao)+'</div>'
-          +'</div>'
-          +'<div class="asset-card-right">'+bdg(a.status,AC)+'<span style="font-size:16px;color:#475569">&#8250;</span></div>'
-          +'</div>';
-      }).join("");
-  return'<div class="fr"><div></div><button class="btn bp" onclick="openModal(\'modal-ativo\')">+ Novo Ativo</button></div>'
-    +'<div class="asset-list">'+cards+'</div>'
-    +'<div style="margin-top:8px;font-size:12px;color:#64748b;text-align:center">Toque em um ativo para abrir a ficha</div>';
+  var ativosAtivos=ativos.filter(function(a){return a.status!=="Desativado";});
+  var ativosDesativ=ativos.filter(function(a){return a.status==="Desativado";});
+  function mkCard(a,inactive){
+    var f=fichas[a.id];var critBadge="";
+    if(f&&f.crit&&f.crit.hse){var sc=calcCritScore(f.crit);var cl=getCritClass(sc);var col=CRIT_CLASS_COLORS[cl];critBadge='<span style="font-size:10px;font-weight:800;color:'+col+';background:'+col+'18;border:1px solid '+col+'35;padding:2px 7px;border-radius:10px;margin-left:6px">'+cl+'</span>';}
+    return'<div class="asset-card" onclick="selAti('+a.id+')" style="'+(inactive?"opacity:.4;border-style:dashed":"")+'">'
+      +'<div class="asset-card-left">'
+      +'<div class="asset-card-name" style="'+(inactive?"text-decoration:line-through":"")+'">'+esc(a.nome)+critBadge+'</div>'
+      +'<div class="asset-card-sub">'+esc(a.categoria)+(a.empresa?" &bull; "+esc(a.empresa):"")+(a.localizacao?" &bull; "+esc(a.localizacao):"")+'</div>'
+      +(inactive&&a.motivo_desativacao?'<div class="asset-card-sub" style="font-style:italic">'+esc(a.motivo_desativacao)+'</div>':"")
+      +'</div><div class="asset-card-right">'+bdg(a.status,AC)+'<span style="font-size:16px;color:#475569">&#8250;</span></div></div>';
+  }
+  var cards=ativosAtivos.length===0?'<div style="color:#64748b;text-align:center;padding:40px;font-size:14px">Nenhum ativo cadastrado</div>':ativosAtivos.map(function(a){return mkCard(a,false);}).join("");
+  var cardsD=ativosDesativ.length===0?"":'<div style="margin-top:14px"><div style="font-size:11px;font-weight:800;color:#64748b;text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px">Desativados ('+ativosDesativ.length+')</div>'+ativosDesativ.map(function(a){return mkCard(a,true);}).join("")+'</div>';
+  return'<div class="fr"><div></div><button class="btn bp" onclick="openModal(\'modal-ativo\')">+ Novo Ativo</button></div>'+'<div class="asset-list">'+cards+cardsD+'</div>';
 }
 
 function selAti(id){selAtivo=ativos.find(function(a){return a.id==id;});fichaTab="geral";if(!fichas[id])fichas[id]={historico:[],preditiva:[],planos:[],docs:[],indicadores:["mtbf","mttr","disp","manuplan"]};render();}
@@ -721,9 +755,11 @@ function tabPrev(a,f){
   var atrasados=planos.filter(function(p){return p.status!=="OK";}).length;
   var alertHtml=atrasados>0?'<div class="aw">'+atrasados+' plano(s) com atencao necessaria</div>':"";
 
-  var cards=planos.length===0
+  var planosFiltro=planos.filter(function(p){return p.ativo!==false;});
+  var planosInativos=planos.filter(function(p){return p.ativo===false;});
+  var cards=planosFiltro.length===0&&planosInativos.length===0
     ?'<div style="color:#64748b;text-align:center;padding:30px;font-size:14px">Nenhum plano cadastrado</div>'
-    :planos.map(function(p){
+    :planosFiltro.map(function(p){
       var tc=TIPO_COR[p.tipo]||"#4ade80";
       var acoes=(p.acoes||[]);
       var nAcao=acoes.filter(function(a){return a.tipo==="acao";}).length;
@@ -748,20 +784,33 @@ function tabPrev(a,f){
         +'</div>'
         +'<div style="display:flex;flex-direction:column;gap:6px;flex-shrink:0">'
         +'<button class="btn bx bsm" onclick="editPlano('+p.id+')" style="font-size:11px">Editar</button>'
-        +'<button class="btn bsm" onclick="delPlano('+p.id+')" style="font-size:11px;background:#7f1d1d30;color:#f87171;border:1px solid #f8717140">Excluir</button>'
+        +(p.ativo===false?'<button class="btn bsm" onclick="reativarPlano('+p.id+')" style="font-size:11px;background:#14532d30;color:#4ade80;border:1px solid #4ade8040">Reativar</button>':'<button class="btn bsm" onclick="abrirDesativarPlano('+p.id+')" style="font-size:11px;background:#7f1d1d30;color:#f87171;border:1px solid #f8717140">Desativar</button>')+
         +'</div></div>'
         +(acoes.length>0?'<div class="plan-acoes-preview">'+chips+'</div>':"")
         +'<div style="margin-top:10px">'+hasOS+'</div>'
         +'</div>';
     }).join("");
 
+  var cardsInativos=planosInativos.length===0?'':
+    '<div style="margin-top:16px"><div style="font-size:11px;font-weight:800;color:#64748b;text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px">Desativados ('+planosInativos.length+')</div>'
+    +planosInativos.map(function(p){
+      return'<div class="plan-card" style="opacity:.45;border-style:dashed">'
+        +'<div class="plan-card-header"><div style="flex:1">'
+        +'<div style="font-size:13px;font-weight:700;color:#64748b;text-decoration:line-through">'+esc(p.nome)+'</div>'
+        +'<div style="font-size:11px;color:#475569;margin-top:3px">Desativado: '+esc(p.desativado_em||'--')+'</div>'
+        +(p.motivo_desativacao?'<div style="font-size:11px;color:#475569;font-style:italic">'+esc(p.motivo_desativacao)+'</div>':"")
+        +'</div>'
+        +'<button class="btn bsm" onclick="reativarPlano('+p.id+')" style="font-size:11px;background:#14532d30;color:#4ade80;border:1px solid #4ade8040">Reativar</button>'
+        +'</div></div>';
+    }).join("")+'</div>';
+
   return alertHtml
-    +'<div class="fr"><div style="font-size:13px;color:#64748b">'+planos.length+' plano(s)</div>'
+    +'<div class="fr"><div style="font-size:13px;color:#64748b">'+planosFiltro.length+' plano(s) ativo(s)</div>'
     +'<div style="display:flex;gap:8px">'
     +'<button class="btn bx bsm" onclick="gerarOSTodos()" style="font-size:11px">&#9654; Gerar OS Vencidas</button>'
     +'<button class="btn bp" onclick="openNewPlano()">+ Novo Plano</button>'
     +'</div></div>'
-    +cards;
+    +cards+cardsInativos;
 }
 
 function delPlano(planoId){
@@ -927,13 +976,8 @@ window.addEventListener("focus", function(){
   var D = loadData();
   ordens = D.ordens; ativos = D.ativos; fichas = D.fichas;
   if(selAtivo){
+    // Refresh selAtivo from updated data
     selAtivo = ativos.find(function(a){return a.id===selAtivo.id;}) || selAtivo;
-  }
-  // Verifica planos vencidos e gera OS silenciosamente
-  var novas = gerarOSProgramadas(7);
-  if(novas.length > 0){
-    ordens = loadData().ordens;
-    fichas = loadData().fichas;
   }
   render();
 });
@@ -944,7 +988,6 @@ window.addEventListener("focus", function(){
   <a class="bn-item active" href="ativos.html"><span class="bn-icon">&#11041;</span><span class="bn-label" data-i18n="nav_ativos_short">Ativos</span></a>
   <a class="bn-item" href="cadastros.html"><span class="bn-icon">&#9998;</span><span class="bn-label" data-i18n="nav_cadastros">Cadastros</span></a>
   <a class="bn-item" href="calendario.html"><span class="bn-icon">&#128197;</span><span class="bn-label">Cal.</span></a>
-  <a class="bn-item" href="relatorios.html"><span class="bn-icon">&#128202;</span><span class="bn-label">Rel.</span></a>
 </nav>
 <script>
 window.addEventListener("langchange", function(){
@@ -955,5 +998,21 @@ window.addEventListener("langchange", function(){
 });
 </script>
 <script src="_theme.js"></script>
+<div class="modal" id="modal-desativar"><div class="mc" onclick="event.stopPropagation()">
+  <div class="mt2" id="desativ-titulo">Desativar</div>
+  <input type="hidden" id="desativ-tipo"/>
+  <input type="hidden" id="desativ-id"/>
+  <div style="background:rgba(248,113,113,.08);border:1px solid rgba(248,113,113,.25);border-radius:10px;padding:12px 14px;margin-bottom:16px;font-size:13px;color:#fca5a5">
+    &#9888; Esta acao desativa o item. Ele ficara visivel como inativo mas nao gerara novas OS.
+  </div>
+  <div class="fg">
+    <label class="lbl">Justificativa *</label>
+    <textarea id="desativ-motivo" placeholder="Ex: Equipamento obsoleto, aguardando substituicao..." rows="3" style="width:100%;background:var(--inner-bg,#060b12);border:1px solid var(--border,#1e3a5f);border-radius:8px;padding:11px 13px;color:var(--text,#f1f5f9);font-family:inherit;font-size:14px;resize:vertical"></textarea>
+  </div>
+  <div class="mf">
+    <button class="btn bx" onclick="closeModal('modal-desativar')">Cancelar</button>
+    <button class="btn" onclick="confirmarDesativacao()" style="background:rgba(248,113,113,.15);color:#f87171;border:1px solid rgba(248,113,113,.4)">Desativar</button>
+  </div>
+</div></div>
 </body>
 </html>
