@@ -68,8 +68,19 @@ function sbDelete(table,field,value){
 // ── NEXT ID ───────────────────────────────────────────────────────────
 function nextId(){
   var n=parseInt(localStorage.getItem("mx_nextid")||"700");
-  localStorage.setItem("mx_nextid",n+1);
-  return n+1;
+  var id=n+1;
+  localStorage.setItem("mx_nextid",id);
+  return id;
+}
+function syncNextId(lists){
+  // Garante que nextId seja maior que todos os IDs existentes
+  var maxId=parseInt(localStorage.getItem("mx_nextid")||"700");
+  lists.forEach(function(arr){
+    (arr||[]).forEach(function(item){
+      if(item&&item.id&&parseInt(item.id)>maxId) maxId=parseInt(item.id);
+    });
+  });
+  localStorage.setItem("mx_nextid",maxId+1);
 }
 
 // ── CONSTANTS ─────────────────────────────────────────────────────────
@@ -302,7 +313,9 @@ function initApp(renderFn){
     // Auto-gera OS de planos vencidos
     var novasOS=gerarOSProgramadas(7);
     if(novasOS.length)console.log("[MaintenX] "+novasOS.length+" OS gerada(s) automaticamente.");
-    console.log("[Supabase] Carregado: "+ativos.length+" ativos, "+ordens.length+" ordens");
+    // Sincroniza nextId para evitar colisao de IDs entre dispositivos
+    syncNextId([ativos, ordens, dbPl, dbHist, dbMed]);
+    console.log("[Supabase] Carregado: "+ativos.length+" ativos, "+ordens.length+" ordens | nextId="+localStorage.getItem("mx_nextid"));
     if(renderFn)renderFn();
 
   }).catch(function(err){
