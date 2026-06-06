@@ -82,7 +82,7 @@ function calcCriticidadeGlobal(){
   var list=[];
   ativos.forEach(function(a){
     var f=fichas[a.id];
-    if(f&&f.crit){
+    if(f&&f.crit&&f.crit.hse&&f.crit.freq){
       var score=calcCritScore(f.crit);
       var cl=getCritClass(score);
       counts[cl]++;
@@ -109,12 +109,15 @@ function buildMatrix(critList){
   var classColors={"A":"#f87171","B":"#fb923c","C":"#fbbf24","D":"#4ade80"};
   critList.forEach(function(item){
     var s=item.crit;
+    // Ignora se dados de criticidade incompletos
+    if(!s||!s.hse||!s.freq) return;
     var cons=(s.hse*2.5+s.prod*2.0+s.custo*1.0)/(5*2.5+5*2.0+5*1.0);
     var prob=(s.freq*2.0+s.det*1.5+s.red*1.0)/(5*2.0+5*1.5+5*1.0);
-    var r=4-Math.min(4,Math.round(cons*4));
-    var c=Math.min(4,Math.round(prob*4));
+    var ri=4-Math.min(4,Math.max(0,Math.round(cons*4)));
+    var ci=Math.min(4,Math.max(0,Math.round(prob*4)));
+    if(isNaN(ri)||isNaN(ci)||ri<0||ri>4||ci<0||ci>4) return;
     var col=classColors[item.cl]||"#9ca3af";
-    matDots[r][c]+='<span class="mx-dot" style="background:'+col+';margin:1px" title="'+item.nome+' ('+item.cl+')"></span>';
+    matDots[ri][ci]+='<span class="mx-dot" style="background:'+col+';margin:1px" title="'+item.nome+' ('+item.cl+')"></span>';
   });
   var html='<div class="risk-matrix">';
   html+='<div class="mx-hdr"></div>';
