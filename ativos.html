@@ -579,11 +579,13 @@ function buildAnaliseView(an){
 
 // ── DESATIVAÇÃO ───────────────────────────────────────────────────────
 function abrirDesativarPlano(planoId){
-  document.getElementById("desativ-titulo").textContent = "Desativar Plano";
-  document.getElementById("desativ-tipo").value = "plano";
-  document.getElementById("desativ-id").value = planoId;
-  document.getElementById("desativ-motivo").value = "";
-  openModal("modal-desativar");
+  if(!confirm("Desativar este plano? Ele não gerará novas OS enquanto inativo.")) return;
+  var f = fichas[selAtivo.id];
+  f.planos = f.planos.map(function(p){
+    return p.id==planoId ? Object.assign({},p,{ativo:false}) : p;
+  });
+  saveFichas(fichas);
+  render();
 }
 
 function abrirDesativarAtivo(){
@@ -597,24 +599,14 @@ function abrirDesativarAtivo(){
 
 function confirmarDesativacao(){
   var motivo = document.getElementById("desativ-motivo").value.trim();
-  if(!motivo){alert("Informe a justificativa.");return;}
-  var tipo  = document.getElementById("desativ-tipo").value;
-  var id    = parseInt(document.getElementById("desativ-id").value);
-  var hoje  = new Date().toISOString().slice(0,10);
-
-  if(tipo === "plano"){
-    var f = fichas[selAtivo.id];
-    f.planos = f.planos.map(function(p){
-      return p.id==id ? Object.assign({},p,{ativo:false,motivo_desativacao:motivo,desativado_em:hoje}) : p;
-    });
-    saveFichas(fichas);
-  } else {
-    ativos = ativos.map(function(a){
-      return a.id===id ? Object.assign({},a,{status:"Desativado",motivo_desativacao:motivo,desativado_em:hoje}) : a;
-    });
-    saveAtivos(ativos);
-    selAtivo = null;
-  }
+  if(!motivo){alert("Informe a justificativa para desativar o ativo.");return;}
+  var id   = parseInt(document.getElementById("desativ-id").value);
+  var hoje = new Date().toISOString().slice(0,10);
+  ativos = ativos.map(function(a){
+    return a.id===id ? Object.assign({},a,{status:"Desativado",motivo_desativacao:motivo,desativado_em:hoje}) : a;
+  });
+  saveAtivos(ativos);
+  selAtivo = null;
   closeModal("modal-desativar");
   render();
 }
@@ -683,7 +675,12 @@ function renderFicha(){
   else if(fichaTab=="preditiva")content=tabPred(a,f);
   else if(fichaTab=="documentos")content=tabDocs(a,f);
   else if(fichaTab=="criticidade")content=tabCrit(a,f);
-  return'<div style="display:flex;align-items:center;gap:10px;margin-bottom:16px"><button class="btn bx" onclick="selAtivo=null;render()">&#8592; Voltar</button></div>'
+  return'<div style="display:flex;align-items:center;gap:10px;margin-bottom:16px">'
+    +'<button class="btn bx" onclick="selAtivo=null;render()">&#8592; Voltar</button>'
+    +(selAtivo.status!=="Desativado"
+      ?'<button class="btn bsm" onclick="abrirDesativarAtivo()" style="font-size:11px;background:#7f1d1d30;color:#f87171;border:1px solid #f8717140">Desativar</button>'
+      :'<button class="btn bsm" onclick="reativarAtivo('+selAtivo.id+')" style="font-size:11px;background:#14532d30;color:#4ade80;border:1px solid #4ade8040">Reativar</button>')
+    +'</div>'
     +'<div class="fh"><div><div class="fn">'+esc(a.nome)+'</div><div class="fs">'+esc(a.categoria)+' &bull; '+esc(a.localizacao)+' &bull; '+esc(a.fabricante)+' '+esc(a.modelo)+'</div></div>'+bdg(a.status,AC)+'</div>'
     +'<div class="tabs">'+tabs+'</div>'+content;
 }
@@ -999,8 +996,7 @@ window.addEventListener("langchange", function(){
 </script>
 <script src="_theme.js"></script>
 <div class="modal" id="modal-desativar"><div class="mc" onclick="event.stopPropagation()">
-  <div class="mt2" id="desativ-titulo">Desativar</div>
-  <input type="hidden" id="desativ-tipo"/>
+  <div class="mt2">Desativar Ativo</div>
   <input type="hidden" id="desativ-id"/>
   <div style="background:rgba(248,113,113,.08);border:1px solid rgba(248,113,113,.25);border-radius:10px;padding:12px 14px;margin-bottom:16px;font-size:13px;color:#fca5a5">
     &#9888; Esta acao desativa o item. Ele ficara visivel como inativo mas nao gerara novas OS.
