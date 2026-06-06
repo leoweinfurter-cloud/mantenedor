@@ -68,6 +68,10 @@
 .cal-legend{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:14px}
 .cal-leg-item{display:flex;align-items:center;gap:4px;font-size:11px;color:#64748b}
 .cal-leg-dot{width:9px;height:9px;border-radius:3px;flex-shrink:0}
+
+/* ── AD BANNER ── */
+.ad-banner{display:none;background:var(--inner-bg,#060b12);border:1px solid var(--border,#1e3a5f);border-radius:10px;padding:10px;margin:0 0 12px;text-align:center;font-size:11px;color:#64748b;}
+.ad-banner ins{display:block;}
 </style>
 </head>
 <body>
@@ -80,6 +84,7 @@
       <a class="ni" href="ativos.html"><span class="nx">&#11041;</span><span class="nl" data-i18n="nav_ativos">Gestao de Ativos</span></a>
       <a class="ni" href="cadastros.html"><span class="nx">&#9998;</span><span class="nl" data-i18n="nav_cadastros">Cadastros</span></a>
       <a class="ni active" href="calendario.html"><span class="nx">&#128197;</span><span class="nl">Calendario</span></a>
+      <a class="ni" href="relatorios.html"><span class="nx">&#128202;</span><span class="nl">Relatorios</span></a>
     </nav>
   </div>
   <div id="main">
@@ -88,8 +93,10 @@
         <span class="topbar-logo">&#9881;</span>
         <div><div id="tt">Calendario</div></div>
       </div>
-      <div class="avatar">G</div>
+      <div class="avatar" onclick="if(confirm('Sair do MaintenX?'))authLogout()" style="cursor:pointer" title="Sair">G</div>
     </div>
+    
+  <div class="ad-banner" id="ad-top"><!-- Anuncio MaintenX Free --></div>
     <div id="ct"></div>
   </div>
 </div>
@@ -99,6 +106,7 @@
   <a class="bn-item" href="ativos.html"><span class="bn-icon">&#11041;</span><span class="bn-label" data-i18n="nav_ativos_short">Ativos</span></a>
   <a class="bn-item" href="cadastros.html"><span class="bn-icon">&#9998;</span><span class="bn-label" data-i18n="nav_cadastros">Cadastros</span></a>
   <a class="bn-item active" href="calendario.html"><span class="bn-icon">&#128197;</span><span class="bn-label">Cal.</span></a>
+  <a class="bn-item" href="relatorios.html"><span class="bn-icon">&#128202;</span><span class="bn-label">Rel.</span></a>
 </nav>
 <script src="_lang.js"></script>
 <script src="_shared.js"></script>
@@ -431,7 +439,7 @@ function goToEvent(kind, idOrAtivo, planoId) {
   }
 }
 
-render();
+initApp(render);
 </script>
 <script>
 window.addEventListener("langchange", function(){

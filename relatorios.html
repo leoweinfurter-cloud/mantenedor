@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>MaintenX — Relatorios</title>
+<link rel="stylesheet" href="_style.css" id="theme-link"/>
+<style>
+/* ── FILTERS ── */
+.rel-filters{background:var(--card-bg,#0d1929);border:1px solid var(--border,#1e3a5f);border-radius:14px;padding:16px;margin-bottom:16px}
+.rel-filter-row{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px}
+.rel-filter-row.three{grid-template-columns:1fr 1fr 1fr}
+.rel-filter-label{font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.06em;color:#64748b;margin-bottom:5px}
+.rel-actions{display:flex;gap:8px;margin-top:12px;flex-wrap:wrap}
+
+/* ── REPORT TYPE SELECTOR ── */
+.rel-type-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px}
+.rel-type-btn{padding:14px 12px;border-radius:12px;border:2px solid var(--border,#1e3a5f);background:var(--card-bg,#0d1929);cursor:pointer;text-align:center;transition:all .15s;font-family:inherit}
+.rel-type-btn.active{border-color:#3b82f6;background:rgba(59,130,246,.08)}
+.rel-type-icon{font-size:22px;margin-bottom:6px}
+.rel-type-label{font-size:12px;font-weight:700;color:#94a3b8}
+.rel-type-btn.active .rel-type-label{color:#60a5fa}
+
+/* ── SUMMARY CARDS ── */
+.rel-summary{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:16px}
+.rel-sum-card{background:var(--card-bg,#0d1929);border:1px solid var(--border,#1e3a5f);border-radius:10px;padding:12px 8px;text-align:center}
+.rel-sum-val{font-size:22px;font-weight:800}
+.rel-sum-lbl{font-size:10px;color:#64748b;margin-top:2px}
+
+/* ── OS REPORT ── */
+.rel-os-card{background:var(--card-bg,#0d1929);border:1px solid var(--border,#1e3a5f);border-radius:12px;padding:14px;margin-bottom:10px}
+.rel-os-header{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;margin-bottom:10px}
+.rel-os-titulo{font-size:14px;font-weight:700;margin-bottom:3px}
+.rel-os-meta{font-size:11px;color:#64748b}
+.rel-os-body{font-size:12px;color:#94a3b8;margin-bottom:10px;line-height:1.5}
+.rel-os-fields{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+.rel-os-field{background:var(--inner-bg,#060b12);border-radius:8px;padding:8px 10px}
+.rel-os-field-label{font-size:10px;color:#64748b;text-transform:uppercase;letter-spacing:.05em;margin-bottom:2px}
+.rel-os-field-val{font-size:13px;font-weight:600}
+.rel-os-log{margin-top:10px;padding-top:10px;border-top:1px solid var(--border,#1e3a5f)}
+.rel-os-log-title{font-size:11px;font-weight:700;color:#64748b;text-transform:uppercase;margin-bottom:6px}
+.rel-os-log-item{font-size:12px;padding:6px 8px;background:var(--inner-bg,#060b12);border-radius:6px;margin-bottom:4px;color:#94a3b8}
+
+/* ── HISTORY REPORT ── */
+.rel-ativo-block{background:var(--card-bg,#0d1929);border:1px solid var(--border,#1e3a5f);border-radius:14px;margin-bottom:14px;overflow:hidden}
+.rel-ativo-header{padding:14px 16px;border-bottom:1px solid var(--border,#1e3a5f);display:flex;align-items:center;justify-content:space-between}
+.rel-ativo-nome{font-size:16px;font-weight:800}
+.rel-ativo-sub{font-size:12px;color:#64748b;margin-top:2px}
+.rel-hist-item{padding:14px 16px;border-bottom:1px solid var(--border,#0d1929)}
+.rel-hist-item:last-child{border-bottom:none}
+.rel-hist-header{display:flex;align-items:flex-start;justify-content:space-between;gap:8px;margin-bottom:6px}
+.rel-hist-desc{font-size:13px;font-weight:700}
+.rel-hist-meta{font-size:11px;color:#64748b;margin-top:2px}
+.rel-hist-fields{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-top:8px}
+.rel-hist-fval{font-size:12px;font-weight:600}
+.rel-hist-flbl{font-size:10px;color:#64748b}
+.rel-analise{margin-top:10px;padding:10px;background:rgba(129,140,248,.06);border:1px dashed rgba(129,140,248,.3);border-radius:8px}
+.rel-analise-title{font-size:11px;font-weight:800;color:#a78bfa;text-transform:uppercase;letter-spacing:.05em;margin-bottom:8px}
+.rel-analise-tipo{display:inline-block;font-size:10px;font-weight:700;padding:2px 8px;border-radius:6px;background:rgba(129,140,248,.15);color:#a78bfa;margin-bottom:8px}
+.rel-analise-content{font-size:12px;color:#94a3b8;line-height:1.6}
+.rel-analise-section{margin-bottom:6px}
+.rel-analise-key{font-size:11px;font-weight:700;color:#c4b5fd}
+
+/* ── EMPTY STATE ── */
+.rel-empty{text-align:center;padding:40px 20px;color:#475569;font-size:14px}
+.rel-empty-icon{font-size:32px;margin-bottom:10px}
+
+/* ── PRINT ── */
+@media print {
+  #sidebar,#bottom-nav,#topbar,.rel-filters,.rel-type-grid,.rel-actions,.rel-actions,.no-print{display:none!important}
+  #main{margin:0!important;padding:0!important}
+  #ct{padding:0!important}
+  body{background:#fff!important;color:#000!important}
+  .rel-os-card,.rel-ativo-block,.rel-hist-item{break-inside:avoid}
+  .rel-ativo-block{border:1px solid #ccc}
+  .rel-os-field,.rel-hist-fields{background:#f8f8f8!important}
+  .rel-analise{background:#f0ecff!important;border:1px dashed #a78bfa!important}
+}
+
+/* ── AD BANNER ── */
+.ad-banner{display:none;background:var(--inner-bg,#060b12);border:1px solid var(--border,#1e3a5f);border-radius:10px;padding:10px;margin:0 0 12px;text-align:center;font-size:11px;color:#64748b;}
+.ad-banner ins{display:block;}
+</style>
+</head>
+<body>
+<div id="app">
+  <div id="sidebar">
+    <a class="sl" href="dashboard.html"><div class="li">&#9881;</div><span class="sl-text">MaintenX</span></a>
+    <nav>
+      <a class="ni" href="dashboard.html"><span class="nx">&#9672;</span><span class="nl" data-i18n="nav_dashboard">Dashboard</span></a>
+      <a class="ni" href="ordens.html"><span class="nx">&#9874;</span><span class="nl" data-i18n="nav_ordens">Ordens de Servico</span></a>
+      <a class="ni" href="ativos.html"><span class="nx">&#11041;</span><span class="nl" data-i18n="nav_ativos">Gestao de Ativos</span></a>
+      <a class="ni" href="cadastros.html"><span class="nx">&#9998;</span><span class="nl" data-i18n="nav_cadastros">Cadastros</span></a>
+      <a class="ni" href="calendario.html"><span class="nx">&#128197;</span><span class="nl">Calendario</span></a>
+      <a class="ni active" href="relatorios.html"><span class="nx">&#128202;</span><span class="nl">Relatorios</span></a>
+    </nav>
+  </div>
+  <div id="main">
+    <div id="topbar">
+      <div id="topbar-left">
+        <span class="topbar-logo">&#9881;</span>
+        <div><div id="tt">Relatorios</div></div>
+      </div>
+      <div class="avatar" onclick="if(confirm('Sair do MaintenX?'))authLogout()" style="cursor:pointer" title="Sair">G</div>
+    </div>
+    
+  <div class="ad-banner" id="ad-top"><!-- Anuncio MaintenX Free --></div>
+    <div id="ct"></div>
+  </div>
+</div>
+<nav id="bottom-nav">
+  <a class="bn-item" href="dashboard.html"><span class="bn-icon">&#9672;</span><span class="bn-label">Dashboard</span></a>
+  <a class="bn-item" href="ordens.html"><span class="bn-icon">&#9874;</span><span class="bn-label">OS</span></a>
+  <a class="bn-item" href="ativos.html"><span class="bn-icon">&#11041;</span><span class="bn-label">Ativos</span></a>
+  <a class="bn-item" href="cadastros.html"><span class="bn-icon">&#9998;</span><span class="bn-label">Cadastros</span></a>
+  <a class="bn-item active" href="relatorios.html"><span class="bn-icon">&#128202;</span><span class="bn-label">Rel.</span></a>
+</nav>
+<script src="_lang.js"></script>
+<script src="_shared.js"></script>
+<script>
+var relTipo = "os";      // "os" | "historico"
+var filtAtivoId = "";
+var filtStatus  = "";
+var filtTipo    = "";
+var filtDtIni   = "";
+var filtDtFim   = "";
+
+// ── RENDER ────────────────────────────────────────────────────────────
+function render(){
+  var html = renderFiltros() + renderTipoSelector() + renderRelatorio();
+  document.getElementById("ct").innerHTML = html;
+}
+
+function renderTipoSelector(){
+  return '<div class="rel-type-grid no-print">'
+    +typeBtn("os","&#128203;","OS Realizadas")
+    +typeBtn("historico","&#128196;","Historico de Ativos")
+    +'</div>';
+}
+function typeBtn(tipo,icon,label){
+  return '<div class="rel-type-btn'+(relTipo===tipo?" active":"")+'" onclick="setRelTipo(\''+tipo+'\')"><div class="rel-type-icon">'+icon+'</div><div class="rel-type-label">'+label+'</div></div>';
+}
+
+function renderFiltros(){
+  // Build ativo options
+  var ativoOpts = '<option value="">Todos os ativos</option>'
+    + ativos.map(function(a){return'<option value="'+a.id+'"'+(filtAtivoId==a.id?' selected':'')+'>'+esc(a.nome)+'</option>';}).join("");
+
+  var statusOpts, tipoOpts;
+  if(relTipo === "os"){
+    statusOpts = '<option value="">Todos</option><option value="Concluida">Concluida</option><option value="Aberta">Aberta</option><option value="Em Andamento">Em Andamento</option><option value="Cancelada">Cancelada</option>';
+    tipoOpts   = '<option value="">Todos</option><option value="Corretiva">Corretiva</option><option value="Preventiva">Preventiva</option><option value="Preditiva">Preditiva</option><option value="Mista">Mista</option>';
+  } else {
+    statusOpts = '<option value="">Todos</option><option value="Corretiva">Corretiva</option><option value="Preventiva">Preventiva</option><option value="Preditiva">Preditiva</option>';
+    tipoOpts   = '<option value="">Com e sem analise</option><option value="com_analise">Com analise de falha</option><option value="sem_analise">Sem analise de falha</option>';
+  }
+
+  return '<div class="rel-filters no-print">'
+    +'<div class="rel-filter-row">'
+    +'<div><div class="rel-filter-label">Ativo</div><select onchange="filtAtivoId=this.value;render()">'+ativoOpts+'</select></div>'
+    +'<div><div class="rel-filter-label">'+(relTipo==="os"?"Status":"Tipo")+'</div><select onchange="'+(relTipo==="os"?"filtStatus":"filtTipo")+'=this.value;render()">'+statusOpts+'</select></div>'
+    +'</div>'
+    +'<div class="rel-filter-row three">'
+    +'<div><div class="rel-filter-label">'+(relTipo==="os"?"Tipo":"Analise")+'</div><select onchange="'+(relTipo==="os"?"filtTipo":"filtStatus")+'=this.value;render()">'+tipoOpts+'</select></div>'
+    +'<div><div class="rel-filter-label">Data inicio</div><input type="date" value="'+filtDtIni+'" onchange="filtDtIni=this.value;render()"/></div>'
+    +'<div><div class="rel-filter-label">Data fim</div><input type="date" value="'+filtDtFim+'" onchange="filtDtFim=this.value;render()"/></div>'
+    +'</div>'
+    +'<div class="rel-actions">'
+    +'<button class="btn bx bsm" onclick="limparFiltros()">Limpar filtros</button>'
+    +'<button class="btn bp bsm" onclick="window.print()">&#128424; Imprimir / Salvar PDF</button>'
+    +'</div></div>';
+}
+
+// ── OS REPORT ─────────────────────────────────────────────────────────
+function renderRelatorio(){
+  return relTipo === "os" ? renderRelOS() : renderRelHist();
+}
+
+function renderRelOS(){
+  var filtered = ordens.filter(function(o){
+    if(filtAtivoId && o.ativo_id!=filtAtivoId) return false;
+    if(filtStatus  && o.status!==filtStatus)   return false;
+    if(filtTipo    && o.tipo!==filtTipo)        return false;
+    if(filtDtIni   && o.abertura < filtDtIni)  return false;
+    if(filtDtFim   && o.abertura > filtDtFim)  return false;
+    return true;
+  });
+
+  // Summary
+  var conc  = filtered.filter(function(o){return o.status==="Concluida";}).length;
+  var aber  = filtered.filter(function(o){return o.status==="Aberta";}).length;
+  var andamento = filtered.filter(function(o){return o.status==="Em Andamento";}).length;
+  var criticas  = filtered.filter(function(o){return o.prioridade==="Critica";}).length;
+
+  var summary = '<div class="rel-summary">'
+    +sumCard(filtered.length,"Total","#60a5fa")
+    +sumCard(conc,"Concluidas","#4ade80")
+    +sumCard(aber+andamento,"Em aberto","#fbbf24")
+    +sumCard(criticas,"Criticas","#f87171")
+    +'</div>';
+
+  if(!filtered.length) return summary+'<div class="rel-empty"><div class="rel-empty-icon">&#128203;</div>Nenhuma OS encontrada com os filtros selecionados.</div>';
+
+  var cards = filtered.map(function(o){
+    var col = TC[o.tipo]||"#60a5fa";
+    var statCol = SC[o.status]||"#9ca3af";
+    var log = (o.execLog||[]);
+    var logHtml = log.length>0
+      ? '<div class="rel-os-log"><div class="rel-os-log-title">Registros de execucao ('+log.length+')</div>'
+        +log.map(function(e){return'<div class="rel-os-log-item">'+esc(e.data||"")+(e.tipo?' ['+esc(e.tipo)+']':'')+(e.desc?' — '+esc(e.desc):'')+(e.horas?' | '+e.horas+'h':'')+'</div>';}).join("")
+        +'</div>' : "";
+    // Checklist de planos
+    var checkHtml = "";
+    if(o.planos_exec && o.planos_exec.length){
+      checkHtml = '<div class="rel-os-log"><div class="rel-os-log-title">Checklist de planos</div>'
+        +o.planos_exec.map(function(pe){
+          var conc=pe.acoes.filter(function(a){return a.concluida;}).length;
+          return'<div class="rel-os-log-item" style="margin-bottom:6px"><b>'+esc(pe.plano_nome)+'</b> — '+conc+'/'+pe.acoes.length+' acoes<br>'
+            +pe.acoes.map(function(a){return'<span style="color:'+(a.concluida?"#4ade80":"#f87171")+'">'+( a.concluida?"✓":"✗")+'</span> '+esc(a.desc)+(a.valor_exec?' = '+a.valor_exec+(a.unidade?' '+a.unidade:''):'');}).join(' &bull; ')
+            +'</div>';
+        }).join("")+'</div>';
+    }
+    return '<div class="rel-os-card">'
+      +'<div class="rel-os-header">'
+      +'<div style="flex:1">'
+      +'<div style="display:flex;gap:6px;margin-bottom:4px">'
+      +'<span style="font-size:10px;font-weight:800;padding:2px 8px;border-radius:6px;background:'+col+'20;color:'+col+'">'+esc(o.tipo)+'</span>'
+      +'<span style="font-size:10px;font-weight:800;padding:2px 8px;border-radius:6px;background:'+statCol+'20;color:'+statCol+'">'+esc(o.status)+'</span>'
+      +(o.prioridade==="Critica"?'<span style="font-size:10px;font-weight:800;padding:2px 8px;border-radius:6px;background:#f8717120;color:#f87171">CRITICA</span>':"")
+      +'</div>'
+      +'<div class="rel-os-titulo">'+esc(o.titulo)+'</div>'
+      +'<div class="rel-os-meta">'+esc(o.ativo||"")+(o.tecnico?' &bull; '+esc(o.tecnico):'')+'</div>'
+      +'</div>'
+      +'<div style="font-size:11px;color:#64748b;text-align:right;white-space:nowrap">OS #'+o.id+'</div>'
+      +'</div>'
+      +(o.descricao?'<div class="rel-os-body">'+esc(o.descricao)+'</div>':"")
+      +'<div class="rel-os-fields">'
+      +osField("Abertura",o.abertura||"--")
+      +osField("Prazo",o.prazo||"--")
+      +osField("Tecnico",o.tecnico||"--")
+      +osField("Prioridade",o.prioridade||"--")
+      +'</div>'
+      +logHtml+checkHtml
+      +'</div>';
+  }).join("");
+
+  return summary+cards;
+}
+
+function osField(label,val){
+  return'<div class="rel-os-field"><div class="rel-os-field-label">'+label+'</div><div class="rel-os-field-val">'+esc(val)+'</div></div>';
+}
+
+// ── HISTORY REPORT ────────────────────────────────────────────────────
+function renderRelHist(){
+  var ativosRel = filtAtivoId
+    ? ativos.filter(function(a){return a.id==filtAtivoId;})
+    : ativos;
+
+  var totalHist=0, totalAnal=0, totalCusto=0, totalHoras=0;
+  var blocks = ativosRel.map(function(a){
+    var f = fichas[a.id];
+    if(!f || !f.historico || !f.historico.length) return "";
+    var hist = f.historico.filter(function(h){
+      if(filtStatus && h.tipo!==filtStatus)   return false;
+      if(filtDtIni  && h.data < filtDtIni)    return false;
+      if(filtDtFim  && h.data > filtDtFim)    return false;
+      if(filtTipo==="com_analise"  && !h.analise) return false;
+      if(filtTipo==="sem_analise"  && h.analise)  return false;
+      return true;
+    });
+    if(!hist.length) return "";
+
+    totalHist += hist.length;
+    hist.forEach(function(h){ totalAnal += h.analise?1:0; totalCusto += h.custo||0; totalHoras += h.horas||0; });
+
+    var items = hist.map(function(h){
+      var col = TC[h.tipo]||"#60a5fa";
+      var analHtml = "";
+      if(h.analise){
+        var an = h.analise;
+        var tipo = an.tipo||"5porques";
+        analHtml = '<div class="rel-analise">'
+          +'<div class="rel-analise-title">&#9888; Analise de Falha</div>'
+          +'<div class="rel-analise-tipo">'+( ANAL_LABELS[tipo]||tipo)+'</div>'
+          +renderAnaliseContent(an)
+          +'</div>';
+      }
+      return '<div class="rel-hist-item">'
+        +'<div class="rel-hist-header">'
+        +'<div style="flex:1">'
+        +'<div style="display:flex;gap:6px;margin-bottom:4px"><span style="font-size:10px;font-weight:800;padding:2px 8px;border-radius:6px;background:'+col+'20;color:'+col+'">'+esc(h.tipo)+'</span></div>'
+        +'<div class="rel-hist-desc">'+esc(h.desc)+'</div>'
+        +'<div class="rel-hist-meta">'+esc(h.data||"--")+(h.tecnico?' &bull; '+esc(h.tecnico):'')+'</div>'
+        +'</div></div>'
+        +(h.obs?'<div style="font-size:12px;color:#64748b;margin:6px 0">'+esc(h.obs)+'</div>':"")
+        +'<div class="rel-hist-fields">'
+        +'<div><div class="rel-hist-flbl">Horas</div><div class="rel-hist-fval">'+(h.horas||0)+'h</div></div>'
+        +'<div><div class="rel-hist-flbl">Custo</div><div class="rel-hist-fval">R$ '+(h.custo||0)+'</div></div>'
+        +'<div><div class="rel-hist-flbl">Analise</div><div class="rel-hist-fval" style="color:'+(h.analise?"#a78bfa":"#475569")+'">'+(h.analise?"Sim":"Nao")+'</div></div>'
+        +'</div>'
+        +analHtml+'</div>';
+    }).join("");
+
+    return '<div class="rel-ativo-block">'
+      +'<div class="rel-ativo-header">'
+      +'<div><div class="rel-ativo-nome">'+esc(a.nome)+'</div><div class="rel-ativo-sub">'+esc(a.categoria||"")+(a.localizacao?' &bull; '+esc(a.localizacao):'')+'</div></div>'
+      +'<div style="text-align:right"><div style="font-size:12px;color:#64748b">'+hist.length+' registro(s)</div></div>'
+      +'</div>'
+      +items+'</div>';
+  }).join("");
+
+  // Summary
+  var summary = '<div class="rel-summary">'
+    +sumCard(totalHist,"Registros","#60a5fa")
+    +sumCard(totalAnal,"Com analise","#a78bfa")
+    +sumCard(totalHoras.toFixed(0)+"h","Horas total","#f59e0b")
+    +sumCard("R$"+totalCusto.toLocaleString("pt-BR"),"Custo total","#4ade80")
+    +'</div>';
+
+  if(!blocks.replace(/\s/g,"")){
+    return summary+'<div class="rel-empty"><div class="rel-empty-icon">&#128196;</div>Nenhum registro de manutencao encontrado.</div>';
+  }
+  return summary+blocks;
+}
+
+function renderAnaliseContent(an){
+  var html = "";
+  var tipo = an.tipo||"5porques";
+  if(tipo==="5porques"&&an.porques){
+    html += '<div class="rel-analise-content">'
+      +an.porques.filter(Boolean).map(function(p,i){return'<div class="rel-analise-section"><span class="rel-analise-key">Por que '+(i+1)+':</span> '+esc(p)+'</div>';}).join("")
+      +(an.causa_raiz?'<div class="rel-analise-section"><span class="rel-analise-key">Causa raiz:</span> '+esc(an.causa_raiz)+'</div>':"")
+      +(an.acao?'<div class="rel-analise-section"><span class="rel-analise-key">Acao corretiva:</span> '+esc(an.acao)+'</div>':"")
+      +'</div>';
+  } else if(tipo==="ishikawa"&&an.causas){
+    var cats=Object.keys(an.causas).filter(function(k){return an.causas[k];});
+    html += '<div class="rel-analise-content">'
+      +cats.map(function(k){return'<div class="rel-analise-section"><span class="rel-analise-key">'+k+':</span> '+esc(an.causas[k])+'</div>';}).join("")
+      +(an.causa_raiz?'<div class="rel-analise-section"><span class="rel-analise-key">Causa raiz:</span> '+esc(an.causa_raiz)+'</div>':"")
+      +'</div>';
+  } else if(tipo==="fmea"&&an.modo){
+    html += '<div class="rel-analise-content">'
+      +(an.modo?'<div class="rel-analise-section"><span class="rel-analise-key">Modo de falha:</span> '+esc(an.modo)+'</div>':"")
+      +(an.efeito?'<div class="rel-analise-section"><span class="rel-analise-key">Efeito:</span> '+esc(an.efeito)+'</div>':"")
+      +(an.causa?'<div class="rel-analise-section"><span class="rel-analise-key">Causa:</span> '+esc(an.causa)+'</div>':"")
+      +(an.nprs!==undefined?'<div class="rel-analise-section"><span class="rel-analise-key">NPR:</span> S:'+an.nprs+' O:'+an.npro+' D:'+an.nprd+' = <b>'+(an.nprs*an.npro*an.nprd)+'</b></div>':"")
+      +(an.acao?'<div class="rel-analise-section"><span class="rel-analise-key">Acao:</span> '+esc(an.acao)+'</div>':"")
+      +'</div>';
+  } else if(an.descricao||an.acao||an.causa_raiz){
+    html += '<div class="rel-analise-content">'
+      +(an.descricao?'<div class="rel-analise-section"><span class="rel-analise-key">Descricao:</span> '+esc(an.descricao)+'</div>':"")
+      +(an.causa_raiz?'<div class="rel-analise-section"><span class="rel-analise-key">Causa raiz:</span> '+esc(an.causa_raiz)+'</div>':"")
+      +(an.acao?'<div class="rel-analise-section"><span class="rel-analise-key">Acao corretiva:</span> '+esc(an.acao)+'</div>':"")
+      +'</div>';
+  }
+  return html;
+}
+
+// ── HELPERS ───────────────────────────────────────────────────────────
+function sumCard(val,label,color){
+  return'<div class="rel-sum-card"><div class="rel-sum-val" style="color:'+color+'">'+val+'</div><div class="rel-sum-lbl">'+label+'</div></div>';
+}
+function setRelTipo(t){ relTipo=t; filtStatus=""; filtTipo=""; render(); }
+function limparFiltros(){ filtAtivoId=""; filtStatus=""; filtTipo=""; filtDtIni=""; filtDtFim=""; render(); }
+
+initApp(render);
+</script>
+<script>
+window.addEventListener("langchange",function(){render();});
+</script>
+<script src="_theme.js"></script>
+</body>
+</html>

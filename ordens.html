@@ -27,6 +27,10 @@
 .os-type-icon{font-size:20px;margin-bottom:4px}
 .os-type-label{font-size:11px;font-weight:700;color:#94a3b8}
 .os-type-btn.selected .os-type-label{color:#60a5fa}
+
+/* ── AD BANNER ── */
+.ad-banner{display:none;background:var(--inner-bg,#060b12);border:1px solid var(--border,#1e3a5f);border-radius:10px;padding:10px;margin:0 0 12px;text-align:center;font-size:11px;color:#64748b;}
+.ad-banner ins{display:block;}
 </style>
 </head>
 <body>
@@ -40,6 +44,7 @@
       
       <a class="ni" href="cadastros.html"><span class="nx">&#9998;</span><span class="nl" data-i18n="nav_cadastros">Cadastros</span></a>
       <a class="ni" href="calendario.html"><span class="nx">&#128197;</span><span class="nl">Calendario</span></a>
+      <a class="bn-item" href="calendario.html"><span class="bn-icon">&#128197;</span><span class="bn-label">Cal.</span></a>
 </nav>
   </div>
   <div id="main">
@@ -54,6 +59,8 @@
         </select>
       </div>
     </div>
+    
+  <div class="ad-banner" id="ad-top"><!-- Anuncio MaintenX Free --></div>
     <div id="ct"></div>
   </div>
 </div>
@@ -63,6 +70,7 @@
   <a class="bn-item" href="ativos.html"><span class="bn-icon">&#11041;</span><span class="bn-label" data-i18n="nav_ativos_short">Ativos</span></a>
   <a class="bn-item" href="cadastros.html"><span class="bn-icon">&#9998;</span><span class="bn-label" data-i18n="nav_cadastros">Cadastros</span></a>
   <a class="bn-item" href="calendario.html"><span class="bn-icon">&#128197;</span><span class="bn-label">Cal.</span></a>
+  <a class="bn-item" href="relatorios.html"><span class="bn-icon">&#128202;</span><span class="bn-label">Rel.</span></a>
 </nav>
 
 <!-- Modal Nova OS -->
@@ -603,7 +611,7 @@ function setFilter(f){filter=f;render();}
   }
 })();
 
-render();
+initApp(render);
 </script>
 <script>
 window.addEventListener("langchange", function(){

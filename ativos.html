@@ -21,6 +21,10 @@
 .plan-acao-chip{font-size:11px;padding:3px 8px;border-radius:8px;font-weight:600;display:inline-block;margin:2px}
 .plan-acao-chip.acao{background:#2563eb15;color:#60a5fa;border:1px solid #2563eb30}
 .plan-acao-chip.medicao{background:#7c3aed15;color:#a78bfa;border:1px solid #7c3aed30}
+
+/* ── AD BANNER ── */
+.ad-banner{display:none;background:var(--inner-bg,#060b12);border:1px solid var(--border,#1e3a5f);border-radius:10px;padding:10px;margin:0 0 12px;text-align:center;font-size:11px;color:#64748b;}
+.ad-banner ins{display:block;}
 </style>
 </head>
 <body>
@@ -34,6 +38,7 @@
       
       <a class="ni" href="cadastros.html"><span class="nx">&#9998;</span><span class="nl" data-i18n="nav_cadastros">Cadastros</span></a>
       <a class="ni" href="calendario.html"><span class="nx">&#128197;</span><span class="nl">Calendario</span></a>
+      <a class="ni" href="relatorios.html"><span class="nx">&#128202;</span><span class="nl">Relatorios</span></a>
     </nav>
     <div class="sb">
       <div class="ni" onclick="toggleSidebar()"><span class="nx" id="tico">&#9664;</span><span class="nl">Recolher</span></div>
@@ -45,8 +50,10 @@
         <span class="topbar-logo">&#9881;</span>
         <div><div id="tt" data-i18n="nav_ativos">Gestao de Ativos</div></div>
       </div>
-      <div class="avatar">G</div>
+      <div class="avatar" onclick="if(confirm('Sair do MaintenX?'))authLogout()" style="cursor:pointer" title="Sair">G</div>
     </div>
+    
+  <div class="ad-banner" id="ad-top"><!-- Anuncio MaintenX Free --></div>
     <div id="ct"></div>
   </div>
 </div>
@@ -937,6 +944,7 @@ window.addEventListener("focus", function(){
   <a class="bn-item active" href="ativos.html"><span class="bn-icon">&#11041;</span><span class="bn-label" data-i18n="nav_ativos_short">Ativos</span></a>
   <a class="bn-item" href="cadastros.html"><span class="bn-icon">&#9998;</span><span class="bn-label" data-i18n="nav_cadastros">Cadastros</span></a>
   <a class="bn-item" href="calendario.html"><span class="bn-icon">&#128197;</span><span class="bn-label">Cal.</span></a>
+  <a class="bn-item" href="relatorios.html"><span class="bn-icon">&#128202;</span><span class="bn-label">Rel.</span></a>
 </nav>
 <script>
 window.addEventListener("langchange", function(){
