@@ -156,6 +156,16 @@ var AUTH    = SB_URL + "/auth/v1";
   }
 })();
 
+// Mensagem quando o app forçou logout por sessão sem empresa associada
+(function(){
+  var params=new URLSearchParams(window.location.search);
+  if(params.get("erro")==="sem_tenant"){
+    window.addEventListener("DOMContentLoaded",function(){
+      showMsg("Sua sessão expirou ou ficou sem empresa associada. Faça login novamente.","error");
+    });
+  }
+})();
+
 function setTab(t){
   document.getElementById("form-login").style.display  = t==="login"  ? "block":"none";
   document.getElementById("form-signup").style.display = t==="signup" ? "block":"none";

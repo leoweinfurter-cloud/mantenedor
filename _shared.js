@@ -26,6 +26,14 @@ function getPlano(){
 function authRequired(){
   var s=getSession();
   if(!s||!s.access_token){window.location.href="login.html";return null;}
+  if(!s.tenant_id){
+    // Sessão "quebrada": autenticado mas sem empresa associada (user_tenants ausente/corrompido).
+    // Continuar assim faz toda gravação falhar em silêncio (RLS 42501). Força novo login.
+    console.error("[Auth] sessão sem tenant_id — forçando novo login");
+    localStorage.clear();
+    window.location.href="login.html?erro=sem_tenant";
+    return null;
+  }
   return s;
 }
 function authLogout(){
@@ -37,32 +45,139 @@ function meuPrimeiro(){return meuNome().split(" ")[0]||"";}
 function meuPerfil(){var s=getSession();return s?s.perfil:"";}
 function isCoordenador(){return meuPerfil()==="Coordenador";}
 
+// ── TOAST ─────────────────────────────────────────────────────────────
+function mxToast(msg,type){
+  type=type||"error";
+  var host=document.getElementById("mx-toast-host");
+  if(!host){
+    host=document.createElement("div");
+    host.id="mx-toast-host";
+    host.style.cssText="position:fixed;top:16px;right:16px;z-index:99999;display:flex;flex-direction:column;gap:8px;max-width:360px;";
+    document.body.appendChild(host);
+  }
+  var colors={error:"#f87171",success:"#4ade80",warn:"#fbbf24",info:"#60a5fa"};
+  var el=document.createElement("div");
+  el.style.cssText="background:#1f2937;color:#fff;border-left:4px solid "+(colors[type]||colors.error)+";padding:12px 14px;border-radius:8px;font:14px/1.4 system-ui,sans-serif;box-shadow:0 4px 12px rgba(0,0,0,.35);opacity:0;transform:translateY(-8px);transition:all .25s ease;";
+  el.textContent=msg;
+  host.appendChild(el);
+  requestAnimationFrame(function(){el.style.opacity="1";el.style.transform="translateY(0)";});
+  setTimeout(function(){
+    el.style.opacity="0";el.style.transform="translateY(-8px)";
+    setTimeout(function(){el.remove();},250);
+  },6000);
+}
+
+// ── TOKEN REFRESH ─────────────────────────────────────────────────────
+function isTokenExpiringSoon(token){
+  try{
+    var b64=token.split(".")[1].replace(/-/g,"+").replace(/_/g,"/");
+    var payload=JSON.parse(atob(b64));
+    return (payload.exp*1000 - Date.now()) < 60000; // <60s de vida restante
+  }catch(e){return true;}
+}
+function refreshSession(){
+  var sess=getSession();
+  if(!sess||!sess.refresh_token) return Promise.reject(new Error("Sessão sem refresh_token."));
+  return fetch(SB_URL+"/auth/v1/token?grant_type=refresh_token",{
+    method:"POST",
+    headers:{"apikey":SB_KEY,"Content-Type":"application/json"},
+    body:JSON.stringify({refresh_token:sess.refresh_token})
+  }).then(function(r){
+    if(!r.ok) throw new Error("Renovação de sessão falhou ("+r.status+").");
+    return r.json();
+  }).then(function(d){
+    sess.access_token=d.access_token;
+    sess.refresh_token=d.refresh_token||sess.refresh_token;
+    localStorage.setItem("mx_session",JSON.stringify(sess));
+    return sess;
+  });
+}
+function ensureFreshToken(){
+  var sess=getSession();
+  if(!sess||!sess.access_token) return Promise.resolve(null);
+  if(!isTokenExpiringSoon(sess.access_token)) return Promise.resolve(sess);
+  return refreshSession().catch(function(e){
+    console.warn("[Auth] Falha ao renovar token, redirecionando para login.",e);
+    authLogout();
+    return null;
+  });
+}
+
 // ── SUPABASE HELPERS ──────────────────────────────────────────────────
 function sbHeaders(extra){
   var h={"apikey":SB_KEY,"Authorization":"Bearer "+getToken(),"Content-Type":"application/json"};
   if(extra)Object.assign(h,extra);
   return h;
 }
+// Wrapper central: garante token válido antes de cada chamada e faz 1 retry em 401
+function sbFetch(path,opts){
+  opts=opts||{};
+  var extraHeaders=opts.headers;
+  return ensureFreshToken().then(function(){
+    return fetch(REST+"/"+path,Object.assign({},opts,{headers:sbHeaders(extraHeaders)}));
+  }).then(function(r){
+    if(r.status===401){
+      return refreshSession().then(function(){
+        return fetch(REST+"/"+path,Object.assign({},opts,{headers:sbHeaders(extraHeaders)}));
+      }).catch(function(){return r;});
+    }
+    return r;
+  });
+}
 function sbGet(table,qs){
-  return fetch(REST+"/"+table+"?"+(qs||"select=*"),{headers:sbHeaders()})
-    .then(function(r){return r.json();});
+  return sbFetch(table+"?"+(qs||"select=*")).then(function(r){
+    if(!r.ok){
+      return r.json().catch(function(){return{message:r.statusText};}).then(function(err){
+        console.error("[SB] GET "+table+" falhou ("+r.status+")",err);
+        return [];
+      });
+    }
+    return r.json();
+  }).catch(function(e){console.warn("[SB] GET "+table,e);return [];});
 }
 function sbUpsert(table,data){
   if(!data||(Array.isArray(data)&&!data.length))return Promise.resolve();
   var rows=Array.isArray(data)?data:[data];
   // Auto-inject tenant_id
   var tid=getTenantId();
-  if(tid) rows=rows.map(function(r){return Object.assign({},r,{tenant_id:tid});});
-  return fetch(REST+"/"+table,{
+  if(!tid){
+    console.error("[SB] upsert "+table+" abortado: sem tenant_id na sessão");
+    mxToast("Não foi possível salvar: sessão sem empresa associada. Faça login novamente.","error");
+    return Promise.reject(new Error("tenant_id ausente na sessão"));
+  }
+  rows=rows.map(function(r){return Object.assign({},r,{tenant_id:tid});});
+  return sbFetch(table,{
     method:"POST",
-    headers:sbHeaders({"Prefer":"resolution=merge-duplicates,return=minimal"}),
+    headers:{"Prefer":"resolution=merge-duplicates,return=minimal"},
     body:JSON.stringify(rows)
-  }).catch(function(e){console.warn("[SB] upsert "+table,e);});
+  }).then(function(r){
+    if(!r.ok){
+      return r.json().catch(function(){return{message:r.statusText};}).then(function(err){
+        var msg=(err&&err.message)||("Erro "+r.status);
+        console.error("[SB] upsert "+table+" falhou ("+r.status+")",err);
+        mxToast("Erro ao salvar em \""+table+"\": "+msg,"error");
+        throw new Error(msg);
+      });
+    }
+    return r;
+  }).catch(function(e){
+    console.warn("[SB] upsert "+table,e);
+    if(!/tenant_id ausente/.test(e.message||"")) mxToast("Falha de conexão ao salvar \""+table+"\".","error");
+    throw e;
+  });
 }
 function sbDelete(table,field,value){
-  return fetch(REST+"/"+table+"?"+field+"=eq."+value,{
-    method:"DELETE",headers:sbHeaders()
-  }).catch(function(e){console.warn("[SB] delete "+table,e);});
+  return sbFetch(table+"?"+field+"=eq."+value,{method:"DELETE"}).then(function(r){
+    if(!r.ok){
+      return r.json().catch(function(){return{message:r.statusText};}).then(function(err){
+        var msg=(err&&err.message)||("Erro "+r.status);
+        console.error("[SB] delete "+table+" falhou ("+r.status+")",err);
+        mxToast("Erro ao excluir em \""+table+"\": "+msg,"error");
+        throw new Error(msg);
+      });
+    }
+    return r;
+  }).catch(function(e){console.warn("[SB] delete "+table,e);throw e;});
 }
 
 // ── NEXT ID ───────────────────────────────────────────────────────────
