@@ -160,6 +160,15 @@ function render(){
   if(k.criticas>0){al.style.display="block";al.textContent=k.criticas+t('topbar_alert_criticas');}else{al.style.display="none";}
 
   var sel=currentSel();
+  // A OS chega aqui "Aberta" apenas se o usuario navegou direto pra ca
+  // (ex: clicando no corpo do card no hub, sem passar pelo botao "Executar").
+  // Como esta pagina e so de execucao, ao abrir ja consideramos que a
+  // execucao comecou — sem exigir um clique extra em "Iniciar Execucao".
+  if(sel&&sel.status=="Aberta"&&(isCoordenador()||sel.tecnico===meuNomeAtivo())){
+    ordens=ordens.map(function(o){return o.id==sel.id?Object.assign({},o,{status:"Em Andamento"}):o;});
+    saveOrdens(ordens);
+    sel=currentSel();
+  }
   if(osId&&sel&&!isOSCorretiva(sel)){
     window.location.replace("ordens-programada.html?id="+sel.id);
     return;
@@ -183,8 +192,6 @@ function renderDetail(o){
 
   var podeExecutar = isCoordenador() || o.tecnico===meuNomeAtivo();
   var ac="";
-  if(o.status=="Aberta"&&podeExecutar)
-    ac='<button class="btn bp bfw" onclick="updOS('+o.id+',\'Em Andamento\')">&#9654; Iniciar Execucao</button>';
   if(o.status=="Em Andamento"&&podeExecutar){
     ac='<button class="btn bp bfw" onclick="toggleExecForm()" style="background:#7c3aed">'+(execFormOpen?'&#10005; Fechar Formulario':'+ Registrar Execucao')+'</button>'
       +'<button class="btn bsu bfw" onclick="updOS('+o.id+',\'Concluida\')">&#10003; Concluir OS</button>';
