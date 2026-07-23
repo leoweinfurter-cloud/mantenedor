@@ -171,12 +171,16 @@ function renderChecklist(o){
       +'</div>'
       + acoes.map(function(a, ai){
           var ismed = a.tipo === "medicao";
+          var valNum = parseFloat(a.valor_exec);
+          var temValor = a.valor_exec!==undefined && a.valor_exec!=="" && !isNaN(valNum);
+          var max = parseFloat(a.limite_max)||0, min = parseFloat(a.limite_min)||0;
+          // 0 (ou vazio) em limite_min/limite_max significa "sem limite definido"
+          // — mesma convencao usada em _shared.js (concluirOSProgramada).
+          var foraMax = temValor && max>0 && valNum>max;
+          var foraMin = temValor && min>0 && valNum<min;
+          var foraPadrao = foraMax||foraMin;
           var condCor = "";
-          if(a.valor_exec && a.limite_max && parseFloat(a.valor_exec) > parseFloat(a.limite_max)){
-            condCor = "#f87171";
-          } else if(a.valor_exec){
-            condCor = "#4ade80";
-          }
+          if(temValor) condCor = foraPadrao ? "#f87171" : "#4ade80";
           return '<div style="padding:12px;background:var(--inner-bg,#060b12);border-radius:10px;margin-bottom:8px">'
             +'<div style="display:flex;align-items:flex-start;gap:10px;margin-bottom:'+(ismed?'10px':'0')+'">'
             +'<div onclick="toggleAcao('+o.id+','+pe.plano_id+','+ai+','+(!a.concluida)+'); render();" '
@@ -191,7 +195,8 @@ function renderChecklist(o){
             +(ismed
               ? '<div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:4px;align-items:center">'
                 +(a.param?'<span style="font-size:11px;color:#64748b">'+esc(a.param+(a.unidade?' ('+a.unidade+')':''))+'</span>':"")
-                +(a.limite_max?'<span style="font-size:11px;color:#475569">max: '+a.limite_max+'</span>':"")
+                +(min>0?'<span style="font-size:11px;color:#475569">min: '+min+'</span>':"")
+                +(max>0?'<span style="font-size:11px;color:#475569">max: '+max+'</span>':"")
                 +'</div>'
                 +'</div></div>'
                 +'<div style="margin-top:8px">'
@@ -199,8 +204,8 @@ function renderChecklist(o){
                 +' value="'+(a.valor_exec||'')+'"'
                 +' oninput="setMedicao('+o.id+','+pe.plano_id+','+ai+',this.value)"'
                 +' style="width:100%;padding:8px 12px;font-size:14px;border-radius:8px;border:2px solid '+(condCor||'#1e3a5f')+';background:var(--inner-bg,#060b12);color:var(--text,#e2e8f0);box-sizing:border-box"/>'
-                +(a.valor_exec&&a.limite_max?'<div style="font-size:11px;margin-top:4px;color:'+condCor+'">'
-                  +(parseFloat(a.valor_exec)>parseFloat(a.limite_max)?'&#9888; Acima do limite!':'&#10003; Dentro do limite')
+                +(temValor&&(max>0||min>0)?'<div style="font-size:11px;margin-top:4px;color:'+condCor+'">'
+                  +(foraPadrao?('&#9888; '+(foraMax?'Acima do limite máximo!':'Abaixo do limite mínimo!')):'&#10003; Dentro do limite')
                   +'</div>':'')
                 +'</div>'
               : '')
@@ -361,8 +366,6 @@ function renderDetail(o){
     +(o.descricao?'<div class="detail-field"><div class="dk">Descricao / Sintoma</div><div class="dv" style="font-size:14px;color:#94a3b8;line-height:1.5">'+esc(o.descricao)+'</div></div>':"")
     +'</div>'
 
-    +'<div class="action-card">'+ac+'</div>'
-
     +(execFormOpen&&o.status=="Em Andamento"&&podeExecutar?renderExecForm():'')
 
     +(isPlanoOS?'<div class="card">'+renderChecklist(o)+'</div>':'')+'<div class="card">'
@@ -371,7 +374,9 @@ function renderDetail(o){
     +(totalCusto>0?'<span style="font-size:12px;color:#f59e0b;font-weight:700">R$ '+totalCusto.toLocaleString("pt-BR")+" em pecas</span>":"")
     +'</div>'
     +(logHtml||'<div style="color:#64748b;text-align:center;padding:20px;font-size:13px">'+(o.status=="Aberta"?t('ord_inicia_para_reg'):t('ord_sem_reg'))+'</div>')
-    +'</div>';
+    +'</div>'
+
+    +'<div class="action-card">'+ac+'</div>';
 }
 
 function renderExecForm(){
