@@ -410,8 +410,9 @@ function concluirOSProgramada(os,fichasObj){
         return Object.assign({},p,{ultima_execucao:hoje,proxima_execucao:prox,status:calcPlanStatus(prox),os_gerada_id:null});
       });
       var horas=(os.execLog||[]).reduce(function(s,e){return s+(e.horas||0);},0);
+      var custo=(os.execLog||[]).reduce(function(s,e){return s+(e.tipo==="peca"&&e.custo?e.qty*e.custo:0);},0);
       f.historico=f.historico||[];
-      f.historico.unshift({id:nextId(),desc:pe.plano_nome,data:hoje,tipo:pe.tipo==="Preditiva"?"Preditiva":"Preventiva",tecnico:os.tecnico||"",horas:horas,custo:0,obs:"OS #"+os.id+" — "+pe.acoes.filter(function(a){return a.concluida;}).length+"/"+pe.acoes.length+" acoes"});
+      f.historico.unshift({id:nextId(),desc:pe.plano_nome,data:hoje,tipo:pe.tipo==="Preditiva"?"Preditiva":"Preventiva",tecnico:os.tecnico||"",horas:horas,custo:custo,obs:"OS "+(os.numero_os||"#"+os.id)+" — "+pe.acoes.filter(function(a){return a.concluida;}).length+"/"+pe.acoes.length+" acoes",os_id:os.id});
     });
   }
   fichasObj[os.ativo_id]=f;
@@ -454,6 +455,39 @@ function abrirCorretivaPorDesvio(osOrigem,desvios){
 }
 
 
+
+// ── REGISTRA HISTORICO AO CONCLUIR OS SEM PLANO VINCULADO ───────────────
+// Usada para OS Corretiva e para OS Preventiva/Preditiva CRIADA MANUALMENTE
+// (sem vinculo a um plano — nesse caso quem atualiza os planos e o historico
+// e concluirOSProgramada(), que trata planos_exec). Aqui nao ha planos_exec:
+// o unico registro disponivel e o proprio execLog da OS (observacoes,
+// medicoes, pecas, fotos registradas na tela de execucao).
+// Retorna null se a OS nao tiver ativo_id (dado incompleto — nao ha em qual
+// ficha gravar) para o chamador decidir como avisar o usuario.
+function registrarHistoricoOS(os,fichasObj){
+  if(!os)return null;
+  if(!os.ativo_id)return null; // sem vinculo com nenhum ativo especifico — nao ha onde gravar
+  var f=fichasObj[os.ativo_id];
+  if(!f)return null;
+  var hoje=new Date().toISOString().slice(0,10);
+  var horas=(os.execLog||[]).reduce(function(s,e){return s+(e.horas||0);},0);
+  var custo=(os.execLog||[]).reduce(function(s,e){return s+(e.tipo==="peca"&&e.custo?e.qty*e.custo:0);},0);
+  var nReg=(os.execLog||[]).length;
+  f.historico=f.historico||[];
+  var entry={
+    id:nextId(),
+    desc:os.titulo||os.numero_os||("OS #"+os.id),
+    data:hoje,
+    tipo:os.tipo||"Corretiva",
+    tecnico:os.tecnico||"",
+    horas:horas,custo:custo,
+    obs:"OS "+(os.numero_os||"#"+os.id)+" — "+nReg+" registro(s) de execução"+(os.descricao?(": "+os.descricao):""),
+    os_id:os.id
+  };
+  f.historico.unshift(entry);
+  fichasObj[os.ativo_id]=f;
+  return entry;
+}
 
 // ── KPIs ──────────────────────────────────────────────────────────────
 function calcInd(ativoNome,hist,ordArr){

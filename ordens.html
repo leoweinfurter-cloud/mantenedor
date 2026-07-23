@@ -161,14 +161,16 @@ document.querySelectorAll(".modal").forEach(function(m){m.addEventListener("clic
 
 // ── NOVA OS CORRETIVA ─────────────────────────────────────────────────
 function openNewOSCorretiva(){
-  document.getElementById("oc-ativo").innerHTML='<option value="">Selecione...</option>'+ativos.map(function(a){return'<option>'+esc(a.nome)+'</option>';}).join("");
+  document.getElementById("oc-ativo").innerHTML='<option value="">Selecione...</option>'+ativos.map(function(a){return'<option value="'+a.id+'">'+esc(a.nome)+'</option>';}).join("");
   openModal("modal-os-cor");
 }
 function saveOSCorretiva(){
   var tit=document.getElementById("oc-titulo").value.trim(),v=document.getElementById("oc-ativo").value;
   if(!tit||!v){alert("Preencha titulo e ativo.");return;}
+  var ativoId=parseInt(v),ativoObj=ativos.find(function(a){return a.id===ativoId;});
+  if(!ativoObj){alert("Ativo invalido.");return;}
   var numeroOS=nextNumeroOS("Corretiva",ordens);
-  var nova={id:nextId(),numero_os:numeroOS,titulo:tit,ativo:v,tipo:"Corretiva",prioridade:document.getElementById("oc-prio").value,tecnico:document.getElementById("oc-tec").value,prazo:document.getElementById("oc-prazo").value,descricao:document.getElementById("oc-desc").value,status:"Aberta",abertura:new Date().toISOString().split("T")[0],origem:"manual",execLog:[]};
+  var nova={id:nextId(),numero_os:numeroOS,titulo:tit,ativo:ativoObj.nome,ativo_id:ativoId,tipo:"Corretiva",prioridade:document.getElementById("oc-prio").value,tecnico:document.getElementById("oc-tec").value,prazo:document.getElementById("oc-prazo").value,descricao:document.getElementById("oc-desc").value,status:"Aberta",abertura:new Date().toISOString().split("T")[0],origem:"manual",execLog:[]};
   ordens.unshift(nova);saveOrdens(ordens);
   closeModal("modal-os-cor");
   render();
@@ -181,7 +183,7 @@ function setTipoProgramada(val,el){
   el.classList.add("selected");
 }
 function openNewOSProgramada(){
-  document.getElementById("op-ativo").innerHTML='<option value="">Selecione...</option>'+ativos.map(function(a){return'<option>'+esc(a.nome)+'</option>';}).join("");
+  document.getElementById("op-ativo").innerHTML='<option value="">Selecione...</option>'+ativos.map(function(a){return'<option value="'+a.id+'">'+esc(a.nome)+'</option>';}).join("");
   document.querySelectorAll("#modal-os-prog .os-type-btn").forEach(function(b,i){b.classList.toggle("selected",i==0);});
   document.getElementById("op-tipo").value="Preventiva";
   openModal("modal-os-prog");
@@ -189,9 +191,11 @@ function openNewOSProgramada(){
 function saveOSProgramada(){
   var tit=document.getElementById("op-titulo").value.trim(),v=document.getElementById("op-ativo").value;
   if(!tit||!v){alert("Preencha titulo e ativo.");return;}
+  var ativoId=parseInt(v),ativoObj=ativos.find(function(a){return a.id===ativoId;});
+  if(!ativoObj){alert("Ativo invalido.");return;}
   var tipo=document.getElementById("op-tipo").value;
   var numeroOS=nextNumeroOS(tipo,ordens);
-  var nova={id:nextId(),numero_os:numeroOS,titulo:tit,ativo:v,tipo:tipo,prioridade:document.getElementById("op-prio").value,tecnico:document.getElementById("op-tec").value,prazo:document.getElementById("op-prazo").value,descricao:document.getElementById("op-desc").value,status:"Aberta",abertura:new Date().toISOString().split("T")[0],origem:"manual",periodo:document.getElementById("op-periodo").value,proxima:document.getElementById("op-proxima").value,execLog:[]};
+  var nova={id:nextId(),numero_os:numeroOS,titulo:tit,ativo:ativoObj.nome,ativo_id:ativoId,tipo:tipo,prioridade:document.getElementById("op-prio").value,tecnico:document.getElementById("op-tec").value,prazo:document.getElementById("op-prazo").value,descricao:document.getElementById("op-desc").value,status:"Aberta",abertura:new Date().toISOString().split("T")[0],origem:"manual",periodo:document.getElementById("op-periodo").value,proxima:document.getElementById("op-proxima").value,execLog:[]};
   ordens.unshift(nova);saveOrdens(ordens);
   closeModal("modal-os-prog");
   render();

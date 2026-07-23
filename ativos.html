@@ -465,15 +465,27 @@ function savePred(){
 }
 
 // ── INDICADORES ─────────────────────────────────────────────────────────────
+// Formata o valor de um indicador para exibicao. calcInd() retorna null quando
+// nao ha historico suficiente para calcular (ver _shared.js) — nesse caso
+// mostramos "--" em vez do "null" literal que aparecia antes (val vira string
+// "null" na concatenacao, e val.toFixed() no lambda null quebraria com erro).
+function fmtIndVal(id,val){
+  if(val===null||val===undefined||(typeof val==="number"&&isNaN(val)))return"--";
+  if(id=="lambda")return val.toFixed(5);
+  if(typeof val=="number"&&val%1!=0)return val.toFixed(1);
+  return val;
+}
 function indCard(id,val,bar){
   var m=IND_CATALOG.find(function(x){return x.id==id;});if(!m)return"";
+  var semDados=(val===null||val===undefined||(typeof val==="number"&&isNaN(val)));
   var nc="color:"+m.color;
-  if(id=="disp"||id=="oee_a")nc=val>=90?"color:#4ade80":val>=70?"color:#fbbf24":"color:#f87171";
+  if(semDados)nc="color:#475569";
+  else if(id=="disp"||id=="oee_a")nc=val>=90?"color:#4ade80":val>=70?"color:#fbbf24":"color:#f87171";
   else if(id=="manuplan"||id=="compliance")nc=val>=80?"color:#4ade80":val>=60?"color:#fbbf24":"color:#f87171";
   else if(id=="backlog"||id=="nfalhas")nc=val==0?"color:#4ade80":val<=2?"color:#fbbf24":"color:#f87171";
-  var dv=id=="lambda"?val.toFixed(5):(typeof val=="number"&&val%1!=0?val.toFixed(1):val);
-  var pct=bar?Math.min(100,Math.round(val)):0;
-  return'<div class="ind-card"><div class="ind-val '+nc+'">'+dv+'<span style="font-size:11px;font-weight:400;color:#475569;margin-left:3px">'+m.unit+'</span></div><div class="ind-name">'+m.abbr+' — '+m.nome+'</div><div class="ind-sub">'+m.norma+'</div>'+(bar?'<div class="ind-bar"><div class="ind-bar-fill" style="width:'+pct+'%;background:'+m.color+'"></div></div>':'')+'</div>';
+  var dv=fmtIndVal(id,val);
+  var pct=(bar&&!semDados)?Math.min(100,Math.round(val)):0;
+  return'<div class="ind-card"><div class="ind-val '+nc+'">'+dv+(semDados?'':'<span style="font-size:11px;font-weight:400;color:#475569;margin-left:3px">'+m.unit+'</span>')+'</div><div class="ind-name">'+m.abbr+' — '+m.nome+'</div><div class="ind-sub">'+m.norma+'</div>'+(bar?'<div class="ind-bar"><div class="ind-bar-fill" style="width:'+pct+'%;background:'+m.color+'"></div></div>':'')+'</div>';
 }
 
 // ── ANALISE ──────────────────────────────────────────────────────────────────
@@ -762,7 +774,7 @@ function tabInds(a,f){
       +'<div class="ind-toggle-top"><div><div class="ind-toggle-name">'+ind.nome+'</div><div style="font-size:10px;color:#475569">'+ind.norma+'</div></div>'
       +'<div style="display:flex;align-items:center;gap:6px"><span class="ind-toggle-abbr">'+ind.abbr+'</span><div class="dot"></div></div></div>'
       +'<div class="ind-toggle-desc">'+(ind.desc||'')+'</div>'
-      +(on?'<div style="margin-top:8px;font-size:14px;font-weight:800;color:'+ind.color+'">'+(typeof vals[ind.id]=="number"&&vals[ind.id]%1!=0&&ind.id!="lambda"?vals[ind.id].toFixed(1):ind.id=="lambda"?vals[ind.id].toFixed(5):vals[ind.id])+' '+ind.unit+'</div>':'')
+      +(on?'<div style="margin-top:8px;font-size:14px;font-weight:800;color:'+ind.color+'">'+fmtIndVal(ind.id,vals[ind.id])+' '+ind.unit+'</div>':'')
       +'</div>';
   }).join("");
   return cards+'<div class="card"><div class="st" style="margin-bottom:4px">Selecionar Indicadores</div><div style="font-size:12px;color:#475569;margin-bottom:16px">Clique para ativar ou desativar cada indicador neste equipamento.</div><div class="ind-catalog">'+catalog+'</div></div>';
@@ -794,6 +806,7 @@ function tabHist(a,f){
     items+='<div class="hi">'
       +'<div class="ht"><div><div class="hn">'+esc(h.desc)+'</div><div class="hm">'+esc(h.data)+' &bull; '+esc(h.tecnico||"--")+(h.horas?' &bull; '+h.horas+'h':'')+'</div></div>'+bdg(h.tipo,TC)+'</div>'
       +(h.obs?'<div class="hd">'+esc(h.obs)+'</div>':'')
+      +(h.os_id?'<div style="margin-top:6px"><a href="ordens-corretiva.html?id='+h.os_id+'" style="font-size:11px;color:#60a5fa;text-decoration:none">&#8594; Ver execução completa</a></div>':'')
       +analView+footer
       +'</div>';
   }
@@ -836,7 +849,7 @@ function tabPrev(a,f){
         +'</div>'
         +'<div style="display:flex;flex-direction:column;gap:6px;flex-shrink:0">'
         +'<button class="btn bx bsm" onclick="editPlano('+p.id+')" style="font-size:11px">Editar</button>'
-        +(p.ativo===false?'<button class="btn bsm" onclick="reativarPlano('+p.id+')" style="font-size:11px;background:#14532d30;color:#4ade80;border:1px solid #4ade8040">Reativar</button>':'<button class="btn bsm" onclick="abrirDesativarPlano('+p.id+')" style="font-size:11px;background:#7f1d1d30;color:#f87171;border:1px solid #f8717140">Desativar</button>')+
+        +(p.ativo===false?'<button class="btn bsm" onclick="reativarPlano('+p.id+')" style="font-size:11px;background:#14532d30;color:#4ade80;border:1px solid #4ade8040">Reativar</button>':'<button class="btn bsm" onclick="abrirDesativarPlano('+p.id+')" style="font-size:11px;background:#7f1d1d30;color:#f87171;border:1px solid #f8717140">Desativar</button>')
         +'</div></div>'
         +(acoes.length>0?'<div class="plan-acoes-preview">'+chips+'</div>':"")
         +'<div style="margin-top:10px">'+hasOS+'</div>'

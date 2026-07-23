@@ -260,6 +260,23 @@ function concluirOSComPlano(osId){
   updOS(osId, "Concluida");
 }
 
+// OS Preventiva/Preditiva criada manualmente (sem vinculo a um plano —
+// isPlanoOS===false). Nao ha planos_exec pra atualizar, mas ainda assim
+// precisamos gravar o historico do ativo a partir do execLog da OS.
+function concluirOSManualProgramada(osId){
+  if(!confirm("Confirmar conclusao desta OS?")) return;
+  var os = ordens.find(function(o){return o.id==osId;});
+  if(!os) return;
+  var fichas = loadData().fichas;
+  var entry = registrarHistoricoOS(os, fichas);
+  if(entry){
+    saveFichas(fichas);
+  } else if(typeof mxToast==="function"){
+    mxToast("OS concluída, mas sem vínculo com um ativo específico — não foi possível registrar no histórico.","warn");
+  }
+  updOS(osId, "Concluida");
+}
+
 // ── RENDER ─────────────────────────────────────────────────────────────
 function render(){
   if(backfillNumerosOS(ordens)){saveOrdens(ordens);}
@@ -306,7 +323,7 @@ function renderDetail(o){
     if(isPlanoOS){
       ac=btnReg+'<button class="btn bsu bfw" onclick="concluirOSComPlano('+o.id+')">&#10003; Concluir OS</button>';
     } else {
-      ac=btnReg+'<button class="btn bsu bfw" onclick="updOS('+o.id+',\'Concluida\')">&#10003; Concluir OS</button>';
+      ac=btnReg+'<button class="btn bsu bfw" onclick="concluirOSManualProgramada('+o.id+')">&#10003; Concluir OS</button>';
     }
   }
   if(o.status!="Concluida"&&o.status!="Cancelada"&&isCoordenador())

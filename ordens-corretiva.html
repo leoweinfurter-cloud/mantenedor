@@ -152,6 +152,25 @@ function updOS(id,status){
   render();
 }
 
+// Ao concluir uma OS Corretiva, grava um registro no historico do ativo
+// (necessario porque updOS() sozinho so muda o status da OS — nao mexe em
+// fichas/historico). Sem ativo_id (OS antiga criada antes dessa correcao,
+// ou dado incompleto) a OS ainda e concluida normalmente, mas avisamos que
+// o historico nao pode ser gravado por falta de vinculo com o ativo.
+function concluirOSCorretiva(id){
+  if(!confirm("Confirmar conclusao desta OS?")) return;
+  var os=ordens.find(function(o){return o.id==id;});
+  if(!os) return;
+  var fichas=loadData().fichas;
+  var entry=registrarHistoricoOS(os,fichas);
+  if(entry){
+    saveFichas(fichas);
+  } else if(typeof mxToast==="function"){
+    mxToast("OS concluída, mas sem vínculo com um ativo específico — não foi possível registrar no histórico.","warn");
+  }
+  updOS(id,"Concluida");
+}
+
 // ── RENDER ─────────────────────────────────────────────────────────────────
 function render(){
   if(backfillNumerosOS(ordens)){saveOrdens(ordens);}
@@ -194,7 +213,7 @@ function renderDetail(o){
   var ac="";
   if(o.status=="Em Andamento"&&podeExecutar){
     ac='<button class="btn bp bfw" onclick="toggleExecForm()" style="background:#7c3aed">'+(execFormOpen?'&#10005; Fechar Formulario':'+ Registrar Execucao')+'</button>'
-      +'<button class="btn bsu bfw" onclick="updOS('+o.id+',\'Concluida\')">&#10003; Concluir OS</button>';
+      +'<button class="btn bsu bfw" onclick="concluirOSCorretiva('+o.id+')">&#10003; Concluir OS</button>';
   }
   if(o.status!="Concluida"&&o.status!="Cancelada"&&isCoordenador())
     ac+='<button class="btn bd bfw" onclick="updOS('+o.id+',\'Cancelada\')">&#10005; Cancelar</button>';
