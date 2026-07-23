@@ -57,68 +57,6 @@
   <a class="bn-item" href="relatorios.html"><span class="bn-icon">&#128202;</span><span class="bn-label">Rel.</span></a>
 </nav>
 
-<!-- Modal Registro de Execucao -->
-<div class="modal" id="modal-exec"><div class="mc" onclick="event.stopPropagation()">
-  <div class="mt2" id="exec-modal-title">Registro de Execucao</div>
-  <div class="fg">
-    <label class="lbl">Tipo de Registro</label>
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:4px">
-      <div class="os-type-btn selected" onclick="setExecTipo('observacao',this)" style="padding:10px 6px">
-        <div class="os-type-icon" style="font-size:16px">&#128221;</div>
-        <div class="os-type-label">Observacao</div>
-      </div>
-      <div class="os-type-btn" onclick="setExecTipo('medicao',this)" style="padding:10px 6px">
-        <div class="os-type-icon" style="font-size:16px">&#128207;</div>
-        <div class="os-type-label">Medicao</div>
-      </div>
-      <div class="os-type-btn" onclick="setExecTipo('peca',this)" style="padding:10px 6px">
-        <div class="os-type-icon" style="font-size:16px">&#128295;</div>
-        <div class="os-type-label">Peca / Material</div>
-      </div>
-      <div class="os-type-btn" onclick="setExecTipo('foto',this)" style="padding:10px 6px">
-        <div class="os-type-icon" style="font-size:16px">&#128248;</div>
-        <div class="os-type-label">Foto / Anexo</div>
-      </div>
-    </div>
-    <input type="hidden" id="exec-tipo" value="observacao"/>
-  </div>
-  <div class="fg"><label class="lbl">Data / Hora</label><input type="datetime-local" id="exec-data"/></div>
-  <div class="fg"><label class="lbl">Tecnico</label><select id="exec-tec"><option value="">Selecione...</option><option>Joao Silva</option><option>Maria Santos</option><option>Carlos Pereira</option><option>Ana Lima</option><option>Pedro Oliveira</option></select></div>
-
-  <div id="exec-obs-fields">
-    <div class="fg"><label class="lbl">Descricao *</label><textarea id="exec-desc" placeholder="O que foi observado, feito ou encontrado..."></textarea></div>
-  </div>
-
-  <div id="exec-med-fields" style="display:none">
-    <div class="fg"><label class="lbl">Parametro medido</label><select id="exec-param"><option>Temperatura (°C)</option><option>Vibracao (mm/s)</option><option>Pressao (bar)</option><option>Corrente (A)</option><option>Tensao (V)</option><option>Ruido (dB)</option><option>Espessura (mm)</option><option>Rotacao (RPM)</option><option>Outro</option></select></div>
-    <div class="g2">
-      <div class="fg"><label class="lbl">Valor medido *</label><input type="number" id="exec-valor" step="0.01" placeholder="0.0"/></div>
-      <div class="fg"><label class="lbl">Limite / Referencia</label><input type="number" id="exec-limite" step="0.01" placeholder="0.0"/></div>
-    </div>
-    <div class="fg"><label class="lbl">Condicao</label><select id="exec-cond"><option>Normal</option><option>Atencao</option><option>Critico</option><option>Fora de especificacao</option></select></div>
-    <div class="fg"><label class="lbl">Observacao adicional</label><input id="exec-med-obs" placeholder="Contexto ou detalhe..."/></div>
-  </div>
-
-  <div id="exec-peca-fields" style="display:none">
-    <div class="fg"><label class="lbl">Descricao da Peca / Material *</label><input id="exec-peca-desc" placeholder="Ex: Rolamento SKF 6205"/></div>
-    <div class="g2">
-      <div class="fg"><label class="lbl">Quantidade</label><input type="number" id="exec-qty" value="1" min="1"/></div>
-      <div class="fg"><label class="lbl">Custo unitario (R$)</label><input type="number" id="exec-custo" min="0" placeholder="0.00"/></div>
-    </div>
-    <div class="fg"><label class="lbl">Observacao</label><input id="exec-peca-obs" placeholder="Codigo, fornecedor..."/></div>
-  </div>
-
-  <div id="exec-foto-fields" style="display:none">
-    <div class="fg"><label class="lbl">Descricao da foto</label><input id="exec-foto-desc" placeholder="O que a foto mostra..."/></div>
-    <div class="ua" onclick="document.getElementById('exec-foto-input').click()" style="padding:20px">
-      <input type="file" id="exec-foto-input" accept="image/*" style="display:none" onchange="previewFoto(this)"/>
-      <div id="exec-foto-preview" style="font-size:22px;margin-bottom:6px">&#128247;</div>
-      <div style="font-size:13px;color:#94a3b8">Toque para selecionar imagem</div>
-    </div>
-  </div>
-
-  <div class="mf"><button class="btn bx" onclick="closeModal('modal-exec')">Cancelar</button><button class="btn bp" onclick="saveExec()">Salvar Registro</button></div>
-</div></div>
 
 <script src="_lang.js"></script>
 <script src="_shared.js"></script>
@@ -139,15 +77,12 @@ function setPerfilTecnico(nome){PERFIL_ATIVO=nome;render();}
 function isCoordenador(){ return PERFIL_ATIVO==="Coordenador"; }
 function meuNomeAtivo(){ return PERFIL_ATIVO; }
 var currentExecTipo="observacao";
-
-function closeModal(id){document.getElementById(id).classList.remove("open");}
-function openModal(id){document.getElementById(id).classList.add("open");}
-document.querySelectorAll(".modal").forEach(function(m){m.addEventListener("click",function(e){if(e.target===this)this.classList.remove("open");});});
+var execFormOpen=false;
 
 function setExecTipo(val,el){
   currentExecTipo=val;
   document.getElementById("exec-tipo").value=val;
-  document.querySelectorAll("#modal-exec .os-type-btn").forEach(function(b){b.classList.remove("selected");});
+  document.querySelectorAll("#exec-form-card .os-type-btn").forEach(function(b){b.classList.remove("selected");});
   el.classList.add("selected");
   document.getElementById("exec-obs-fields").style.display=val=="observacao"?"block":"none";
   document.getElementById("exec-med-fields").style.display=val=="medicao"?"block":"none";
@@ -166,29 +101,28 @@ function previewFoto(input){
   r.readAsDataURL(input.files[0]);
 }
 
+function nowLocalStr(){
+  var now=new Date();var pad=function(n){return String(n).padStart(2,"0");};
+  return now.getFullYear()+"-"+pad(now.getMonth()+1)+"-"+pad(now.getDate())+"T"+pad(now.getHours())+":"+pad(now.getMinutes());
+}
+
 // ── URL STATE ─────────────────────────────────────────────────────────
 function getParam(name){var m=new RegExp('[?&]'+name+'=([^&]*)').exec(location.search);return m?decodeURIComponent(m[1]):null;}
 var osId=getParam('id')?parseInt(getParam('id')):null;
 function currentSel(){return osId?ordens.find(function(o){return o.id==osId;}):null;}
 function voltar(){window.location.href="ordens.html";}
 
-// ── SAVE EXEC LOG ──────────────────────────────────────────────────────────
-function openExecModal(id){
-  var os=ordens.find(function(o){return o.id==id;});
-  document.getElementById("exec-modal-title").textContent="Registro de Execucao — "+os.titulo;
-  var now=new Date();var pad=function(n){return String(n).padStart(2,"0");};
-  document.getElementById("exec-data").value=now.getFullYear()+"-"+pad(now.getMonth()+1)+"-"+pad(now.getDate())+"T"+pad(now.getHours())+":"+pad(now.getMinutes());
+// ── REGISTRAR EXECUCAO (formulario embutido na pagina) ──────────────────
+function toggleExecForm(){
+  execFormOpen=!execFormOpen;
+  currentExecTipo="observacao";
   fotoBase64=null;
-  document.getElementById("exec-foto-preview").innerHTML='<div style="font-size:22px;margin-bottom:6px">&#128247;</div>';
-  setExecTipo("observacao",document.querySelector("#modal-exec .os-type-btn"));
-  document.querySelectorAll("#modal-exec .os-type-btn").forEach(function(b,i){b.classList.toggle("selected",i==0);});
-  openModal("modal-exec");
-  document.getElementById("modal-exec").dataset.osid=id;
+  render();
 }
 
 function saveExec(){
-  var id=parseInt(document.getElementById("modal-exec").dataset.osid);
-  var os=ordens.find(function(o){return o.id==id;});
+  var os=currentSel();
+  if(!os) return;
   if(!os.execLog)os.execLog=[];
   var tipo=currentExecTipo;
   var entry={id:nextId(),tipo:tipo,data:document.getElementById("exec-data").value,tecnico:document.getElementById("exec-tec").value};
@@ -206,7 +140,8 @@ function saveExec(){
     entry.desc=document.getElementById("exec-foto-desc").value;entry.foto=fotoBase64;
   }
   os.execLog.unshift(entry);
-  saveOrdens(ordens);closeModal("modal-exec");
+  saveOrdens(ordens);
+  execFormOpen=false;
   render();
 }
 
@@ -251,7 +186,7 @@ function renderDetail(o){
   if(o.status=="Aberta"&&podeExecutar)
     ac='<button class="btn bp bfw" onclick="updOS('+o.id+',\'Em Andamento\')">&#9654; Iniciar Execucao</button>';
   if(o.status=="Em Andamento"&&podeExecutar){
-    ac='<button class="btn bp bfw" onclick="openExecModal('+o.id+')" style="background:#7c3aed">+ Registrar Execucao</button>'
+    ac='<button class="btn bp bfw" onclick="toggleExecForm()" style="background:#7c3aed">'+(execFormOpen?'&#10005; Fechar Formulario':'+ Registrar Execucao')+'</button>'
       +'<button class="btn bsu bfw" onclick="updOS('+o.id+',\'Concluida\')">&#10003; Concluir OS</button>';
   }
   if(o.status!="Concluida"&&o.status!="Cancelada"&&isCoordenador())
@@ -310,12 +245,70 @@ function renderDetail(o){
 
     +'<div class="action-card">'+ac+'</div>'
 
+    +(execFormOpen&&o.status=="Em Andamento"&&podeExecutar?renderExecForm():'')
+
     +'<div class="card">'
     +'<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">'
     +'<div class="card-title" style="margin-bottom:0">'+t('ord_reg_exec')+'</div>'
     +(totalCusto>0?'<span style="font-size:12px;color:#f59e0b;font-weight:700">R$ '+totalCusto.toLocaleString("pt-BR")+" em pecas</span>":"")
     +'</div>'
     +(logHtml||'<div style="color:#64748b;text-align:center;padding:20px;font-size:13px">'+(o.status=="Aberta"?t('ord_inicia_para_reg'):t('ord_sem_reg'))+'</div>')
+    +'</div>';
+}
+
+function renderExecForm(){
+  return '<div class="card" id="exec-form-card">'
+    +'<div class="card-title">Registrar Execucao</div>'
+    +'<div class="fg">'
+    +'<label class="lbl">Tipo de Registro</label>'
+    +'<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:4px">'
+    +'<div class="os-type-btn selected" onclick="setExecTipo(\'observacao\',this)" style="padding:10px 6px">'
+    +'<div class="os-type-icon" style="font-size:16px">&#128221;</div><div class="os-type-label">Observacao</div></div>'
+    +'<div class="os-type-btn" onclick="setExecTipo(\'medicao\',this)" style="padding:10px 6px">'
+    +'<div class="os-type-icon" style="font-size:16px">&#128207;</div><div class="os-type-label">Medicao</div></div>'
+    +'<div class="os-type-btn" onclick="setExecTipo(\'peca\',this)" style="padding:10px 6px">'
+    +'<div class="os-type-icon" style="font-size:16px">&#128295;</div><div class="os-type-label">Peca / Material</div></div>'
+    +'<div class="os-type-btn" onclick="setExecTipo(\'foto\',this)" style="padding:10px 6px">'
+    +'<div class="os-type-icon" style="font-size:16px">&#128248;</div><div class="os-type-label">Foto / Anexo</div></div>'
+    +'</div>'
+    +'<input type="hidden" id="exec-tipo" value="observacao"/>'
+    +'</div>'
+    +'<div class="fg"><label class="lbl">Data / Hora</label><input type="datetime-local" id="exec-data" value="'+nowLocalStr()+'"/></div>'
+    +'<div class="fg"><label class="lbl">Tecnico</label><select id="exec-tec"><option value="">Selecione...</option><option>Joao Silva</option><option>Maria Santos</option><option>Carlos Pereira</option><option>Ana Lima</option><option>Pedro Oliveira</option></select></div>'
+
+    +'<div id="exec-obs-fields">'
+    +'<div class="fg"><label class="lbl">Descricao *</label><textarea id="exec-desc" placeholder="O que foi observado, feito ou encontrado..."></textarea></div>'
+    +'</div>'
+
+    +'<div id="exec-med-fields" style="display:none">'
+    +'<div class="fg"><label class="lbl">Parametro medido</label><select id="exec-param"><option>Temperatura (°C)</option><option>Vibracao (mm/s)</option><option>Pressao (bar)</option><option>Corrente (A)</option><option>Tensao (V)</option><option>Ruido (dB)</option><option>Espessura (mm)</option><option>Rotacao (RPM)</option><option>Outro</option></select></div>'
+    +'<div class="g2">'
+    +'<div class="fg"><label class="lbl">Valor medido *</label><input type="number" id="exec-valor" step="0.01" placeholder="0.0"/></div>'
+    +'<div class="fg"><label class="lbl">Limite / Referencia</label><input type="number" id="exec-limite" step="0.01" placeholder="0.0"/></div>'
+    +'</div>'
+    +'<div class="fg"><label class="lbl">Condicao</label><select id="exec-cond"><option>Normal</option><option>Atencao</option><option>Critico</option><option>Fora de especificacao</option></select></div>'
+    +'<div class="fg"><label class="lbl">Observacao adicional</label><input id="exec-med-obs" placeholder="Contexto ou detalhe..."/></div>'
+    +'</div>'
+
+    +'<div id="exec-peca-fields" style="display:none">'
+    +'<div class="fg"><label class="lbl">Descricao da Peca / Material *</label><input id="exec-peca-desc" placeholder="Ex: Rolamento SKF 6205"/></div>'
+    +'<div class="g2">'
+    +'<div class="fg"><label class="lbl">Quantidade</label><input type="number" id="exec-qty" value="1" min="1"/></div>'
+    +'<div class="fg"><label class="lbl">Custo unitario (R$)</label><input type="number" id="exec-custo" min="0" placeholder="0.00"/></div>'
+    +'</div>'
+    +'<div class="fg"><label class="lbl">Observacao</label><input id="exec-peca-obs" placeholder="Codigo, fornecedor..."/></div>'
+    +'</div>'
+
+    +'<div id="exec-foto-fields" style="display:none">'
+    +'<div class="fg"><label class="lbl">Descricao da foto</label><input id="exec-foto-desc" placeholder="O que a foto mostra..."/></div>'
+    +'<div class="ua" onclick="document.getElementById(\'exec-foto-input\').click()" style="padding:20px">'
+    +'<input type="file" id="exec-foto-input" accept="image/*" style="display:none" onchange="previewFoto(this)"/>'
+    +'<div id="exec-foto-preview" style="font-size:22px;margin-bottom:6px">&#128247;</div>'
+    +'<div style="font-size:13px;color:#94a3b8">Toque para selecionar imagem</div>'
+    +'</div>'
+    +'</div>'
+
+    +'<div class="mf"><button class="btn bx" onclick="toggleExecForm()">Cancelar</button><button class="btn bp" onclick="saveExec()">Salvar Registro</button></div>'
     +'</div>';
 }
 
