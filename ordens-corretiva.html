@@ -155,7 +155,6 @@
 // OS Preventiva/Preditiva vivem em ordens-programada.html.
 // ═══════════════════════════════════════════════════════════════════════
 var D=loadData(), ordens=D.ordens, ativos=D.ativos;
-var filter="Todas", execTab="log";
 var fotoBase64=null;
 
 var _tecNomes=[];
@@ -197,8 +196,9 @@ function previewFoto(input){
 // ── URL STATE ─────────────────────────────────────────────────────────
 function getParam(name){var m=new RegExp('[?&]'+name+'=([^&]*)').exec(location.search);return m?decodeURIComponent(m[1]):null;}
 var osId=getParam('id')?parseInt(getParam('id')):null;
+var isNew=getParam('new')==='1';
 function currentSel(){return osId?ordens.find(function(o){return o.id==osId;}):null;}
-function voltarLista(){window.location.href="ordens-corretiva.html";}
+function voltar(){window.location.href="ordens.html";}
 
 // ── SAVE OS ───────────────────────────────────────────────────────────────
 function openNewOS(){
@@ -213,7 +213,9 @@ function saveOS(){
   var nova={id:nextId(),numero_os:numeroOS,titulo:tit,ativo:v,tipo:"Corretiva",prioridade:document.getElementById("os-prio").value,tecnico:document.getElementById("os-tec").value,prazo:document.getElementById("os-prazo").value,descricao:document.getElementById("os-desc").value,status:"Aberta",abertura:new Date().toISOString().split("T")[0],origem:"manual",execLog:[]};
   ordens.unshift(nova);saveOrdens(ordens);
   closeModal("modal-os");
-  window.location.href="ordens-corretiva.html?id="+nova.id;
+  osId=nova.id;
+  history.replaceState(null,'','ordens-corretiva.html?id='+nova.id);
+  render();
 }
 
 // ── SAVE EXEC LOG ──────────────────────────────────────────────────────────
@@ -274,54 +276,21 @@ function render(){
     return;
   }
   if(osId&&!sel){
-    document.getElementById("ct").innerHTML='<div style="color:#64748b;text-align:center;padding:40px;font-size:14px">OS nao encontrada. <a href="ordens-corretiva.html" style="color:#60a5fa">Voltar a lista</a></div>';
+    document.getElementById("ct").innerHTML='<div style="color:#64748b;text-align:center;padding:40px;font-size:14px">OS nao encontrada. <a href="ordens.html" style="color:#60a5fa">Voltar as Ordens de Servico</a></div>';
     return;
   }
-  document.getElementById("ct").innerHTML=sel?renderDetail(sel):renderList();
-
-  if(!sel&&getParam('new')==='1'&&isCoordenador()){
-    openNewOS();
-    history.replaceState(null,'','ordens-corretiva.html');
+  if(sel){
+    document.getElementById("ct").innerHTML=renderDetail(sel);
+    return;
   }
-}
-
-function setFilter(f){filter=f;render();}
-
-function renderList(){
-  var corretivas=ordens.filter(isOSCorretiva);
-  var counts={a:corretivas.filter(function(o){return o.status=="Aberta";}).length,e:corretivas.filter(function(o){return o.status=="Em Andamento";}).length,c:corretivas.filter(function(o){return o.status=="Concluida";}).length};
-  var summary='<div style="display:flex;gap:20px;margin-bottom:16px">'
-    +'<div style="text-align:center"><div style="font-size:26px;font-weight:800;color:#fbbf24">'+counts.a+'</div><div style="font-size:11px;color:#64748b">Abertas</div></div>'
-    +'<div style="text-align:center"><div style="font-size:26px;font-weight:800;color:#60a5fa">'+counts.e+'</div><div style="font-size:11px;color:#64748b">Andamento</div></div>'
-    +'<div style="text-align:center"><div style="font-size:26px;font-weight:800;color:#4ade80">'+counts.c+'</div><div style="font-size:11px;color:#64748b">Concluidas</div></div>'
-    +'</div>';
-  var fb=[t('ord_filtro_todas'),t('ord_status_aberta'),t('ord_status_and'),t('ord_status_conc'),t('ord_status_canc')].map(function(x){return'<button class="btn bsm '+(filter==x?"bp":"bx")+'" onclick="setFilter(\''+x+'\')">'+x+'</button>';}).join("");
-  var list=corretivas.filter(function(o){return filter=="Todas"||o.status==filter;});
-  var cards=list.length==0?'<div style="color:#64748b;text-align:center;padding:40px;font-size:14px">Nenhuma OS Corretiva encontrada</div>'
-    :list.map(function(o){
-      var logCount=(o.execLog&&o.execLog.length)||0;
-      return'<div class="os-card" onclick="window.location.href=\'ordens-corretiva.html?id='+o.id+'\'">'
-        +'<div style="display:flex;align-items:center;gap:8px;margin-bottom:4px">'
-        +'<span style="width:8px;height:8px;border-radius:50%;background:#f87171;flex-shrink:0;display:inline-block"></span>'
-        +'<span style="font-size:10px;font-weight:700;color:#f87171;text-transform:uppercase;letter-spacing:.05em">Corretiva</span>'
-        +'<span class="os-numero">'+esc(o.numero_os||"")+'</span>'
-        +'<span style="flex:1"></span>'
-        +bdg(o.status,SC)
-        +'</div>'
-        +'<div class="os-card-title" style="margin-bottom:6px">'+esc(o.titulo)+'</div>'
-        +'<div class="os-card-meta">'
-        +'<span style="color:#94a3b8">'+esc(o.ativo)+'</span>'
-        +(o.tecnico?'<span>&#128100; '+esc(o.tecnico)+'</span>':'')
-        +(o.prazo?'<span>&#128197; '+esc(o.prazo)+'</span>':'')
-        +(logCount>0?'<span style="color:#818cf8">&#128203; '+logCount+' registros</span>':'')
-        +'</div>'
-        +'<div style="margin-top:8px;display:flex;align-items:center;justify-content:space-between">'
-        +bdg(o.prioridade,PC)
-        +(o.status=="Em Andamento"&&(isCoordenador()||o.tecnico===meuNomeAtivo())?'<button class="btn bp bsm" onclick="event.stopPropagation();openExecModal('+o.id+')" style="font-size:11px">+ Registrar</button>':'')
-        +'</div>'
-        +'</div>';
-    }).join("");
-  return summary+'<div class="fr"><div class="fb">'+fb+'</div>'+(isCoordenador()?'<button class="btn bp" onclick="openNewOS()">+ Nova OS Corretiva</button>':'')+'</div>'+cards;
+  // Sem id: so faz sentido estar aqui para abrir o modal de criacao (?new=1).
+  // Caso contrario, nao ha nada pra mostrar — volta pro hub.
+  if(isNew&&isCoordenador()){
+    document.getElementById("ct").innerHTML='';
+    openNewOS();
+  } else {
+    window.location.replace("ordens.html");
+  }
 }
 
 function renderDetail(o){
@@ -380,7 +349,7 @@ function renderDetail(o){
   var totalCusto=0;
   if(o.execLog)o.execLog.forEach(function(e){if(e.tipo=="peca"&&e.custo)totalCusto+=e.qty*e.custo;});
 
-  return '<button class="btn bx" style="margin-bottom:16px" onclick="voltarLista()">&#8592; Voltar</button>'
+  return '<button class="btn bx" style="margin-bottom:16px" onclick="voltar()">&#8592; Voltar</button>'
     +'<div style="margin-bottom:16px"><div class="os-numero-big">'+esc(o.numero_os||"")+'</div><div style="font-size:18px;font-weight:800;margin-bottom:8px">'+esc(o.titulo)+'</div>'
     +'<div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px">'+bdg(o.status,SC)+bdg(o.prioridade,PC)+bdg(o.tipo,TC)+'</div>'
     +'<div class="status-flow">'+flow+'</div></div>'
