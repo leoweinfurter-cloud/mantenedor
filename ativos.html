@@ -867,9 +867,10 @@ function gerarOSPlano(ativoId, planoId){
   // Cria OS para este plano especifico
   var hoje=new Date().toISOString().slice(0,10);
   var osId=nextId();
+  var numeroOS=nextNumeroOS(plano.tipo||"Preventiva",D.ordens);
   var ativo=D.ativos.find(function(a){return a.id==ativoId;});
   var novaOS={
-    id:osId,titulo:(ativo?ativo.nome:"Ativo")+" — "+plano.tipo+" ("+plano.nome+")",
+    id:osId,numero_os:numeroOS,titulo:(ativo?ativo.nome:"Ativo")+" — "+plano.tipo+" ("+plano.nome+")",
     ativo:ativo?ativo.nome:"",ativo_id:ativoId,tipo:plano.tipo||"Preventiva",
     prioridade:"Normal",status:"Aberta",tecnico:plano.responsavel||"",
     abertura:hoje,prazo:plano.proxima_execucao||"",
@@ -883,7 +884,7 @@ function gerarOSPlano(ativoId, planoId){
   ficha.planos=ficha.planos.map(function(p){return p.id===planoId?Object.assign({},p,{os_gerada_id:osId}):p;});
   saveOrdens(D.ordens);saveFichas(D.fichas);
   ordens=D.ordens;fichas=D.fichas;
-  alert("OS #"+osId+" gerada com sucesso!");render();
+  alert("OS "+numeroOS+" gerada com sucesso!");render();
 }
 
 function gerarOSTodos(){

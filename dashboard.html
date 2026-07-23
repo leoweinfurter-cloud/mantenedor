@@ -156,7 +156,7 @@ function render(){
 
   // OS recentes
   var ohHtml=ordens.slice(0,5).map(function(o){
-    return'<a class="mi" href="ordens.html" style="text-decoration:none">'
+    return'<a class="mi" href="'+ordensDetailUrl(o)+'" style="text-decoration:none">'
       +'<div><div class="mn">'+esc(o.titulo)+'</div><div class="ms">'+esc(o.ativo)+' &bull; '+esc(o.tipo)+'</div></div>'
       +'<div class="mb">'+bdg(o.status,SC)+bdg(o.prioridade,PC)+'</div></a>';
   }).join("")||'<div style="color:#64748b;padding:16px;text-align:center;font-size:13px">'+ t("ord_nenhuma_cad") +'</div>';

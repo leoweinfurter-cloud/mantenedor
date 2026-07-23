@@ -198,6 +198,47 @@ function syncNextId(lists){
   localStorage.setItem("mx_nextid",maxId+1);
 }
 
+// ── NUMERACAO DE O.S. (rastreio) ─────────────────────────────────────
+// Formato: ANO-TIPO-SEQUENCIAL, ex: 2026-COR-0001, 2026-PRV-0002, 2026-PRD-0003
+// Campo adicional "numero_os" — nao substitui o id interno (usado em relacoes/localStorage/Supabase).
+// A sequencia e recalculada a partir dos numero_os ja existentes no array de ordens do tenant,
+// evitando depender de um contador isolado no localStorage (mesma limitacao de nextId(): risco de
+// colisao com escrita concorrente entre usuarios do mesmo tenant — ver observacao no README/memoria).
+var OS_TIPO_PREFIXO={"Corretiva":"COR","Preventiva":"PRV","Preditiva":"PRD","Mista":"MST"};
+function isOSProgramada(o){
+  if(!o)return false;
+  if(o.origem==="plano")return true;
+  return o.tipo==="Preventiva"||o.tipo==="Preditiva"||o.tipo==="Mista";
+}
+function isOSCorretiva(o){return !isOSProgramada(o);}
+function ordensDetailUrl(o){
+  return (isOSProgramada(o)?"ordens-programada.html":"ordens-corretiva.html")+"?id="+o.id;
+}
+function nextNumeroOS(tipo,ordensArr){
+  var ano=new Date().getFullYear();
+  var prefixo=OS_TIPO_PREFIXO[tipo]||"OS";
+  var base=ano+"-"+prefixo+"-";
+  var max=0;
+  (ordensArr||[]).forEach(function(o){
+    if(o&&o.numero_os&&o.numero_os.indexOf(base)===0){
+      var n=parseInt(o.numero_os.slice(base.length),10);
+      if(!isNaN(n)&&n>max)max=n;
+    }
+  });
+  return base+String(max+1).padStart(4,"0");
+}
+// Preenche numero_os em OS antigas que ainda nao tem (migracao silenciosa, roda uma vez por carga)
+function backfillNumerosOS(ordensArr){
+  var mudou=false;
+  (ordensArr||[]).forEach(function(o){
+    if(!o.numero_os){
+      o.numero_os=nextNumeroOS(o.tipo||"Corretiva",ordensArr);
+      mudou=true;
+    }
+  });
+  return mudou;
+}
+
 // ── CONSTANTS ─────────────────────────────────────────────────────────
 var PC={"Critica":"#f87171","Alta":"#fb923c","Normal":"#60a5fa","Baixa":"#9ca3af"};
 var SC={"Aberta":"#fbbf24","Em Andamento":"#60a5fa","Concluida":"#4ade80","Cancelada":"#6b7280"};
@@ -257,7 +298,7 @@ function loadEmpresas(){var d=localStorage.getItem("mx_empresas");return d?JSON.
 
 function saveOrdens(arr){
   localStorage.setItem("mx_ordens",JSON.stringify(arr));
-  sbUpsert("ordens",arr.map(function(o){return{id:o.id,titulo:o.titulo||"",ativo_nome:o.ativo||"",ativo_id:o.ativo_id||null,tipo:o.tipo||"Corretiva",prioridade:o.prioridade||"Normal",status:o.status||"Aberta",tecnico:o.tecnico||"",abertura:o.abertura||"",prazo:o.prazo||"",descricao:o.descricao||"",origem:o.origem||"manual",planos_ids:o.planos_ids||[],planos_exec:o.planos_exec||[],exec_log:o.execLog||[]};}));
+  sbUpsert("ordens",arr.map(function(o){return{id:o.id,numero_os:o.numero_os||"",titulo:o.titulo||"",ativo_nome:o.ativo||"",ativo_id:o.ativo_id||null,tipo:o.tipo||"Corretiva",prioridade:o.prioridade||"Normal",status:o.status||"Aberta",tecnico:o.tecnico||"",abertura:o.abertura||"",prazo:o.prazo||"",descricao:o.descricao||"",origem:o.origem||"manual",planos_ids:o.planos_ids||[],planos_exec:o.planos_exec||[],exec_log:o.execLog||[]};}));
 }
 function saveAtivos(arr){
   localStorage.setItem("mx_ativos",JSON.stringify(arr));
@@ -316,7 +357,8 @@ function gerarOSProgramadas(tol){
     var td=tipos.indexOf("Preditiva")>=0||tipos.indexOf("Ambos")>=0;
     var tipoOS=tp&&td?"Mista":td?"Preditiva":"Preventiva";
     var osId=nextId();
-    novas.push({id:osId,titulo:ativo.nome+" — "+tipoOS+" ("+dev.length+" plano(s))",ativo:ativo.nome,ativo_id:ativo.id,tipo:tipoOS,prioridade:"Normal",status:"Aberta",tecnico:dev[0].responsavel||"",abertura:hoje.toISOString().slice(0,10),prazo:dev[0].proxima_execucao||"",descricao:"OS dos planos: "+dev.map(function(p){return p.nome;}).join(", "),origem:"plano",planos_ids:dev.map(function(p){return p.id;}),planos_exec:dev.map(function(p){return{plano_id:p.id,plano_nome:p.nome,tipo:p.tipo||"Preventiva",acoes:(p.acoes||[]).map(function(a){return Object.assign({},a,{concluida:false,valor_exec:null,obs_exec:""});})};})  ,execLog:[]});
+    var numeroOS=nextNumeroOS(tipoOS,ordens.concat(novas));
+    novas.push({id:osId,numero_os:numeroOS,titulo:ativo.nome+" — "+tipoOS+" ("+dev.length+" plano(s))",ativo:ativo.nome,ativo_id:ativo.id,tipo:tipoOS,prioridade:"Normal",status:"Aberta",tecnico:dev[0].responsavel||"",abertura:hoje.toISOString().slice(0,10),prazo:dev[0].proxima_execucao||"",descricao:"OS dos planos: "+dev.map(function(p){return p.nome;}).join(", "),origem:"plano",planos_ids:dev.map(function(p){return p.id;}),planos_exec:dev.map(function(p){return{plano_id:p.id,plano_nome:p.nome,tipo:p.tipo||"Preventiva",acoes:(p.acoes||[]).map(function(a){return Object.assign({},a,{concluida:false,valor_exec:null,obs_exec:""});})};})  ,execLog:[]});
     f.planos=f.planos.map(function(p){return dev.find(function(d){return d.id===p.id;})?Object.assign({},p,{os_gerada_id:osId}):p;});
   });
   if(novas.length){ordens=novas.concat(ordens);saveOrdens(ordens);saveFichas(fichas);}
@@ -406,7 +448,7 @@ function initApp(renderFn){
 
     // Ordens
     if(Array.isArray(dbOrd)&&dbOrd.length){
-      ordens=dbOrd.map(function(o){return{id:o.id,titulo:o.titulo,ativo:o.ativo_nome,ativo_id:o.ativo_id,tipo:o.tipo,prioridade:o.prioridade,status:o.status,tecnico:o.tecnico,abertura:o.abertura,prazo:o.prazo,descricao:o.descricao,origem:o.origem||"manual",planos_ids:o.planos_ids||[],planos_exec:o.planos_exec||[],execLog:o.exec_log||[]};});
+      ordens=dbOrd.map(function(o){return{id:o.id,numero_os:o.numero_os||"",titulo:o.titulo,ativo:o.ativo_nome,ativo_id:o.ativo_id,tipo:o.tipo,prioridade:o.prioridade,status:o.status,tecnico:o.tecnico,abertura:o.abertura,prazo:o.prazo,descricao:o.descricao,origem:o.origem||"manual",planos_ids:o.planos_ids||[],planos_exec:o.planos_exec||[],execLog:o.exec_log||[]};});
       localStorage.setItem("mx_ordens",JSON.stringify(ordens));
     }else{ordens=[];}
 

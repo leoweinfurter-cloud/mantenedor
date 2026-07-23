@@ -398,8 +398,10 @@ function goToEvent(kind, idOrAtivo, planoId) {
       var hoje = new Date().toISOString().slice(0,10);
       var ativo = ativos.find(function(a){return a.id==ativoId;});
       var osId = nextId();
+      var numeroOS = nextNumeroOS(plano.tipo||"Preventiva", ordens);
       var novaOS = {
         id: osId,
+        numero_os: numeroOS,
         titulo: (ativo?ativo.nome:"Ativo") + " — " + (plano.tipo||"Preventiva") + " (" + plano.nome + ")",
         ativo: ativo ? ativo.nome : "",
         ativo_id: ativoId,

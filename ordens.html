@@ -6,27 +6,9 @@
 <title>MaintenX — Ordens de Servico</title>
 <link rel="stylesheet" href="_style.css" id="theme-link"/>
 <style>
-.exec-log-item{background:#060b12;border:1px solid #1e3a5f;border-radius:10px;padding:12px;margin-bottom:8px}
-.exec-log-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px}
-.exec-log-tipo{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;padding:3px 8px;border-radius:10px}
-.exec-log-date{font-size:11px;color:#64748b}
-.exec-log-text{font-size:13px;color:#e2e8f0;line-height:1.5}
-.exec-log-meta{font-size:11px;color:#64748b;margin-top:5px}
-.medic-card{background:#060b12;border:1px solid #1e3a5f;border-radius:10px;padding:12px;margin-bottom:8px;display:flex;justify-content:space-between;align-items:center}
-.medic-val{font-size:20px;font-weight:800}
-.medic-info{flex:1}
-.medic-name{font-size:13px;font-weight:600;color:#f1f5f9}
-.medic-detail{font-size:11px;color:#64748b;margin-top:2px}
-.status-flow{display:flex;align-items:center;gap:0;margin-bottom:20px;overflow-x:auto}
-.status-step{flex:1;text-align:center;padding:10px 4px;font-size:11px;font-weight:700;color:#475569;border-bottom:2px solid #1e3a5f;white-space:nowrap;min-width:70px}
-.status-step.done{color:#4ade80;border-color:#4ade80}
-.status-step.current{color:#60a5fa;border-color:#60a5fa}
-.os-type-selector{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:16px}
-.os-type-btn{padding:12px 8px;border-radius:10px;border:1px solid #1e3a5f;background:#060b12;cursor:pointer;text-align:center;transition:all .15s;font-family:inherit}
-.os-type-btn.selected{border-color:#3b82f6;background:rgba(59,130,246,.1)}
-.os-type-icon{font-size:20px;margin-bottom:4px}
-.os-type-label{font-size:11px;font-weight:700;color:#94a3b8}
-.os-type-btn.selected .os-type-label{color:#60a5fa}
+.os-numero{font-size:10px;font-weight:700;color:#64748b;letter-spacing:.03em}
+.os-hub-split{display:flex;gap:8px;flex-wrap:wrap}
+.os-type-summary{display:flex;gap:20px;margin-bottom:4px;flex-wrap:wrap}
 
 /* ── AD BANNER ── */
 .ad-banner{display:none;background:var(--inner-bg,#060b12);border:1px solid var(--border,#1e3a5f);border-radius:10px;padding:10px;margin:0 0 12px;text-align:center;font-size:11px;color:#64748b;}
@@ -58,7 +40,7 @@
         </select>
       </div>
     </div>
-    
+
   <div class="ad-banner" id="ad-top"><!-- Anuncio MaintenX Free --></div>
     <div id="ct"></div>
   </div>
@@ -72,384 +54,62 @@
   <a class="bn-item" href="relatorios.html"><span class="bn-icon">&#128202;</span><span class="bn-label">Rel.</span></a>
 </nav>
 
-<!-- Modal Nova OS -->
-<div class="modal" id="modal-os"><div class="mc" onclick="event.stopPropagation()">
-  <div class="mt2">Nova Ordem de Servico</div>
-
-  <!-- Tipo da OS com seletor visual -->
-  <div class="fg">
-    <label class="lbl">Tipo de Manutencao</label>
-    <div class="os-type-selector">
-      <div class="os-type-btn selected" onclick="setTipo('Corretiva',this)">
-        <div class="os-type-icon">&#128308;</div>
-        <div class="os-type-label">Corretiva</div>
-      </div>
-      <div class="os-type-btn" onclick="setTipo('Preventiva',this)">
-        <div class="os-type-icon">&#128994;</div>
-        <div class="os-type-label">Preventiva</div>
-      </div>
-      <div class="os-type-btn" onclick="setTipo('Preditiva',this)">
-        <div class="os-type-icon">&#128309;</div>
-        <div class="os-type-label">Preditiva</div>
-      </div>
-    </div>
-    <input type="hidden" id="os-tipo" value="Corretiva"/>
-  </div>
-
-  <div class="fg"><label class="lbl">Titulo *</label><input id="os-titulo" placeholder="Descricao resumida do servico"/></div>
-  <div class="g2">
-    <div class="fg"><label class="lbl">Ativo *</label><select id="os-ativo"><option value="">Selecione...</option></select></div>
-    <div class="fg"><label class="lbl">Prioridade</label><select id="os-prio"><option>Critica</option><option>Alta</option><option selected>Normal</option><option>Baixa</option></select></div>
-  </div>
-  <div class="g2">
-    <div class="fg"><label class="lbl">Tecnico Responsavel</label><select id="os-tec"><option value="">Selecione...</option><option>Joao Silva</option><option>Maria Santos</option><option>Carlos Pereira</option><option>Ana Lima</option><option>Pedro Oliveira</option></select></div>
-    <div class="fg"><label class="lbl">Prazo</label><input type="date" id="os-prazo"/></div>
-  </div>
-  <!-- Periodo para preventiva/preditiva -->
-  <div id="periodo-field" style="display:none">
-    <div class="g2">
-      <div class="fg"><label class="lbl">Periodo (dias)</label><input type="number" id="os-periodo" placeholder="Ex: 30" min="1"/></div>
-      <div class="fg"><label class="lbl">Proxima OS em (dias)</label><input type="number" id="os-proxima" placeholder="Ex: 30" min="1"/></div>
-    </div>
-  </div>
-  <div class="fg"><label class="lbl">Descricao / Sintoma</label><textarea id="os-desc" placeholder="Descreva o problema ou servico a executar..."></textarea></div>
-  <div class="mf"><button class="btn bx" onclick="closeModal('modal-os')">Cancelar</button><button class="btn bp" onclick="saveOS()">Criar OS</button></div>
-</div></div>
-
-<!-- Modal Registro de Execucao -->
-<div class="modal" id="modal-exec"><div class="mc" onclick="event.stopPropagation()">
-  <div class="mt2" id="exec-modal-title">Registro de Execucao</div>
-  <div class="fg">
-    <label class="lbl">Tipo de Registro</label>
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:4px">
-      <div class="os-type-btn selected" onclick="setExecTipo('observacao',this)" style="padding:10px 6px">
-        <div class="os-type-icon" style="font-size:16px">&#128221;</div>
-        <div class="os-type-label">Observacao</div>
-      </div>
-      <div class="os-type-btn" onclick="setExecTipo('medicao',this)" style="padding:10px 6px">
-        <div class="os-type-icon" style="font-size:16px">&#128207;</div>
-        <div class="os-type-label">Medicao</div>
-      </div>
-      <div class="os-type-btn" onclick="setExecTipo('peca',this)" style="padding:10px 6px">
-        <div class="os-type-icon" style="font-size:16px">&#128295;</div>
-        <div class="os-type-label">Peca / Material</div>
-      </div>
-      <div class="os-type-btn" onclick="setExecTipo('foto',this)" style="padding:10px 6px">
-        <div class="os-type-icon" style="font-size:16px">&#128248;</div>
-        <div class="os-type-label">Foto / Anexo</div>
-      </div>
-    </div>
-    <input type="hidden" id="exec-tipo" value="observacao"/>
-  </div>
-  <div class="fg"><label class="lbl">Data / Hora</label><input type="datetime-local" id="exec-data"/></div>
-  <div class="fg"><label class="lbl">Tecnico</label><select id="exec-tec"><option value="">Selecione...</option><option>Joao Silva</option><option>Maria Santos</option><option>Carlos Pereira</option><option>Ana Lima</option><option>Pedro Oliveira</option></select></div>
-
-  <!-- Campos para Observacao -->
-  <div id="exec-obs-fields">
-    <div class="fg"><label class="lbl">Descricao *</label><textarea id="exec-desc" placeholder="O que foi observado, feito ou encontrado..."></textarea></div>
-  </div>
-
-  <!-- Campos para Medicao -->
-  <div id="exec-med-fields" style="display:none">
-    <div class="fg"><label class="lbl">Parametro medido</label><select id="exec-param"><option>Temperatura (°C)</option><option>Vibracao (mm/s)</option><option>Pressao (bar)</option><option>Corrente (A)</option><option>Tensao (V)</option><option>Ruido (dB)</option><option>Espessura (mm)</option><option>Rotacao (RPM)</option><option>Outro</option></select></div>
-    <div class="g2">
-      <div class="fg"><label class="lbl">Valor medido *</label><input type="number" id="exec-valor" step="0.01" placeholder="0.0"/></div>
-      <div class="fg"><label class="lbl">Limite / Referencia</label><input type="number" id="exec-limite" step="0.01" placeholder="0.0"/></div>
-    </div>
-    <div class="fg"><label class="lbl">Condicao</label><select id="exec-cond"><option>Normal</option><option>Atencao</option><option>Critico</option><option>Fora de especificacao</option></select></div>
-    <div class="fg"><label class="lbl">Observacao adicional</label><input id="exec-med-obs" placeholder="Contexto ou detalhe..."/></div>
-  </div>
-
-  <!-- Campos para Peca/Material -->
-  <div id="exec-peca-fields" style="display:none">
-    <div class="fg"><label class="lbl">Descricao da Peca / Material *</label><input id="exec-peca-desc" placeholder="Ex: Rolamento SKF 6205"/></div>
-    <div class="g2">
-      <div class="fg"><label class="lbl">Quantidade</label><input type="number" id="exec-qty" value="1" min="1"/></div>
-      <div class="fg"><label class="lbl">Custo unitario (R$)</label><input type="number" id="exec-custo" min="0" placeholder="0.00"/></div>
-    </div>
-    <div class="fg"><label class="lbl">Observacao</label><input id="exec-peca-obs" placeholder="Codigo, fornecedor..."/></div>
-  </div>
-
-  <!-- Campos para Foto -->
-  <div id="exec-foto-fields" style="display:none">
-    <div class="fg"><label class="lbl">Descricao da foto</label><input id="exec-foto-desc" placeholder="O que a foto mostra..."/></div>
-    <div class="ua" onclick="document.getElementById('exec-foto-input').click()" style="padding:20px">
-      <input type="file" id="exec-foto-input" accept="image/*" style="display:none" onchange="previewFoto(this)"/>
-      <div id="exec-foto-preview" style="font-size:22px;margin-bottom:6px">&#128247;</div>
-      <div style="font-size:13px;color:#94a3b8">Toque para selecionar imagem</div>
-    </div>
-  </div>
-
-  <div class="mf"><button class="btn bx" onclick="closeModal('modal-exec')">Cancelar</button><button class="btn bp" onclick="saveExec()">Salvar Registro</button></div>
-</div></div>
-
 <script src="_lang.js"></script>
 <script src="_shared.js"></script>
 <script>
+// ═══════════════════════════════════════════════════════════════════════
+// ordens.html — HUB: resumo geral + lista unificada de O.S.
+// A criacao e execucao de cada O.S. acontece em arquivo dedicado por tipo:
+//   ordens-corretiva.html   → OS Corretiva
+//   ordens-programada.html  → OS Preventiva / Preditiva (vinculada a plano)
+// ═══════════════════════════════════════════════════════════════════════
 var D=loadData(), ordens=D.ordens, ativos=D.ativos;
-var filter="Todas", sel=null, execTab="log";
-var fotoBase64=null;
+var filter="Todas";
 
-// Perfil ativo — "Coordenador" ou nome do tecnico
-// Extraido das OS existentes para nao depender do _shared.js novo
 var _tecNomes=[];
 ordens.forEach(function(o){if(o.tecnico&&_tecNomes.indexOf(o.tecnico)===-1)_tecNomes.push(o.tecnico);});
-var PERFIL_ATIVO = "Coordenador"; // padrao
+var PERFIL_ATIVO = "Coordenador";
 
-function setCoordenador(){
-  PERFIL_ATIVO="Coordenador";
-  document.getElementById("perfil-sel").value="Coordenador";
-  render();
-}
-function setPerfilTecnico(nome){
-  PERFIL_ATIVO=nome;
-  render();
-}
+function setCoordenador(){PERFIL_ATIVO="Coordenador";document.getElementById("perfil-sel").value="Coordenador";render();}
+function setPerfilTecnico(nome){PERFIL_ATIVO=nome;render();}
 function isCoordenador(){ return PERFIL_ATIVO==="Coordenador"; }
 function meuNomeAtivo(){ return PERFIL_ATIVO; }
-var currentExecTipo="observacao";
-
-function closeModal(id){document.getElementById(id).classList.remove("open");}
-function openModal(id){document.getElementById(id).classList.add("open");}
-document.querySelectorAll(".modal").forEach(function(m){m.addEventListener("click",function(e){if(e.target===this)this.classList.remove("open");});});
-
-// ── TIPO SELETOR ──────────────────────────────────────────────────────────
-function setTipo(val,el){
-  document.getElementById("os-tipo").value=val;
-  document.querySelectorAll(".os-type-selector .os-type-btn").forEach(function(b){b.classList.remove("selected");});
-  el.classList.add("selected");
-  document.getElementById("periodo-field").style.display=(val=="Preventiva"||val=="Preditiva")?"block":"none";
+function setFilter(f){filter=f;render();}
+function selOS(id){
+  var o=ordens.find(function(x){return x.id==id;});
+  if(o) window.location.href=ordensDetailUrl(o);
 }
-
-function setExecTipo(val,el){
-  currentExecTipo=val;
-  document.getElementById("exec-tipo").value=val;
-  document.querySelectorAll("#modal-exec .os-type-btn").forEach(function(b){b.classList.remove("selected");});
-  el.classList.add("selected");
-  document.getElementById("exec-obs-fields").style.display=val=="observacao"?"block":"none";
-  document.getElementById("exec-med-fields").style.display=val=="medicao"?"block":"none";
-  document.getElementById("exec-peca-fields").style.display=val=="peca"?"block":"none";
-  document.getElementById("exec-foto-fields").style.display=val=="foto"?"block":"none";
-}
-
-function previewFoto(input){
-  if(!input.files||!input.files[0])return;
-  var r=new FileReader();
-  r.onload=function(e){
-    fotoBase64=e.target.result;
-    var prev=document.getElementById("exec-foto-preview");
-    prev.innerHTML='<img src="'+fotoBase64+'" style="max-width:100%;max-height:150px;border-radius:8px;margin-bottom:6px"/>';
-  };
-  r.readAsDataURL(input.files[0]);
-}
-
-// ── SAVE OS ───────────────────────────────────────────────────────────────
-function openNewOS(){
-  document.getElementById("os-ativo").innerHTML='<option value="">Selecione...</option>'+ativos.map(function(a){return'<option>'+esc(a.nome)+'</option>';}).join("");
-  // reset tipo
-  document.querySelectorAll(".os-type-selector .os-type-btn").forEach(function(b,i){b.classList.toggle("selected",i==0);});
-  document.getElementById("os-tipo").value="Corretiva";
-  document.getElementById("periodo-field").style.display="none";
-  openModal("modal-os");
-}
-
-function saveOS(){
-  var t=document.getElementById("os-titulo").value.trim(),v=document.getElementById("os-ativo").value;
-  if(!t||!v){alert("Preencha titulo e ativo.");return;}
-  var tipo=document.getElementById("os-tipo").value;
-  var nova={id:nextId(),titulo:t,ativo:v,tipo:tipo,prioridade:document.getElementById("os-prio").value,tecnico:document.getElementById("os-tec").value,prazo:document.getElementById("os-prazo").value,descricao:document.getElementById("os-desc").value,status:"Aberta",abertura:new Date().toISOString().split("T")[0],execLog:[]};
-  if(tipo=="Preventiva"||tipo=="Preditiva"){nova.periodo=document.getElementById("os-periodo").value;nova.proxima=document.getElementById("os-proxima").value;}
-  ordens.unshift(nova);saveOrdens(ordens);
-  closeModal("modal-os");render();
-}
-
-// ── SAVE EXEC LOG ──────────────────────────────────────────────────────────
-function openExecModal(osId){
-  var os=ordens.find(function(o){return o.id==osId;});
-  document.getElementById("exec-modal-title").textContent="Registro de Execucao — "+os.titulo;
-  var now=new Date();var pad=function(n){return String(n).padStart(2,"0");};
-  document.getElementById("exec-data").value=now.getFullYear()+"-"+pad(now.getMonth()+1)+"-"+pad(now.getDate())+"T"+pad(now.getHours())+":"+pad(now.getMinutes());
-  fotoBase64=null;
-  document.getElementById("exec-foto-preview").innerHTML='<div style="font-size:22px;margin-bottom:6px">&#128247;</div>';
-  // reset tipo
-  setExecTipo("observacao",document.querySelector("#modal-exec .os-type-btn"));
-  document.querySelectorAll("#modal-exec .os-type-btn").forEach(function(b,i){b.classList.toggle("selected",i==0);});
-  openModal("modal-exec");
-  document.getElementById("modal-exec").dataset.osid=osId;
-}
-
-function saveExec(){
-  var osId=parseInt(document.getElementById("modal-exec").dataset.osid);
-  var os=ordens.find(function(o){return o.id==osId;});
-  if(!os.execLog)os.execLog=[];
-  var tipo=currentExecTipo;
-  var entry={id:nextId(),tipo:tipo,data:document.getElementById("exec-data").value,tecnico:document.getElementById("exec-tec").value};
-  if(tipo=="observacao"){
-    var d=document.getElementById("exec-desc").value.trim();if(!d){alert("Informe a descricao.");return;}
-    entry.desc=d;
-  } else if(tipo=="medicao"){
-    var v=parseFloat(document.getElementById("exec-valor").value);if(isNaN(v)){alert("Informe o valor medido.");return;}
-    entry.param=document.getElementById("exec-param").value;entry.valor=v;entry.limite=parseFloat(document.getElementById("exec-limite").value)||0;entry.cond=document.getElementById("exec-cond").value;entry.obs=document.getElementById("exec-med-obs").value;
-  } else if(tipo=="peca"){
-    var d=document.getElementById("exec-peca-desc").value.trim();if(!d){alert("Informe a peca.");return;}
-    entry.desc=d;entry.qty=parseInt(document.getElementById("exec-qty").value)||1;entry.custo=parseFloat(document.getElementById("exec-custo").value)||0;entry.obs=document.getElementById("exec-peca-obs").value;
-  } else if(tipo=="foto"){
-    if(!fotoBase64){alert("Selecione uma imagem.");return;}
-    entry.desc=document.getElementById("exec-foto-desc").value;entry.foto=fotoBase64;
-  }
-  os.execLog.unshift(entry);
-  saveOrdens(ordens);closeModal("modal-exec");
-  if(sel&&sel.id==osId){sel=os;}
-  render();
-}
-
-// ── UPDATE STATUS ──────────────────────────────────────────────────────────
-function updOS(id,status){
-  ordens=ordens.map(function(o){return o.id==id?Object.assign({},o,{status:status}):o;});
-  saveOrdens(ordens);
-  if(sel&&sel.id==id)sel=ordens.find(function(o){return o.id==id;});
-  render();
-}
-
-
-// ── GERAR OS PROGRAMADAS ────────────────────────────────────────────────────
+function irNovaCorretiva(){window.location.href="ordens-corretiva.html?new=1";}
+function irNovaProgramada(){window.location.href="ordens-programada.html?new=1";}
 function gerarOSDialog(){
   var novas = gerarOSProgramadas(7);
   ordens = loadData().ordens;
   if(novas.length === 0){
     alert("Nenhum plano vencido ou com vencimento em 7 dias. Verifique os planos na ficha dos ativos.");
   } else {
-    alert(novas.length + " OS gerada(s) com sucesso!");
+    alert(novas.length + " OS gerada(s) com sucesso! Numeracao: "+novas.map(function(n){return n.numero_os;}).join(", "));
   }
   render();
 }
 
-// ── CHECKLIST EXECUTION (OS de plano) ──────────────────────────────────────
-function renderChecklist(o){
-  if(!o.planos_exec || !o.planos_exec.length) return "";
-  return o.planos_exec.map(function(pe){
-    var acoes = pe.acoes || [];
-    var conc = acoes.filter(function(a){return a.concluida;}).length;
-    var tipoCor = pe.tipo==="Preditiva"?"#a78bfa":"#4ade80";
-    var tipoFundo = pe.tipo==="Preditiva"?"#8b5cf620":"#4ade8020";
-    return '<div class="card" style="margin-bottom:12px">'
-      +'<div style="display:flex;align-items:center;gap:8px;margin-bottom:12px">'
-      +'<span style="font-size:10px;font-weight:800;padding:2px 8px;border-radius:8px;background:'+tipoFundo+';color:'+tipoCor+'">'+esc(pe.tipo)+'</span>'
-      +'<span style="font-size:14px;font-weight:700;flex:1">'+esc(pe.plano_nome)+'</span>'
-      +'<span style="font-size:12px;color:#64748b">'+conc+'/'+acoes.length+'</span>'
-      +'</div>'
-      + acoes.map(function(a, ai){
-          var ismed = a.tipo === "medicao";
-          var condCor = "";
-          if(a.valor_exec && a.limite_max && parseFloat(a.valor_exec) > parseFloat(a.limite_max)){
-            condCor = "#f87171";
-          } else if(a.valor_exec){
-            condCor = "#4ade80";
-          }
-          return '<div style="padding:12px;background:var(--inner-bg,#060b12);border-radius:10px;margin-bottom:8px">'
-            // Header row: status indicator + description
-            +'<div style="display:flex;align-items:flex-start;gap:10px;margin-bottom:'+(ismed?'10px':'0')+'">'
-            +'<div onclick="toggleAcao('+o.id+','+pe.plano_id+','+ai+','+(!a.concluida)+'); render();" '
-            +'style="width:20px;height:20px;border-radius:4px;border:2px solid '+(a.concluida?'#4ade80':'#1e3a5f')+';background:'+(a.concluida?'#4ade80':'transparent')+';display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;margin-top:1px">'
-            +(a.concluida?'<span style="color:#000;font-size:12px;font-weight:900">&#10003;</span>':'')
-            +'</div>'
-            +'<div style="flex:1">'
-            +'<div style="font-size:13px;font-weight:600;'+(a.concluida?'color:#64748b;text-decoration:line-through':'')+'">'
-            +(a.obrigatorio?'<span style="color:#f87171;margin-right:3px">&#42;</span>':'')+esc(a.desc)
-            +'</div>'
-            +(ismed?'':'</div></div>')
-            // Measurement fields (only for medicao type)
-            +(ismed
-              ? '<div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:4px;align-items:center">'
-                +(a.param?'<span style="font-size:11px;color:#64748b">'+esc(a.param+(a.unidade?' ('+a.unidade+')':''))+'</span>':"")
-                +(a.limite_max?'<span style="font-size:11px;color:#475569">max: '+a.limite_max+'</span>':"")
-                +'</div>'
-                +'</div></div>'
-                +'<div style="margin-top:8px">'
-                +'<input type="number" step="0.01" placeholder="Valor medido"'
-                +' value="'+(a.valor_exec||'')+'"'
-                +' oninput="setMedicao('+o.id+','+pe.plano_id+','+ai+',this.value)"'
-                +' style="width:100%;padding:8px 12px;font-size:14px;border-radius:8px;border:2px solid '+(condCor||'#1e3a5f')+';background:var(--inner-bg,#060b12);color:var(--text,#e2e8f0);box-sizing:border-box"/>'
-                +(a.valor_exec&&a.limite_max?'<div style="font-size:11px;margin-top:4px;color:'+condCor+'">'
-                  +(parseFloat(a.valor_exec)>parseFloat(a.limite_max)?'&#9888; Acima do limite!':'&#10003; Dentro do limite')
-                  +'</div>':'')
-                +'</div>'
-              : '')
-            +'</div>';
-        }).join("")
-      +'</div>';
-  }).join("");
-}
-
-
-function toggleAcao(osId, planoId, acaoIdx, checked){
-  var os = ordens.find(function(o){return o.id==osId;});
-  if(!os||!os.planos_exec) return;
-  os.planos_exec = os.planos_exec.map(function(pe){
-    if(pe.plano_id !== planoId) return pe;
-    var acoes = pe.acoes.map(function(a, i){
-      return i===acaoIdx ? Object.assign({},a,{concluida:checked}) : a;
-    });
-    return Object.assign({},pe,{acoes:acoes});
-  });
-  saveOrdens(ordens);
-  // Update checkbox state without full re-render
-  var total=0,conc=0;
-  os.planos_exec.forEach(function(pe){
-    if(pe.plano_id!==planoId) return;
-    total=pe.acoes.length;
-    conc=pe.acoes.filter(function(a){return a.concluida;}).length;
-  });
-}
-
-function setMedicao(osId, planoId, acaoIdx, val){
-  var os = ordens.find(function(o){return o.id==osId;});
-  if(!os||!os.planos_exec) return;
-  os.planos_exec = os.planos_exec.map(function(pe){
-    if(pe.plano_id !== planoId) return pe;
-    var acoes = pe.acoes.map(function(a, i){
-      return i===acaoIdx ? Object.assign({},a,{valor_exec:val,concluida:val!==""}) : a;
-    });
-    return Object.assign({},pe,{acoes:acoes});
-  });
-  saveOrdens(ordens);
-}
-
-function concluirOSComPlano(osId){
-  if(!confirm("Confirmar conclusao? Os planos serao atualizados automaticamente.")) return;
-  var os = ordens.find(function(o){return o.id==osId;});
-  if(!os) return;
-  // Check obrigatorio actions
-  var pendObrig = false;
-  if(os.planos_exec) os.planos_exec.forEach(function(pe){
-    pe.acoes.forEach(function(a){
-      if(a.obrigatorio && !a.concluida && !a.valor_exec) pendObrig=true;
-    });
-  });
-  if(pendObrig && !confirm("Existem acoes obrigatorias nao concluidas. Deseja concluir mesmo assim?")){
-    return;
-  }
-  // Update fichas
-  var fichas = loadData().fichas;
-  fichas = concluirOSProgramada(os, fichas);
-  saveFichas(fichas);
-  updOS(osId, "Concluida");
-}
-
-// ── RENDER ─────────────────────────────────────────────────────────────────
+// ── RENDER ─────────────────────────────────────────────────────────────
 function render(){
+  if(backfillNumerosOS(ordens)){saveOrdens(ordens);}
   var k={criticas:ordens.filter(function(o){return o.prioridade=="Critica"&&o.status!="Concluida"&&o.status!="Cancelada";}).length};
   var al=document.getElementById("ta");
   if(k.criticas>0){al.style.display="block";al.textContent=k.criticas+t('topbar_alert_criticas');}else{al.style.display="none";}
-  document.getElementById("ct").innerHTML=sel?renderDetail():renderList();
+  document.getElementById("ct").innerHTML=renderList();
 }
 
 function renderList(){
   var counts={a:ordens.filter(function(o){return o.status=="Aberta";}).length,e:ordens.filter(function(o){return o.status=="Em Andamento";}).length,c:ordens.filter(function(o){return o.status=="Concluida";}).length};
-  var summary='<div style="display:flex;gap:20px;margin-bottom:16px">'
+  var tipoCounts={cor:ordens.filter(isOSCorretiva).length,prog:ordens.filter(isOSProgramada).length};
+  var summary='<div style="display:flex;gap:20px;margin-bottom:16px;flex-wrap:wrap">'
     +'<div style="text-align:center"><div style="font-size:26px;font-weight:800;color:#fbbf24">'+counts.a+'</div><div style="font-size:11px;color:#64748b">Abertas</div></div>'
     +'<div style="text-align:center"><div style="font-size:26px;font-weight:800;color:#60a5fa">'+counts.e+'</div><div style="font-size:11px;color:#64748b">Andamento</div></div>'
     +'<div style="text-align:center"><div style="font-size:26px;font-weight:800;color:#4ade80">'+counts.c+'</div><div style="font-size:11px;color:#64748b">Concluidas</div></div>'
+    +'<div style="text-align:center;border-left:1px solid #1e3a5f;padding-left:20px"><div style="font-size:26px;font-weight:800;color:#f87171">'+tipoCounts.cor+'</div><div style="font-size:11px;color:#64748b">Corretivas</div></div>'
+    +'<div style="text-align:center"><div style="font-size:26px;font-weight:800;color:#8b5cf6">'+tipoCounts.prog+'</div><div style="font-size:11px;color:#64748b">Prev./Predit.</div></div>'
     +'</div>';
   var fb=[t('ord_filtro_todas'),t('ord_status_aberta'),t('ord_status_and'),t('ord_status_conc'),t('ord_status_canc')].map(function(x){return'<button class="btn bsm '+(filter==x?"bp":"bx")+'" onclick="setFilter(\''+x+'\')">'+x+'</button>';}).join("");
   var list=ordens.filter(function(o){return filter=="Todas"||o.status==filter;});
@@ -459,9 +119,10 @@ function renderList(){
       var logCount=(o.execLog&&o.execLog.length)||0;
       var tc=typeColors[o.tipo]||"#60a5fa";
       return'<div class="os-card" onclick="selOS('+o.id+')">'
-        +'<div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">'
+        +'<div style="display:flex;align-items:center;gap:8px;margin-bottom:4px">'
         +'<span style="width:8px;height:8px;border-radius:50%;background:'+tc+';flex-shrink:0;display:inline-block"></span>'
         +'<span style="font-size:10px;font-weight:700;color:'+tc+';text-transform:uppercase;letter-spacing:.05em">'+esc(o.tipo)+'</span>'
+        +'<span class="os-numero">'+esc(o.numero_os||"")+'</span>'
         +'<span style="flex:1"></span>'
         +bdg(o.status,SC)
         +'</div>'
@@ -474,114 +135,17 @@ function renderList(){
         +'</div>'
         +'<div style="margin-top:8px;display:flex;align-items:center;justify-content:space-between">'
         +bdg(o.prioridade,PC)
-        +(o.status=="Em Andamento"&&(isCoordenador()||o.tecnico===meuNomeAtivo())?'<button class="btn bp bsm" onclick="event.stopPropagation();openExecModal('+o.id+')" style="font-size:11px">+ Registrar</button>':'')
         +'</div>'
         +'</div>';
     }).join("");
-  return summary+'<div class="fr"><div class="fb">'+fb+'</div>'+(isCoordenador()?'<div style="display:flex;gap:8px"><button class=\'btn bx bsm\' onclick=\'gerarOSDialog()\' style=\'font-size:11px\'>&#9654; Gerar OS Programadas</button><button class=\'btn bp\' onclick=\'openNewOS()\'>+ Nova OS Corretiva</button></div>':'')+'</div>'+cards;
+  var acoes=isCoordenador()?'<div class="os-hub-split">'
+      +'<button class="btn bx bsm" onclick="gerarOSDialog()" style="font-size:11px">&#9654; Gerar OS Programadas</button>'
+      +'<button class="btn bx" onclick="irNovaProgramada()">+ Nova Prev./Predit.</button>'
+      +'<button class="btn bp" onclick="irNovaCorretiva()">+ Nova OS Corretiva</button>'
+      +'</div>':'';
+  return summary+'<div class="fr"><div class="fb">'+fb+'</div>'+acoes+'</div>'+cards;
 }
 
-function renderDetail(){
-  var o=sel;
-  var isPlanoOS = o.origem === "plano" && o.planos_exec && o.planos_exec.length > 0;
-  var STATUS_ORDER=[t('ord_status_aberta'),t('ord_status_and'),t('ord_status_conc')];
-  var si=STATUS_ORDER.indexOf(o.status);
-  var flow=STATUS_ORDER.map(function(s,i){return'<div class="status-step'+(i<si?" done":i==si?" current":"")+'">'+(i<si?"&#10003; ":"")+s+'</div>';}).join('<div style="color:#1e3a5f;font-size:16px;flex-shrink:0">&#8250;</div>');
-
-  // Actions — tecnico so pode executar OS atribuida a ele
-  var podeExecutar = isCoordenador() || o.tecnico===meuNomeAtivo();
-  var ac="";
-  if(o.status=="Aberta"&&podeExecutar)
-    ac='<button class="btn bp bfw" onclick="updOS('+o.id+',\'Em Andamento\')">&#9654; Iniciar Execucao</button>';
-  if(o.status=="Em Andamento"&&podeExecutar){
-    if(isPlanoOS){
-      ac='<button class="btn bp bfw" onclick="openExecModal('+o.id+')" style="background:#7c3aed">+ Registrar Execucao</button>'
-        +'<button class="btn bsu bfw" onclick="concluirOSComPlano('+o.id+')">&#10003; Concluir OS</button>';
-    } else {
-      ac='<button class="btn bp bfw" onclick="openExecModal('+o.id+')" style="background:#7c3aed">+ Registrar Execucao</button>'
-        +'<button class="btn bsu bfw" onclick="updOS('+o.id+',\'Concluida\')">&#10003; Concluir OS</button>';
-    }
-  }
-  if(o.status!="Concluida"&&o.status!="Cancelada"&&isCoordenador())
-    ac+='<button class="btn bd bfw" onclick="updOS('+o.id+',\'Cancelada\')">&#10005; Cancelar</button>';
-  if(o.status=="Concluida"||o.status=="Cancelada")
-    ac='<div style="color:#64748b;text-align:center;padding:12px;font-size:13px">OS finalizada</div>';
-  if(!podeExecutar&&o.status!="Concluida"&&o.status!="Cancelada")
-    ac='<div style="font-size:13px;color:#64748b;text-align:center;padding:12px;border:1px solid #1e3a5f;border-radius:8px">OS atribuida a <b style=\"color:#94a3b8\">'+esc(o.tecnico||"--")+'</b></div>';
-
-  // Execution log
-  var logHtml="";
-  if(o.execLog&&o.execLog.length>0){
-    var tipoColors={observacao:"#60a5fa",medicao:"#a78bfa",peca:"#f59e0b",foto:"#34d399"};
-    var tipoNames={observacao:t('exec_tipo_obs'),medicao:t('exec_tipo_med'),peca:t('exec_tipo_peca'),foto:t('exec_tipo_foto')};
-    logHtml=o.execLog.map(function(e){
-      var col=tipoColors[e.tipo]||"#60a5fa";
-      var body="";
-      if(e.tipo=="observacao"){body='<div class="exec-log-text">'+esc(e.desc)+'</div>';}
-      else if(e.tipo=="medicao"){
-        var condCol=e.cond=="Normal"?"#4ade80":e.cond=="Atencao"?"#fbbf24":"#f87171";
-        body='<div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">'
-          +'<div><div style="font-size:22px;font-weight:800;color:'+condCol+'">'+e.valor+'</div><div style="font-size:11px;color:#64748b">'+esc(e.param)+'</div></div>'
-          +(e.limite?'<div><div style="font-size:14px;color:#475569">'+e.limite+'</div><div style="font-size:10px;color:#475569">Limite</div></div>':'')
-          +'<span style="padding:3px 9px;border-radius:12px;font-size:11px;font-weight:700;background:'+condCol+'20;color:'+condCol+'">'+esc(e.cond)+'</span>'
-          +'</div>'
-          +(e.obs?'<div style="font-size:12px;color:#94a3b8;margin-top:5px">'+esc(e.obs)+'</div>':"");
-      }
-      else if(e.tipo=="peca"){
-        body='<div class="exec-log-text">'+esc(e.desc)+'</div>'
-          +'<div style="font-size:12px;color:#94a3b8;margin-top:4px">Qtd: '+e.qty+(e.custo?' &bull; R$ '+(e.qty*e.custo).toLocaleString("pt-BR"):'')+(e.obs?' &bull; '+esc(e.obs):'')+'</div>';
-      }
-      else if(e.tipo=="foto"){
-        body=(e.foto?'<img src="'+e.foto+'" style="max-width:100%;border-radius:8px;margin-top:4px;max-height:200px"/>':'')
-          +(e.desc?'<div style="font-size:12px;color:#94a3b8;margin-top:6px">'+esc(e.desc)+'</div>':"");
-      }
-      return'<div class="exec-log-item">'
-        +'<div class="exec-log-header">'
-        +'<span class="exec-log-tipo" style="background:'+col+'20;color:'+col+'">'+tipoNames[e.tipo]+'</span>'
-        +'<span class="exec-log-date">'+(e.data||"")+(e.tecnico?' &bull; '+esc(e.tecnico):'')+'</span>'
-        +'</div>'+body+'</div>';
-    }).join("");
-  }
-
-  // Cost summary
-  var totalCusto=0,totalHoras=0;
-  if(o.execLog)o.execLog.forEach(function(e){if(e.tipo=="peca"&&e.custo)totalCusto+=e.qty*e.custo;});
-
-  // Periodo info
-  var periodoHtml="";
-  if(o.periodo||o.proxima){
-    periodoHtml='<div style="background:rgba(59,130,246,.08);border:1px solid #1e3a5f;border-radius:10px;padding:12px;margin-bottom:14px;display:flex;gap:16px;flex-wrap:wrap">'
-      +(o.periodo?'<div><div style="font-size:18px;font-weight:800;color:#60a5fa">'+o.periodo+'d</div><div style="font-size:11px;color:#64748b">Periodo</div></div>':"")
-      +(o.proxima?'<div><div style="font-size:18px;font-weight:800;color:#a78bfa">'+o.proxima+'d</div><div style="font-size:11px;color:#64748b">Proxima OS em</div></div>':"")
-      +'</div>';
-  }
-
-  return '<button class="btn bx" style="margin-bottom:16px" onclick="sel=null;render()">&#8592; Voltar</button>'
-    +'<div style="margin-bottom:16px"><div style="font-size:18px;font-weight:800;margin-bottom:8px">'+esc(o.titulo)+'</div>'
-    +'<div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px">'+bdg(o.status,SC)+bdg(o.prioridade,PC)+bdg(o.tipo,TC)+'</div>'
-    +'<div class="status-flow">'+flow+'</div></div>'
-
-    +periodoHtml
-
-    +'<div class="card">'
-    +'<div class="card-title">Informacoes</div>'
-    +[[t('ord_f_ativo_label'),o.ativo],[t('ord_f_tecnico'),o.tecnico||"--"],[t('ord_f_abertura'),o.abertura],[t('ord_f_prazo'),o.prazo||"--"]].map(function(f){return'<div class="detail-field"><div class="dk">'+f[0]+'</div><div class="dv">'+esc(f[1])+'</div></div>';}).join("")
-    +(o.descricao?'<div class="detail-field"><div class="dk">Descricao / Sintoma</div><div class="dv" style="font-size:14px;color:#94a3b8;line-height:1.5">'+esc(o.descricao)+'</div></div>':"")
-    +'</div>'
-
-    +'<div class="action-card">'+ac+'</div>'
-
-    +(isPlanoOS?'<div class="card">'+renderChecklist(o)+'</div>':'')+'<div class="card">'
-    +'<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">'
-    +'<div class="card-title" style="margin-bottom:0">'+(isPlanoOS?t('ord_reg_exec')+' — Observacoes':t('ord_reg_exec'))+'</div>'
-    +(totalCusto>0?'<span style="font-size:12px;color:#f59e0b;font-weight:700">R$ '+totalCusto.toLocaleString("pt-BR")+" em pecas</span>":"")
-    +'</div>'
-    +(logHtml||'<div style="color:#64748b;text-align:center;padding:20px;font-size:13px">'+(o.status=="Aberta"?t('ord_inicia_para_reg'):t('ord_sem_reg'))+'</div>')
-    +'</div>';
-}
-
-function selOS(id){sel=ordens.find(function(o){return o.id==id;});render();}
-function setFilter(f){filter=f;render();}
 // Popula seletor de perfil
 (function(){
   var sel = document.getElementById("perfil-sel");
@@ -593,18 +157,17 @@ function setFilter(f){filter=f;render();}
   });
 })();
 
-// Deep link from calendario
+// Deep link vindo do calendario — encaminha direto para o arquivo de execucao correto
 (function(){
   var calOS = localStorage.getItem("mx_cal_os");
   if(!calOS) return;
   localStorage.removeItem("mx_cal_os");
-  // Try int and string comparison
   var calId = parseInt(calOS);
   var os = ordens.find(function(o){
     return o.id===calId || o.id===calOS || String(o.id)===calOS;
   });
   if(os){
-    sel = os;
+    window.location.href=ordensDetailUrl(os);
   } else {
     console.warn("OS nao encontrada para id:", calOS, "ordens ids:", ordens.map(function(o){return o.id;}));
   }
