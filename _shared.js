@@ -309,7 +309,18 @@ function saveFichas(fichasObj){
   Object.keys(fichasObj).forEach(function(aid){
     var ativoId=parseInt(aid),f=fichasObj[aid];
     if(!f)return;
-    sbUpsert("ativos",[{id:ativoId,indicadores:f.indicadores||["mtbf","mttr","disp","manuplan"],crit:f.crit||{},docs:f.docs||[]}]);
+    // O upsert abaixo usa "resolution=merge-duplicates" (INSERT ... ON CONFLICT DO UPDATE).
+    // A coluna "nome" é NOT NULL no banco e o Postgres valida essa constraint na
+    // construcao da linha candidata ANTES de checar o conflito — ou seja, mesmo
+    // atualizando um ativo ja existente, omitir "nome" do payload faz o upsert
+    // inteiro falhar com 23502 (violates not-null constraint). Como a "ficha"
+    // nao guarda o nome do ativo, buscamos no array global `ativos`.
+    var ativoRef=ativos.find(function(a){return a.id===ativoId;});
+    if(!ativoRef){
+      console.warn("[saveFichas] ativo id="+ativoId+" não encontrado no array 'ativos' em memória — upsert de ativos ignorado para não enviar 'nome' nulo (indicadores/crit/docs deste ativo não serão sincronizados nesta chamada).");
+    } else {
+      sbUpsert("ativos",[{id:ativoId,nome:ativoRef.nome,indicadores:f.indicadores||["mtbf","mttr","disp","manuplan"],crit:f.crit||{},docs:f.docs||[]}]);
+    }
     sbDelete("planos","ativo_id",ativoId).then(function(){if(f.planos&&f.planos.length)sbUpsert("planos",f.planos.map(function(p){return{id:p.id,ativo_id:ativoId,nome:p.nome,tipo:p.tipo||"Preventiva",frequencia:p.frequencia||"Mensal",ultima_execucao:p.ultima_execucao||"--",proxima_execucao:p.proxima_execucao||"--",responsavel:p.responsavel||"",status:p.status||"OK",os_gerada_id:p.os_gerada_id||null,acoes:p.acoes||[],ativo:p.ativo!==false,motivo_desativacao:p.motivo_desativacao||"",desativado_em:p.desativado_em||""};}));});
     sbDelete("historico","ativo_id",ativoId).then(function(){if(f.historico&&f.historico.length)sbUpsert("historico",f.historico.map(function(h){return{id:h.id,ativo_id:ativoId,descricao:h.desc||"",data:h.data||"",tipo:h.tipo||"Corretiva",tecnico:h.tecnico||"",horas:h.horas||0,custo:h.custo||0,obs:h.obs||"",analise:h.analise||null};}));});
     sbDelete("medicoes","ativo_id",ativoId).then(function(){if(f.preditiva&&f.preditiva.length)sbUpsert("medicoes",f.preditiva.map(function(m){return{id:m.id,ativo_id:ativoId,data:m.data||"",param:m.param||"",valor:m.valor||0,limite:m.limite||0,obs:m.obs||""};}));});
