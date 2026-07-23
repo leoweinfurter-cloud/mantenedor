@@ -16,7 +16,6 @@
 .status-step{flex:1;text-align:center;padding:10px 4px;font-size:11px;font-weight:700;color:#475569;border-bottom:2px solid #1e3a5f;white-space:nowrap;min-width:70px}
 .status-step.done{color:#4ade80;border-color:#4ade80}
 .status-step.current{color:#60a5fa;border-color:#60a5fa}
-.os-type-selector{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:16px}
 .os-type-btn{padding:12px 8px;border-radius:10px;border:1px solid #1e3a5f;background:#060b12;cursor:pointer;text-align:center;transition:all .15s;font-family:inherit}
 .os-type-btn.selected{border-color:#3b82f6;background:rgba(59,130,246,.1)}
 .os-type-icon{font-size:20px;margin-bottom:4px}
@@ -32,17 +31,6 @@
 </head>
 <body>
 <div id="app">
-  <div id="sidebar">
-    <a class="sl" href="index.html"><div class="li">&#9881;</div><span class="sl-text">MaintenX</span></a>
-    <nav>
-      <a class="ni" href="dashboard.html"><span class="nx">&#9672;</span><span class="nl" data-i18n="nav_dashboard">Dashboard</span></a>
-      <a class="ni active" href="ordens.html"><span class="nx">&#9874;</span><span class="nl" data-i18n="nav_ordens">Ordens de Servico</span></a>
-      <a class="ni" href="ativos.html"><span class="nx">&#11041;</span><span class="nl" data-i18n="nav_ativos">Gestao de Ativos</span></a>
-      <a class="ni" href="cadastros.html"><span class="nx">&#9998;</span><span class="nl" data-i18n="nav_cadastros">Cadastros</span></a>
-      <a class="ni" href="calendario.html"><span class="nx">&#128197;</span><span class="nl">Calendario</span></a>
-      <a class="ni" href="relatorios.html"><span class="nx">&#128202;</span><span class="nl">Relatorios</span></a>
-</nav>
-  </div>
   <div id="main">
     <div id="topbar">
       <div id="topbar-left">
@@ -68,41 +56,6 @@
   <a class="bn-item" href="calendario.html"><span class="bn-icon">&#128197;</span><span class="bn-label">Cal.</span></a>
   <a class="bn-item" href="relatorios.html"><span class="bn-icon">&#128202;</span><span class="bn-label">Rel.</span></a>
 </nav>
-
-<!-- Modal Nova OS Preventiva/Preditiva manual (sem vinculo a plano) -->
-<div class="modal" id="modal-os"><div class="mc" onclick="event.stopPropagation()">
-  <div class="mt2">Nova OS Preventiva / Preditiva</div>
-  <div class="fg">
-    <label class="lbl">Tipo de Manutencao</label>
-    <div class="os-type-selector">
-      <div class="os-type-btn selected" onclick="setTipo('Preventiva',this)">
-        <div class="os-type-icon">&#128994;</div>
-        <div class="os-type-label">Preventiva</div>
-      </div>
-      <div class="os-type-btn" onclick="setTipo('Preditiva',this)">
-        <div class="os-type-icon">&#128309;</div>
-        <div class="os-type-label">Preditiva</div>
-      </div>
-    </div>
-    <input type="hidden" id="os-tipo" value="Preventiva"/>
-  </div>
-  <div class="fg"><label class="lbl">Titulo *</label><input id="os-titulo" placeholder="Descricao resumida do servico"/></div>
-  <div class="g2">
-    <div class="fg"><label class="lbl">Ativo *</label><select id="os-ativo"><option value="">Selecione...</option></select></div>
-    <div class="fg"><label class="lbl">Prioridade</label><select id="os-prio"><option>Critica</option><option>Alta</option><option selected>Normal</option><option>Baixa</option></select></div>
-  </div>
-  <div class="g2">
-    <div class="fg"><label class="lbl">Tecnico Responsavel</label><select id="os-tec"><option value="">Selecione...</option><option>Joao Silva</option><option>Maria Santos</option><option>Carlos Pereira</option><option>Ana Lima</option><option>Pedro Oliveira</option></select></div>
-    <div class="fg"><label class="lbl">Prazo</label><input type="date" id="os-prazo"/></div>
-  </div>
-  <div class="g2">
-    <div class="fg"><label class="lbl">Periodo (dias)</label><input type="number" id="os-periodo" placeholder="Ex: 30" min="1"/></div>
-    <div class="fg"><label class="lbl">Proxima OS em (dias)</label><input type="number" id="os-proxima" placeholder="Ex: 30" min="1"/></div>
-  </div>
-  <div class="fg"><label class="lbl">Descricao / Sintoma</label><textarea id="os-desc" placeholder="Descreva o servico a executar..."></textarea></div>
-  <div style="font-size:11px;color:#64748b;margin-bottom:8px">Para gerar OS automaticamente a partir de um plano de manutencao cadastrado no ativo, use o botao "Gerar OS Programadas" na lista.</div>
-  <div class="mf"><button class="btn bx" onclick="closeModal('modal-os')">Cancelar</button><button class="btn bp" onclick="saveOS()">Criar OS</button></div>
-</div></div>
 
 <!-- Modal Registro de Execucao (para OS programada sem checklist de plano) -->
 <div class="modal" id="modal-exec"><div class="mc" onclick="event.stopPropagation()">
@@ -192,12 +145,6 @@ function closeModal(id){document.getElementById(id).classList.remove("open");}
 function openModal(id){document.getElementById(id).classList.add("open");}
 document.querySelectorAll(".modal").forEach(function(m){m.addEventListener("click",function(e){if(e.target===this)this.classList.remove("open");});});
 
-function setTipo(val,el){
-  document.getElementById("os-tipo").value=val;
-  document.querySelectorAll(".os-type-selector .os-type-btn").forEach(function(b){b.classList.remove("selected");});
-  el.classList.add("selected");
-}
-
 function setExecTipo(val,el){
   currentExecTipo=val;
   document.getElementById("exec-tipo").value=val;
@@ -223,30 +170,8 @@ function previewFoto(input){
 // ── URL STATE ─────────────────────────────────────────────────────────
 function getParam(name){var m=new RegExp('[?&]'+name+'=([^&]*)').exec(location.search);return m?decodeURIComponent(m[1]):null;}
 var osId=getParam('id')?parseInt(getParam('id')):null;
-var isNew=getParam('new')==='1';
 function currentSel(){return osId?ordens.find(function(o){return o.id==osId;}):null;}
 function voltar(){window.location.href="ordens.html";}
-
-// ── SAVE OS (manual, sem vinculo a plano) ───────────────────────────────
-function openNewOS(){
-  document.getElementById("os-ativo").innerHTML='<option value="">Selecione...</option>'+ativos.map(function(a){return'<option>'+esc(a.nome)+'</option>';}).join("");
-  document.querySelectorAll(".os-type-selector .os-type-btn").forEach(function(b,i){b.classList.toggle("selected",i==0);});
-  document.getElementById("os-tipo").value="Preventiva";
-  openModal("modal-os");
-}
-
-function saveOS(){
-  var tit=document.getElementById("os-titulo").value.trim(),v=document.getElementById("os-ativo").value;
-  if(!tit||!v){alert("Preencha titulo e ativo.");return;}
-  var tipo=document.getElementById("os-tipo").value;
-  var numeroOS=nextNumeroOS(tipo,ordens);
-  var nova={id:nextId(),numero_os:numeroOS,titulo:tit,ativo:v,tipo:tipo,prioridade:document.getElementById("os-prio").value,tecnico:document.getElementById("os-tec").value,prazo:document.getElementById("os-prazo").value,descricao:document.getElementById("os-desc").value,status:"Aberta",abertura:new Date().toISOString().split("T")[0],origem:"manual",periodo:document.getElementById("os-periodo").value,proxima:document.getElementById("os-proxima").value,execLog:[]};
-  ordens.unshift(nova);saveOrdens(ordens);
-  closeModal("modal-os");
-  osId=nova.id;
-  history.replaceState(null,'','ordens-programada.html?id='+nova.id);
-  render();
-}
 
 // A geracao em lote ("Gerar OS Programadas") acontece no hub — ordens.html.
 
@@ -415,12 +340,8 @@ function render(){
     document.getElementById("ct").innerHTML=renderDetail(sel);
     return;
   }
-  if(isNew&&isCoordenador()){
-    document.getElementById("ct").innerHTML='';
-    openNewOS();
-  } else {
-    window.location.replace("ordens.html");
-  }
+  // Pagina e so de execucao — sem id nao ha nada pra mostrar.
+  window.location.replace("ordens.html");
 }
 
 function renderDetail(o){

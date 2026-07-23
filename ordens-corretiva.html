@@ -31,17 +31,6 @@
 </head>
 <body>
 <div id="app">
-  <div id="sidebar">
-    <a class="sl" href="index.html"><div class="li">&#9881;</div><span class="sl-text">MaintenX</span></a>
-    <nav>
-      <a class="ni" href="dashboard.html"><span class="nx">&#9672;</span><span class="nl" data-i18n="nav_dashboard">Dashboard</span></a>
-      <a class="ni active" href="ordens.html"><span class="nx">&#9874;</span><span class="nl" data-i18n="nav_ordens">Ordens de Servico</span></a>
-      <a class="ni" href="ativos.html"><span class="nx">&#11041;</span><span class="nl" data-i18n="nav_ativos">Gestao de Ativos</span></a>
-      <a class="ni" href="cadastros.html"><span class="nx">&#9998;</span><span class="nl" data-i18n="nav_cadastros">Cadastros</span></a>
-      <a class="ni" href="calendario.html"><span class="nx">&#128197;</span><span class="nl">Calendario</span></a>
-      <a class="ni" href="relatorios.html"><span class="nx">&#128202;</span><span class="nl">Relatorios</span></a>
-</nav>
-  </div>
   <div id="main">
     <div id="topbar">
       <div id="topbar-left">
@@ -67,22 +56,6 @@
   <a class="bn-item" href="calendario.html"><span class="bn-icon">&#128197;</span><span class="bn-label">Cal.</span></a>
   <a class="bn-item" href="relatorios.html"><span class="bn-icon">&#128202;</span><span class="bn-label">Rel.</span></a>
 </nav>
-
-<!-- Modal Nova OS Corretiva -->
-<div class="modal" id="modal-os"><div class="mc" onclick="event.stopPropagation()">
-  <div class="mt2">Nova OS Corretiva</div>
-  <div class="fg"><label class="lbl">Titulo *</label><input id="os-titulo" placeholder="Descricao resumida do servico"/></div>
-  <div class="g2">
-    <div class="fg"><label class="lbl">Ativo *</label><select id="os-ativo"><option value="">Selecione...</option></select></div>
-    <div class="fg"><label class="lbl">Prioridade</label><select id="os-prio"><option>Critica</option><option>Alta</option><option selected>Normal</option><option>Baixa</option></select></div>
-  </div>
-  <div class="g2">
-    <div class="fg"><label class="lbl">Tecnico Responsavel</label><select id="os-tec"><option value="">Selecione...</option><option>Joao Silva</option><option>Maria Santos</option><option>Carlos Pereira</option><option>Ana Lima</option><option>Pedro Oliveira</option></select></div>
-    <div class="fg"><label class="lbl">Prazo</label><input type="date" id="os-prazo"/></div>
-  </div>
-  <div class="fg"><label class="lbl">Descricao / Sintoma</label><textarea id="os-desc" placeholder="Descreva o problema ou servico a executar..."></textarea></div>
-  <div class="mf"><button class="btn bx" onclick="closeModal('modal-os')">Cancelar</button><button class="btn bp" onclick="saveOS()">Criar OS</button></div>
-</div></div>
 
 <!-- Modal Registro de Execucao -->
 <div class="modal" id="modal-exec"><div class="mc" onclick="event.stopPropagation()">
@@ -196,27 +169,8 @@ function previewFoto(input){
 // ── URL STATE ─────────────────────────────────────────────────────────
 function getParam(name){var m=new RegExp('[?&]'+name+'=([^&]*)').exec(location.search);return m?decodeURIComponent(m[1]):null;}
 var osId=getParam('id')?parseInt(getParam('id')):null;
-var isNew=getParam('new')==='1';
 function currentSel(){return osId?ordens.find(function(o){return o.id==osId;}):null;}
 function voltar(){window.location.href="ordens.html";}
-
-// ── SAVE OS ───────────────────────────────────────────────────────────────
-function openNewOS(){
-  document.getElementById("os-ativo").innerHTML='<option value="">Selecione...</option>'+ativos.map(function(a){return'<option>'+esc(a.nome)+'</option>';}).join("");
-  openModal("modal-os");
-}
-
-function saveOS(){
-  var tit=document.getElementById("os-titulo").value.trim(),v=document.getElementById("os-ativo").value;
-  if(!tit||!v){alert("Preencha titulo e ativo.");return;}
-  var numeroOS=nextNumeroOS("Corretiva",ordens);
-  var nova={id:nextId(),numero_os:numeroOS,titulo:tit,ativo:v,tipo:"Corretiva",prioridade:document.getElementById("os-prio").value,tecnico:document.getElementById("os-tec").value,prazo:document.getElementById("os-prazo").value,descricao:document.getElementById("os-desc").value,status:"Aberta",abertura:new Date().toISOString().split("T")[0],origem:"manual",execLog:[]};
-  ordens.unshift(nova);saveOrdens(ordens);
-  closeModal("modal-os");
-  osId=nova.id;
-  history.replaceState(null,'','ordens-corretiva.html?id='+nova.id);
-  render();
-}
 
 // ── SAVE EXEC LOG ──────────────────────────────────────────────────────────
 function openExecModal(id){
@@ -283,14 +237,8 @@ function render(){
     document.getElementById("ct").innerHTML=renderDetail(sel);
     return;
   }
-  // Sem id: so faz sentido estar aqui para abrir o modal de criacao (?new=1).
-  // Caso contrario, nao ha nada pra mostrar — volta pro hub.
-  if(isNew&&isCoordenador()){
-    document.getElementById("ct").innerHTML='';
-    openNewOS();
-  } else {
-    window.location.replace("ordens.html");
-  }
+  // Pagina e so de execucao — sem id nao ha nada pra mostrar.
+  window.location.replace("ordens.html");
 }
 
 function renderDetail(o){
