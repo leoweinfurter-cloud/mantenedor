@@ -584,15 +584,33 @@ function abrirDesativarPlano(planoId){
   var f = fichas[selAtivo.id];
   var plano = f.planos.find(function(p){return p.id==planoId;});
 
-  // Cancela OS aberta vinculada ao plano
+  // Trata a OS aberta vinculada ao plano (pode ser exclusiva do plano OU
+  // uma OS em lote compartilhada com outros planos do mesmo ativo, gerada
+  // por gerarOSProgramadas() em _shared.js).
   if(plano && plano.os_gerada_id){
-    ordens = ordens.map(function(o){
-      if(o.id==plano.os_gerada_id && o.status!=="Concluida" && o.status!=="Cancelada"){
-        return Object.assign({},o,{status:"Cancelada",descricao:o.descricao+" [OS cancelada: plano desativado]"});
+    var os = ordens.find(function(o){return o.id==plano.os_gerada_id;});
+    if(os && os.status!=="Concluida" && os.status!=="Cancelada"){
+      // outros planos ainda ativos que também dependem desta mesma OS
+      var outrosPlanosAtivos = (os.planos_ids||[]).filter(function(pid){
+        return pid!=planoId && f.planos.some(function(p){return p.id==pid && p.ativo!==false;});
+      });
+
+      if(outrosPlanosAtivos.length===0){
+        // OS exclusiva deste plano (ou nenhum outro plano ativo depende dela): cancela normalmente
+        ordens = ordens.map(function(o){
+          return o.id===os.id ? Object.assign({},o,{status:"Cancelada",descricao:o.descricao+" [OS cancelada: plano desativado]"}) : o;
+        });
+      } else {
+        // OS compartilhada com plano(s) ainda ativo(s): apenas remove este plano da OS,
+        // mantendo-a aberta para os demais.
+        var osAtualizada = Object.assign({},os,{
+          planos_ids:(os.planos_ids||[]).filter(function(pid){return pid!=planoId;}),
+          planos_exec:(os.planos_exec||[]).filter(function(pe){return pe.plano_id!=planoId;})
+        });
+        ordens = ordens.map(function(o){return o.id===os.id ? osAtualizada : o;});
       }
-      return o;
-    });
-    saveOrdens(ordens);
+      saveOrdens(ordens);
+    }
   }
 
   f.planos = f.planos.map(function(p){
