@@ -403,9 +403,10 @@ function renderPlAcoes(){
       +'<span class="pl-acao-type '+a.tipo+'">'+(ismed?"Medicao":"Acao")+'</span>'
       +'<div class="fg" style="margin:0 0 6px"><input placeholder="'+(ismed?"Descricao da medicao *":"Descricao da acao *")+'" value="'+esc(a.desc)+'" oninput="updPlAcao('+a.id+',\'desc\',this.value)" style="margin-top:4px"/></div>'
       +(ismed
-        ? '<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px">'
+        ? '<div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:6px">'
           +'<div class="fg" style="margin:0"><input placeholder="Parametro" value="'+esc(a.param)+'" oninput="updPlAcao('+a.id+',\'param\',this.value)"/></div>'
           +'<div class="fg" style="margin:0"><input placeholder="Unidade" value="'+esc(a.unidade)+'" oninput="updPlAcao('+a.id+',\'unidade\',this.value)"/></div>'
+          +'<div class="fg" style="margin:0"><input type="number" placeholder="Limite min" value="'+(a.limite_min||'')+'" oninput="updPlAcao('+a.id+',\'limite_min\',parseFloat(this.value)||0)"/></div>'
           +'<div class="fg" style="margin:0"><input type="number" placeholder="Limite max" value="'+(a.limite_max||'')+'" oninput="updPlAcao('+a.id+',\'limite_max\',parseFloat(this.value)||0)"/></div>'
           +'</div>'
         : '')

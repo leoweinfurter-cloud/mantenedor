@@ -366,17 +366,36 @@ function gerarOSProgramadas(tol){
 }
 
 // ── CONCLUI OS DE PLANO ───────────────────────────────────────────────
+// Ao concluir uma OS de plano (preventiva/preditiva), registra o historico
+// e as medicoes. Se alguma medicao vier fora do padrao (limite_min/limite_max
+// definidos na acao do plano), abre AUTOMATICAMENTE uma OS Corretiva
+// vinculada ao ativo, com prioridade Alta e descricao listando os desvios.
 function concluirOSProgramada(os,fichasObj){
   if(!os||os.origem!=="plano")return fichasObj;
   var hoje=new Date().toISOString().slice(0,10);
   var f=fichasObj[os.ativo_id];
   if(!f)return fichasObj;
+  var desvios=[]; // medicoes fora do padrao detectadas nesta conclusao
   if(os.planos_exec){
     os.planos_exec.forEach(function(pe){
       f.planos=f.planos.map(function(p){
         if(p.id!==pe.plano_id)return p;
         var prox=calcProxima(hoje,p.frequencia);
-        pe.acoes.forEach(function(a){if(a.tipo==="medicao"&&a.valor_exec!=null&&a.valor_exec!==""){if(!f.preditiva)f.preditiva=[];f.preditiva.push({id:nextId(),data:hoje,param:a.param||a.desc,valor:parseFloat(a.valor_exec),limite:parseFloat(a.limite_max)||0,obs:a.obs_exec||""});}});
+        pe.acoes.forEach(function(a){
+          if(a.tipo==="medicao"&&a.valor_exec!=null&&a.valor_exec!==""){
+            var valor=parseFloat(a.valor_exec);
+            if(!f.preditiva)f.preditiva=[];
+            f.preditiva.push({id:nextId(),data:hoje,param:a.param||a.desc,valor:valor,limite:parseFloat(a.limite_max)||0,obs:a.obs_exec||""});
+            // 0 (ou vazio) em limite_min/limite_max significa "sem limite definido"
+            // — mesma convencao ja usada no restante do arquivo (ver linha de cima).
+            var max=parseFloat(a.limite_max)||0, min=parseFloat(a.limite_min)||0;
+            var foraMax = max>0 && valor>max;
+            var foraMin = min>0 && valor<min;
+            if((foraMax||foraMin) && !isNaN(valor)){
+              desvios.push({plano_nome:pe.plano_nome,param:a.param||a.desc,unidade:a.unidade||"",valor:valor,limite_max:max,limite_min:min,tipo:foraMax?"acima":"abaixo"});
+            }
+          }
+        });
         return Object.assign({},p,{ultima_execucao:hoje,proxima_execucao:prox,status:calcPlanStatus(prox),os_gerada_id:null});
       });
       var horas=(os.execLog||[]).reduce(function(s,e){return s+(e.horas||0);},0);
@@ -385,8 +404,45 @@ function concluirOSProgramada(os,fichasObj){
     });
   }
   fichasObj[os.ativo_id]=f;
+
+  if(desvios.length){
+    var novaCorretiva=abrirCorretivaPorDesvio(os,desvios);
+    if(novaCorretiva && typeof mxToast==="function"){
+      mxToast(desvios.length+" medição(ões) fora do padrão — OS Corretiva "+novaCorretiva.numero_os+" aberta automaticamente.","warn");
+    }
+  }
+
   return fichasObj;
 }
+
+// Cria e persiste uma OS Corretiva a partir de desvios detectados numa
+// medicao preditiva. Extraida como funcao separada para poder ser testada
+// isoladamente e reaproveitada (ex: futura integracao com sensores/IoT).
+function abrirCorretivaPorDesvio(osOrigem,desvios){
+  if(!desvios||!desvios.length)return null;
+  var hoje=new Date().toISOString().slice(0,10);
+  var ativoObj=ativos.find(function(a){return a.id===osOrigem.ativo_id;});
+  var numeroOS=nextNumeroOS("Corretiva",ordens);
+  var descDesvios=desvios.map(function(d){
+    var limite=d.tipo==="acima"?d.limite_max:d.limite_min;
+    return d.param+": "+d.valor+(d.unidade?" "+d.unidade:"")+" ("+d.tipo+" do limite de "+limite+(d.unidade?" "+d.unidade:"")+")";
+  }).join("; ");
+  var novaCorretiva={
+    id:nextId(),numero_os:numeroOS,
+    titulo:(ativoObj?ativoObj.nome:"Ativo")+" — Desvio em medição preditiva",
+    ativo:ativoObj?ativoObj.nome:"",ativo_id:osOrigem.ativo_id,
+    tipo:"Corretiva",prioridade:"Alta",status:"Aberta",
+    tecnico:osOrigem.tecnico||"",
+    abertura:hoje,prazo:"",
+    descricao:"OS aberta automaticamente: parâmetro(s) fora do padrão detectado(s) na OS "+osOrigem.numero_os+". "+descDesvios,
+    origem:"auto_preditiva",origem_os_id:osOrigem.id,execLog:[]
+  };
+  ordens=[novaCorretiva].concat(ordens);
+  saveOrdens(ordens);
+  return novaCorretiva;
+}
+
+
 
 // ── KPIs ──────────────────────────────────────────────────────────────
 function calcInd(ativoNome,hist,ordArr){
