@@ -246,6 +246,7 @@ var AC={"Operacional":"#4ade80","Em Manutencao":"#fbbf24","Parado":"#f87171"};
 var TC={"Corretiva":"#f87171","Preventiva":"#4ade80","Preditiva":"#8b5cf6","Mista":"#60a5fa","Inspecao":"#60a5fa"};
 var LP={"OK":"#4ade80","Atrasado":"#f87171","Vence Hoje":"#fbbf24","Vence em Breve":"#f59e0b"};
 var ANAL_LABELS={"5porques":"5 Porques","ishikawa":"Ishikawa (6M)","fmea":"FMEA","rca":"RCA","fta":"Arvore de Falhas","pdca":"PDCA"};
+var ANAL_COLORS={"5porques":"#60a5fa","ishikawa":"#4ade80","fmea":"#f87171","rca":"#fbbf24","fta":"#a78bfa","pdca":"#818cf8"};
 var FREQ_DIAS={"Semanal":7,"Quinzenal":15,"Mensal":30,"Bimestral":60,"Trimestral":90,"Semestral":180,"Anual":365};
 var IND_CATALOG=[
   {id:"mtbf",abbr:"MTBF",nome:"Tempo Medio entre Falhas",unit:"h",color:"#60a5fa",norma:"EN 13306"},
@@ -270,6 +271,7 @@ var CRIT_DESCS={
   red:["","Redundante em op.","Standby pronto","Redundancia parcial","Sem backup","Ativo unico"]
 };
 var CRIT_CLASS_COLORS={"A":"#f87171","B":"#fb923c","C":"#fbbf24","D":"#4ade80"};
+var CRIT_CLASS_NAMES={"A":"Critica","B":"Alta","C":"Media","D":"Baixa"};
 var CRIT_RECS={
   "A":"Monitoramento continuo. Plano de contingencia obrigatorio. FMEA e analise de causa raiz.",
   "B":"Preventiva sistematica. Monitoramento por condicao recomendado.",
