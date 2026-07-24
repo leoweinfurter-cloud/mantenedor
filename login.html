@@ -203,9 +203,17 @@ if(CONVITE_TOKEN){
       method:"POST",
       headers:{"apikey":SB_KEY,"Authorization":"Bearer "+SB_KEY,"Content-Type":"application/json"},
       body: JSON.stringify({p_token: CONVITE_TOKEN})
-    }).then(function(r){return r.json();}).then(function(rows){
-      var c = Array.isArray(rows) ? rows[0] : rows;
+    }).then(function(r){
+      return r.json().then(function(body){ return {ok:r.ok, body:body}; });
+    }).then(function(res){
       setLoading("btn-convite", false);
+      if(!res.ok){
+        document.getElementById("convite-desc").textContent = "Erro ao carregar o convite (sistema indisponível). Tente recarregar a página em instantes.";
+        document.getElementById("btn-convite").disabled = true;
+        return;
+      }
+      var rows = res.body;
+      var c = Array.isArray(rows) ? rows[0] : rows;
       if(!c || c.status!=="pendente" || new Date(c.expires_at) < new Date()){
         document.getElementById("convite-desc").textContent = "Este link de convite é inválido ou já expirou. Peça um novo link pra quem te convidou.";
         document.getElementById("btn-convite").disabled = true;
@@ -240,6 +248,12 @@ function doAceitarConvite(){
       showMsg(d.msg||d.error_description||"Erro ao criar acesso.","error");
       setLoading("btn-convite", false); return;
     }
+    // Supabase responde 200 com um "usuário-fantasma" (identities:[]) quando o
+    // e-mail já tem conta — por segurança, não revela isso via erro explícito.
+    if(d.user && Array.isArray(d.user.identities) && d.user.identities.length===0){
+      showMsg("Este e-mail já tem uma conta cadastrada. Tente fazer login normalmente com a senha que você já usa, ou peça pro coordenador apagar o usuário duplicado no Supabase antes de gerar um novo convite.","error");
+      setLoading("btn-convite", false); return;
+    }
     var userId = d.user ? d.user.id : d.id;
     var token  = d.access_token || (d.session && d.session.access_token);
     if(!token){
@@ -252,9 +266,17 @@ function doAceitarConvite(){
       method:"POST",
       headers:{"apikey":SB_KEY,"Authorization":"Bearer "+token,"Content-Type":"application/json"},
       body: JSON.stringify({p_token: CONVITE_TOKEN, p_user_id: userId})
-    }).then(function(r){return r.json();}).then(function(rows){
-      var res = Array.isArray(rows) ? rows[0] : rows;
-      if(!res){
+    }).then(function(r){
+      return r.json().then(function(body){ return {ok:r.ok, body:body}; });
+    }).then(function(res){
+      if(!res.ok){
+        var errMsg = (res.body && res.body.message) || "Erro ao vincular o convite.";
+        showMsg(errMsg+" Sua conta foi criada — avise o coordenador ou tente um novo convite.","error");
+        setLoading("btn-convite", false); return;
+      }
+      var rows = res.body;
+      var linha = Array.isArray(rows) ? rows[0] : rows;
+      if(!linha || !linha.tenant_id){
         showMsg("Não foi possível vincular o convite. Tente novamente.","error");
         setLoading("btn-convite", false); return;
       }
@@ -262,8 +284,8 @@ function doAceitarConvite(){
         access_token: token,
         refresh_token: d.refresh_token || (d.session && d.session.refresh_token) || "",
         user_id: userId, email: CONVITE_DATA.email,
-        tenant_id: res.tenant_id, perfil: res.perfil,
-        nome: res.nome, plano: res.plano || "free", tenantNome: res.tenant_nome || ""
+        tenant_id: linha.tenant_id, perfil: linha.perfil,
+        nome: linha.nome, plano: linha.plano || "free", tenantNome: linha.tenant_nome || ""
       }));
       showMsg("Conta criada! Redirecionando...","success");
       setTimeout(function(){ window.location.href="dashboard.html"; }, 1000);
