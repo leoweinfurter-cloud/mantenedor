@@ -421,7 +421,7 @@ function renderExecForm(){
     +'<input type="hidden" id="exec-tipo" value="observacao"/>'
     +'</div>'
     +'<div class="fg"><label class="lbl">Data / Hora</label><input type="datetime-local" id="exec-data" value="'+nowLocalStr()+'"/></div>'
-    +'<div class="fg"><label class="lbl">Tecnico</label><select id="exec-tec"><option value="">Selecione...</option><option>Joao Silva</option><option>Maria Santos</option><option>Carlos Pereira</option><option>Ana Lima</option><option>Pedro Oliveira</option></select></div>'
+    +'<div class="fg"><label class="lbl">Tecnico</label><select id="exec-tec"><option value="">Selecione...</option>'+optsUsuariosTecnicos(currentSel()?currentSel().tecnico:"")+'</select></div>'
 
     +'<div id="exec-obs-fields">'
     +'<div class="fg"><label class="lbl">Descricao *</label><textarea id="exec-desc" placeholder="O que foi observado, feito ou encontrado..."></textarea></div>'

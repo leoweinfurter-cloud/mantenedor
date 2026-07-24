@@ -71,7 +71,7 @@
     <div class="fg"><label class="lbl">Prioridade</label><select id="oc-prio"><option>Critica</option><option>Alta</option><option selected>Normal</option><option>Baixa</option></select></div>
   </div>
   <div class="g2">
-    <div class="fg"><label class="lbl">Tecnico Responsavel</label><select id="oc-tec"><option value="">Selecione...</option><option>Joao Silva</option><option>Maria Santos</option><option>Carlos Pereira</option><option>Ana Lima</option><option>Pedro Oliveira</option></select></div>
+    <div class="fg"><label class="lbl">Tecnico Responsavel</label><select id="oc-tec"><option value="">Selecione...</option></select></div>
     <div class="fg"><label class="lbl">Prazo</label><input type="date" id="oc-prazo"/></div>
   </div>
   <div class="fg"><label class="lbl">Descricao / Sintoma</label><textarea id="oc-desc" placeholder="Descreva o problema ou servico a executar..."></textarea></div>
@@ -101,7 +101,7 @@
     <div class="fg"><label class="lbl">Prioridade</label><select id="op-prio"><option>Critica</option><option>Alta</option><option selected>Normal</option><option>Baixa</option></select></div>
   </div>
   <div class="g2">
-    <div class="fg"><label class="lbl">Tecnico Responsavel</label><select id="op-tec"><option value="">Selecione...</option><option>Joao Silva</option><option>Maria Santos</option><option>Carlos Pereira</option><option>Ana Lima</option><option>Pedro Oliveira</option></select></div>
+    <div class="fg"><label class="lbl">Tecnico Responsavel</label><select id="op-tec"><option value="">Selecione...</option></select></div>
     <div class="fg"><label class="lbl">Prazo</label><input type="date" id="op-prazo"/></div>
   </div>
   <div class="g2">
@@ -128,8 +128,6 @@
 var D=loadData(), ordens=D.ordens, ativos=D.ativos;
 var filter="Todas";
 
-var _tecNomes=[];
-ordens.forEach(function(o){if(o.tecnico&&_tecNomes.indexOf(o.tecnico)===-1)_tecNomes.push(o.tecnico);});
 var PERFIL_ATIVO = "Coordenador";
 
 function setCoordenador(){PERFIL_ATIVO="Coordenador";document.getElementById("perfil-sel").value="Coordenador";render();}
@@ -162,6 +160,7 @@ document.querySelectorAll(".modal").forEach(function(m){m.addEventListener("clic
 // ── NOVA OS CORRETIVA ─────────────────────────────────────────────────
 function openNewOSCorretiva(){
   document.getElementById("oc-ativo").innerHTML='<option value="">Selecione...</option>'+ativos.map(function(a){return'<option value="'+a.id+'">'+esc(a.nome)+'</option>';}).join("");
+  populaSelectTecnicos("oc-tec");
   openModal("modal-os-cor");
 }
 function saveOSCorretiva(){
@@ -184,6 +183,7 @@ function setTipoProgramada(val,el){
 }
 function openNewOSProgramada(){
   document.getElementById("op-ativo").innerHTML='<option value="">Selecione...</option>'+ativos.map(function(a){return'<option value="'+a.id+'">'+esc(a.nome)+'</option>';}).join("");
+  populaSelectTecnicos("op-tec");
   document.querySelectorAll("#modal-os-prog .os-type-btn").forEach(function(b,i){b.classList.toggle("selected",i==0);});
   document.getElementById("op-tipo").value="Preventiva";
   openModal("modal-os-prog");
@@ -297,13 +297,17 @@ function renderList(){
   return summary+'<div class="fr"><div class="fb">'+fb+'</div>'+acoes+'</div>'+cards;
 }
 
-// Popula seletor de perfil
+// Popula seletor de perfil com os tecnicos REALMENTE cadastrados (antes usava
+// _tecNomes, uma lista extraida dos nomes que ja apareciam em OS antigas —
+// se nenhuma OS tivesse sido atribuida a um tecnico ainda, ele nunca
+// aparecia aqui, mesmo ja cadastrado em Cadastros > Usuarios).
 (function(){
   var sel = document.getElementById("perfil-sel");
-  _tecNomes.forEach(function(nome){
+  var usuarios = loadUsuarios().filter(function(u){return u.ativo!==false&&u.perfil!=="Coordenador";});
+  usuarios.forEach(function(u){
     var opt = document.createElement("option");
-    opt.value = nome;
-    opt.textContent = "⚒ " + nome;
+    opt.value = u.nome;
+    opt.textContent = "⚒ " + u.nome;
     sel.appendChild(opt);
   });
 })();

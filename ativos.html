@@ -84,7 +84,7 @@
     <div class="fg"><label class="lbl">Tipo</label><select id="h-tipo"><option>Corretiva</option><option>Preventiva</option><option>Preditiva</option><option>Inspecao</option></select></div>
   </div>
   <div class="g2">
-    <div class="fg"><label class="lbl">Tecnico</label><select id="h-tec"><option value="">Selecione...</option><option>Joao Silva</option><option>Maria Santos</option><option>Carlos Pereira</option><option>Ana Lima</option><option>Pedro Oliveira</option></select></div>
+    <div class="fg"><label class="lbl">Tecnico</label><select id="h-tec"><option value="">Selecione...</option></select></div>
     <div class="fg"><label class="lbl">Horas</label><input type="number" id="h-horas" min="0" step="0.5" placeholder="0"/></div>
   </div>
   <div class="g2">
@@ -304,6 +304,9 @@ function openModal(id){
     populateCatSelect();
     populateEmpSelect();
     document.getElementById("at-unid").disabled=true;
+  }
+  if(id==="modal-hist"){
+    populaSelectTecnicos("h-tec");
   }
   document.getElementById(id).classList.add("open");
 }

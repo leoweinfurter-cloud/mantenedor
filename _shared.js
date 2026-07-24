@@ -296,6 +296,28 @@ function loadUsuarios(){var d=localStorage.getItem("mx_usuarios");return d?JSON.
 function loadCategorias(){var d=localStorage.getItem("mx_categorias");return d?JSON.parse(d):[];}
 function loadEmpresas(){var d=localStorage.getItem("mx_empresas");return d?JSON.parse(d):[];}
 
+// Popula um <select> de tecnico com os usuarios REALMENTE cadastrados (tela
+// Cadastros > Usuarios), em vez da lista fixa de nomes de teste (Joao Silva,
+// Maria Santos, Carlos Pereira, Ana Lima, Pedro Oliveira) que ficava
+// hardcoded direto no HTML dos modais de criacao/execucao de OS e nunca
+// refletia quem o usuario realmente cadastrou.
+function populaSelectTecnicos(selectId,selecionado){
+  var sel=document.getElementById(selectId);
+  if(!sel)return;
+  var usuarios=loadUsuarios().filter(function(u){return u.ativo!==false;});
+  sel.innerHTML='<option value="">Selecione...</option>'
+    +usuarios.map(function(u){return'<option value="'+esc(u.nome)+'"'+(u.nome===selecionado?' selected':'')+'>'+esc(u.nome)+'</option>';}).join("");
+}
+
+// Mesma lista, mas so as tags <option> (sem o <select> nem o "Selecione..."
+// inicial) — usada em templates HTML montados como string, como o
+// formulario de execucao das OS, onde o <select> ja vem com o placeholder
+// escrito diretamente na string.
+function optsUsuariosTecnicos(selecionado){
+  var usuarios=loadUsuarios().filter(function(u){return u.ativo!==false;});
+  return usuarios.map(function(u){return'<option value="'+esc(u.nome)+'"'+(u.nome===selecionado?' selected':'')+'>'+esc(u.nome)+'</option>';}).join("");
+}
+
 function saveOrdens(arr){
   localStorage.setItem("mx_ordens",JSON.stringify(arr));
   sbUpsert("ordens",arr.map(function(o){return{id:o.id,numero_os:o.numero_os||"",titulo:o.titulo||"",ativo_nome:o.ativo||"",ativo_id:o.ativo_id||null,tipo:o.tipo||"Corretiva",prioridade:o.prioridade||"Normal",status:o.status||"Aberta",tecnico:o.tecnico||"",abertura:o.abertura||"",prazo:o.prazo||"",descricao:o.descricao||"",origem:o.origem||"manual",planos_ids:o.planos_ids||[],planos_exec:o.planos_exec||[],exec_log:o.execLog||[]};}));
