@@ -6,20 +6,20 @@
 <title>Mantenedor — OS Preventiva / Preditiva</title>
 <link rel="stylesheet" href="_style.css" id="theme-link"/>
 <style>
-.exec-log-item{background:#060b12;border:1px solid #1e3a5f;border-radius:10px;padding:12px;margin-bottom:8px}
+.exec-log-item{background:var(--inner-bg,#060b12);border:1px solid var(--border,#1e3a5f);border-radius:10px;padding:12px;margin-bottom:8px}
 .exec-log-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px}
 .exec-log-tipo{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;padding:3px 8px;border-radius:10px}
-.exec-log-date{font-size:11px;color:#64748b}
-.exec-log-text{font-size:13px;color:#e2e8f0;line-height:1.5}
-.exec-log-meta{font-size:11px;color:#64748b;margin-top:5px}
+.exec-log-date{font-size:11px;color:var(--text-muted,#64748b)}
+.exec-log-text{font-size:13px;color:var(--text,#e2e8f0);line-height:1.5}
+.exec-log-meta{font-size:11px;color:var(--text-muted,#64748b);margin-top:5px}
 .status-flow{display:flex;align-items:center;gap:0;margin-bottom:20px;overflow-x:auto}
 .status-step{flex:1;text-align:center;padding:10px 4px;font-size:11px;font-weight:700;color:#475569;border-bottom:2px solid #1e3a5f;white-space:nowrap;min-width:70px}
 .status-step.done{color:#4ade80;border-color:#4ade80}
 .status-step.current{color:#60a5fa;border-color:#60a5fa}
-.os-type-btn{padding:12px 8px;border-radius:10px;border:1px solid #1e3a5f;background:#060b12;cursor:pointer;text-align:center;transition:all .15s;font-family:inherit}
+.os-type-btn{padding:12px 8px;border-radius:10px;border:1px solid var(--border,#1e3a5f);background:var(--inner-bg,#060b12);cursor:pointer;text-align:center;transition:all .15s;font-family:inherit}
 .os-type-btn.selected{border-color:#3b82f6;background:rgba(59,130,246,.1)}
 .os-type-icon{font-size:20px;margin-bottom:4px}
-.os-type-label{font-size:11px;font-weight:700;color:#94a3b8}
+.os-type-label{font-size:11px;font-weight:700;color:var(--text-muted,#94a3b8)}
 .os-type-btn.selected .os-type-label{color:#60a5fa}
 .os-numero{font-size:10px;font-weight:700;color:#64748b;letter-spacing:.03em}
 .os-numero-big{font-size:12px;font-weight:700;color:#8b5cf6;letter-spacing:.03em;margin-bottom:4px}
