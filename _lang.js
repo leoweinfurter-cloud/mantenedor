@@ -881,7 +881,14 @@ function addToggle(){
       window.dispatchEvent(new CustomEvent("langchange", {detail:{lang:next}}));
     };
 
-    topbar.appendChild(btn);
+    // Insere antes do botao de logout, para que o logout fique sempre
+    // como o ultimo item (mais a direita) do topbar
+    var logoutBtn = document.getElementById("logout-btn");
+    if(logoutBtn && logoutBtn.parentNode === topbar){
+      topbar.insertBefore(btn, logoutBtn);
+    } else {
+      topbar.appendChild(btn);
+    }
   });
 }
 
