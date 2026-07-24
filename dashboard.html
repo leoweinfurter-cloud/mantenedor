@@ -68,7 +68,15 @@ function calcGlobal(){
     var comp2=allP.length>0?Math.round(allP.filter(function(p){return p.status=="OK";}).length/allP.length*100):0;
     return{mtbf:"--",mttr:"--",disp:"--",mp:0,comp:comp2,bkl:bkl,nCorr:0,atrasados:atrasados};
   }
-  var per=8760*Math.max(ativos.length,1);
+  var per=0,anyHist=false;
+  ativos.forEach(function(a){
+    var f=fichas[a.id],h=(f&&f.historico)||[];
+    if(!h.length)return;
+    anyHist=true;
+    var ds=h.map(function(x){return new Date(x.data).getTime();}).sort(function(x,y){return x-y;});
+    per+=Math.max((Date.now()-ds[0])/3600000,720);
+  });
+  if(!anyHist)per=8760;
   var mtbf=nC>0?Math.round((per-hC)/nC):"--";
   var mttr=nC>0?Math.round(hC/nC*10)/10:"--";
   var disp=(mtbf!=="--"&&mttr!=="--")?Math.round(mtbf/(mtbf+mttr)*1000)/10:"--";

@@ -246,7 +246,6 @@ var AC={"Operacional":"#4ade80","Em Manutencao":"#fbbf24","Parado":"#f87171"};
 var TC={"Corretiva":"#f87171","Preventiva":"#4ade80","Preditiva":"#8b5cf6","Mista":"#60a5fa","Inspecao":"#60a5fa"};
 var LP={"OK":"#4ade80","Atrasado":"#f87171","Vence Hoje":"#fbbf24","Vence em Breve":"#f59e0b"};
 var ANAL_LABELS={"5porques":"5 Porques","ishikawa":"Ishikawa (6M)","fmea":"FMEA","rca":"RCA","fta":"Arvore de Falhas","pdca":"PDCA"};
-var ANAL_COLORS={"5porques":"#60a5fa","ishikawa":"#4ade80","fmea":"#f87171","rca":"#fbbf24","fta":"#a78bfa","pdca":"#818cf8"};
 var FREQ_DIAS={"Semanal":7,"Quinzenal":15,"Mensal":30,"Bimestral":60,"Trimestral":90,"Semestral":180,"Anual":365};
 var IND_CATALOG=[
   {id:"mtbf",abbr:"MTBF",nome:"Tempo Medio entre Falhas",unit:"h",color:"#60a5fa",norma:"EN 13306"},
@@ -271,7 +270,6 @@ var CRIT_DESCS={
   red:["","Redundante em op.","Standby pronto","Redundancia parcial","Sem backup","Ativo unico"]
 };
 var CRIT_CLASS_COLORS={"A":"#f87171","B":"#fb923c","C":"#fbbf24","D":"#4ade80"};
-var CRIT_CLASS_NAMES={"A":"Critica","B":"Alta","C":"Media","D":"Baixa"};
 var CRIT_RECS={
   "A":"Monitoramento continuo. Plano de contingencia obrigatorio. FMEA e analise de causa raiz.",
   "B":"Preventiva sistematica. Monitoramento por condicao recomendado.",
@@ -529,7 +527,7 @@ function calcInd(ativoId,ativoNome,hist,ordArr){
   var plan=hist.filter(function(h){return h.tipo==="Preventiva"||h.tipo==="Preditiva";});
   var nC=corr.length,nT=hist.length,hC=corr.reduce(function(s,h){return s+(h.horas||0);},0);
   var per=8760;
-  if(hist.length>=2){var ds=hist.map(function(h){return new Date(h.data).getTime();}).sort(function(a,b){return a-b;});per=Math.max((ds[ds.length-1]-ds[0])/3600000,720);}
+  if(hist.length>=1){var ds=hist.map(function(h){return new Date(h.data).getTime();}).sort(function(a,b){return a-b;});per=Math.max((Date.now()-ds[0])/3600000,720);}
   var mtbf=nC>0?Math.round((per-hC)/nC):null;
   var mttr=nC>0?Math.round(hC/nC*10)/10:null;
   var disp=(mtbf&&mttr)?Math.round(mtbf/(mtbf+mttr)*1000)/10:null;
