@@ -135,6 +135,27 @@ input::placeholder{color:#334155;}
       <div>✓ Relatórios</div>
     </div>
   </div>
+
+  <!-- ACEITAR CONVITE -->
+  <div id="form-convite" style="display:none">
+    <div class="hint" style="margin-bottom:16px" id="convite-desc">Carregando convite...</div>
+    <div class="field">
+      <label class="label">E-mail</label>
+      <input type="email" id="convite-email" disabled/>
+    </div>
+    <div class="field">
+      <label class="label">Crie uma senha</label>
+      <input type="password" id="convite-senha" placeholder="Mínimo 6 caracteres" autocomplete="new-password"/>
+    </div>
+    <div class="field">
+      <label class="label">Confirme a senha</label>
+      <input type="password" id="convite-senha2" placeholder="Repita a senha" autocomplete="new-password"/>
+    </div>
+    <button class="btn-primary" id="btn-convite" onclick="doAceitarConvite()">
+      <span>Entrar</span>
+      <div class="spinner"></div>
+    </button>
+  </div>
 </div></div>
 
 <div class="footer">
@@ -165,6 +186,96 @@ var AUTH    = SB_URL + "/auth/v1";
     });
   }
 })();
+
+// ── ACEITAR CONVITE ──────────────────────────────────────────────────
+var CONVITE_TOKEN = new URLSearchParams(window.location.search).get("convite");
+var CONVITE_DATA = null;
+
+if(CONVITE_TOKEN){
+  window.addEventListener("DOMContentLoaded", function(){
+    document.querySelector(".tabs").style.display = "none";
+    document.getElementById("form-login").style.display  = "none";
+    document.getElementById("form-signup").style.display = "none";
+    document.getElementById("form-convite").style.display = "block";
+    setLoading("btn-convite", true);
+
+    fetch(REST+"/rpc/get_convite_by_token", {
+      method:"POST",
+      headers:{"apikey":SB_KEY,"Authorization":"Bearer "+SB_KEY,"Content-Type":"application/json"},
+      body: JSON.stringify({p_token: CONVITE_TOKEN})
+    }).then(function(r){return r.json();}).then(function(rows){
+      var c = Array.isArray(rows) ? rows[0] : rows;
+      setLoading("btn-convite", false);
+      if(!c || c.status!=="pendente" || new Date(c.expires_at) < new Date()){
+        document.getElementById("convite-desc").textContent = "Este link de convite é inválido ou já expirou. Peça um novo link pra quem te convidou.";
+        document.getElementById("btn-convite").disabled = true;
+        return;
+      }
+      CONVITE_DATA = c;
+      document.getElementById("convite-desc").textContent =
+        "Você foi convidado por "+(c.tenant_nome||"sua empresa")+" como "+c.perfil+". Crie sua senha pra entrar.";
+      document.getElementById("convite-email").value = c.email;
+    }).catch(function(){
+      setLoading("btn-convite", false);
+      document.getElementById("convite-desc").textContent = "Erro ao carregar o convite. Verifique sua conexão e recarregue a página.";
+    });
+  });
+}
+
+function doAceitarConvite(){
+  if(!CONVITE_DATA){ showMsg("Convite ainda não carregado.","error"); return; }
+  var senha  = document.getElementById("convite-senha").value;
+  var senha2 = document.getElementById("convite-senha2").value;
+  if(senha.length<6){ showMsg("Senha deve ter ao menos 6 caracteres.","error"); return; }
+  if(senha!==senha2){ showMsg("As senhas não coincidem.","error"); return; }
+
+  setLoading("btn-convite", true); hideMsg();
+
+  fetch(AUTH+"/signup", {
+    method:"POST",
+    headers:{"apikey":SB_KEY,"Content-Type":"application/json"},
+    body: JSON.stringify({email: CONVITE_DATA.email, password: senha})
+  }).then(function(r){return r.json();}).then(function(d){
+    if(d.error||d.error_code){
+      showMsg(d.msg||d.error_description||"Erro ao criar acesso.","error");
+      setLoading("btn-convite", false); return;
+    }
+    var userId = d.user ? d.user.id : d.id;
+    var token  = d.access_token || (d.session && d.session.access_token);
+    if(!token){
+      // E-mail confirmação pode estar ativa e não retornar sessão direto — orienta o usuário
+      showMsg("Conta criada. Confirme seu e-mail e depois faça login normalmente.","success");
+      setLoading("btn-convite", false); return;
+    }
+
+    fetch(REST+"/rpc/aceitar_convite", {
+      method:"POST",
+      headers:{"apikey":SB_KEY,"Authorization":"Bearer "+token,"Content-Type":"application/json"},
+      body: JSON.stringify({p_token: CONVITE_TOKEN, p_user_id: userId})
+    }).then(function(r){return r.json();}).then(function(rows){
+      var res = Array.isArray(rows) ? rows[0] : rows;
+      if(!res){
+        showMsg("Não foi possível vincular o convite. Tente novamente.","error");
+        setLoading("btn-convite", false); return;
+      }
+      localStorage.setItem("mx_session", JSON.stringify({
+        access_token: token,
+        refresh_token: d.refresh_token || (d.session && d.session.refresh_token) || "",
+        user_id: userId, email: CONVITE_DATA.email,
+        tenant_id: res.tenant_id, perfil: res.perfil,
+        nome: res.nome, plano: res.plano || "free", tenantNome: res.tenant_nome || ""
+      }));
+      showMsg("Conta criada! Redirecionando...","success");
+      setTimeout(function(){ window.location.href="dashboard.html"; }, 1000);
+    }).catch(function(){
+      showMsg("Erro ao vincular o convite. Sua conta foi criada — tente fazer login normalmente.","error");
+      setLoading("btn-convite", false);
+    });
+  }).catch(function(){
+    showMsg("Erro de conexão. Tente novamente.","error");
+    setLoading("btn-convite", false);
+  });
+}
 
 function setTab(t){
   document.getElementById("form-login").style.display  = t==="login"  ? "block":"none";
@@ -326,6 +437,7 @@ function doSignup(){
 // Enter key support
 document.addEventListener("keydown",function(e){
   if(e.key!=="Enter")return;
+  if(CONVITE_TOKEN){ doAceitarConvite(); return; }
   var loginVisible=document.getElementById("form-login").style.display!=="none";
   if(loginVisible)doLogin(); else doSignup();
 });

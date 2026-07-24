@@ -45,6 +45,17 @@ function meuPrimeiro(){return meuNome().split(" ")[0]||"";}
 function meuPerfil(){var s=getSession();return s?s.perfil:"";}
 function isCoordenador(){return meuPerfil()==="Coordenador";}
 
+// Bloqueia a página inteira pra quem não é Coordenador (Cadastros, Relatórios, etc.)
+function authRequireCoordenador(){
+  var s=authRequired();
+  if(!s) return null;
+  if(s.perfil!=="Coordenador"){
+    window.location.href="dashboard.html?erro=sem_permissao";
+    return null;
+  }
+  return s;
+}
+
 // ── TOAST ─────────────────────────────────────────────────────────────
 function mxToast(msg,type){
   type=type||"error";
@@ -350,7 +361,7 @@ function saveFichas(fichasObj){
     sbDelete("medicoes","ativo_id",ativoId).then(function(){if(f.preditiva&&f.preditiva.length)sbUpsert("medicoes",f.preditiva.map(function(m){return{id:m.id,ativo_id:ativoId,data:m.data||"",param:m.param||"",valor:m.valor||0,limite:m.limite||0,obs:m.obs||""};}));});
   });
 }
-function saveUsuarios(d){localStorage.setItem("mx_usuarios",JSON.stringify(d));sbUpsert("usuarios",d.map(function(u){return{id:u.id,nome:u.nome,email:u.email||"",telefone:u.telefone||"",perfil:u.perfil||"Tecnico",ativo:u.ativo!==false};}));}
+function saveUsuarios(d){localStorage.setItem("mx_usuarios",JSON.stringify(d));sbUpsert("usuarios",d.map(function(u){return{id:u.id,nome:u.nome,email:u.email||"",telefone:u.telefone||"",perfil:u.perfil||"Tecnico",ativo:u.ativo!==false,status:u.status||"Ativo",user_id:u.user_id||null};}));}
 function saveCategorias(d){localStorage.setItem("mx_categorias",JSON.stringify(d));sbUpsert("categorias",d.map(function(c){return{id:c.id,nome:c.nome,descricao:c.descricao||"",icone:c.icone||"⚙",cor:c.cor||"#60a5fa"};}));}
 function saveEmpresas(d){
   localStorage.setItem("mx_empresas",JSON.stringify(d));
@@ -541,10 +552,19 @@ function getCritClass(sc){if(sc>=70)return"A";if(sc>=45)return"B";if(sc>=25)retu
 function contarPlanosPendentes(fichasObj){var t=0;Object.keys(fichasObj).forEach(function(id){var f=fichasObj[id];if(!f||!f.planos)return;f.planos.forEach(function(p){if(calcPlanStatus(p.proxima_execucao)!=="OK")t++;});});return t;}
 
 // ── INIT APP ──────────────────────────────────────────────────────────
+function aplicarRestricoesNav(){
+  if(isCoordenador())return;
+  ["cadastros.html","relatorios.html"].forEach(function(href){
+    var links=document.querySelectorAll('#bottom-nav a[href="'+href+'"]');
+    links.forEach(function(a){a.style.display="none";});
+  });
+}
+
 function initApp(renderFn){
   // Auth check — redireciona para login se não autenticado
   var sess=authRequired();
   if(!sess)return;
+  aplicarRestricoesNav();
 
   // Show/hide ads based on plan
   if(typeof showAds==="function") showAds(getPlano()==="free");

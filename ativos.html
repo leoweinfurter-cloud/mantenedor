@@ -314,6 +314,7 @@ document.querySelectorAll(".modal").forEach(function(m){m.addEventListener("clic
 
 // ── SAVES ──────────────────────────────────────────────────────────────────
 function saveAtivo(){
+  if(!isCoordenador()){mxToast("Apenas Coordenadores podem cadastrar ativos.","error");return;}
   var n=document.getElementById("at-nome").value.trim();if(!n){alert("Informe o nome.");return;}
   var id=nextId();
   ativos.unshift({id:id,nome:n,categoria:gv("at-cat"),empresa:gv("at-emp"),unidade:gv("at-unid"),localizacao:gv("at-loc"),fabricante:gv("at-fab"),modelo:gv("at-mod"),serie:gv("at-serie"),ano:gv("at-ano"),tag:gv("at-tag"),patrimonio:gv("at-pat"),status:t('at_status_op'),ultima_manutencao:"--",proxima_manutencao:"--"});
@@ -429,6 +430,7 @@ function updPlAcao(id, key, val){
 }
 
 function savePlano(){
+  if(!isCoordenador()){mxToast("Apenas Coordenadores podem gerenciar planos.","error");return;}
   var n=document.getElementById("pl-nome").value.trim();
   if(!n){alert("Informe o nome.");return;}
   var f=fichas[selAtivo.id];
@@ -596,6 +598,7 @@ function buildAnaliseView(an){
 
 // ── DESATIVAÇÃO ───────────────────────────────────────────────────────
 function abrirDesativarPlano(planoId){
+  if(!isCoordenador()){mxToast("Apenas Coordenadores podem desativar planos.","error");return;}
   if(!confirm("Desativar este plano? Ele não gerará novas OS enquanto inativo.")) return;
   var f = fichas[selAtivo.id];
   var plano = f.planos.find(function(p){return p.id==planoId;});
@@ -637,6 +640,7 @@ function abrirDesativarPlano(planoId){
 }
 
 function abrirDesativarAtivo(){
+  if(!isCoordenador()){mxToast("Apenas Coordenadores podem desativar ativos.","error");return;}
   if(!selAtivo) return;
   document.getElementById("desativ-id").value = selAtivo.id;
   document.getElementById("desativ-motivo").value = "";
@@ -682,6 +686,7 @@ function confirmarDesativacao(){
 }
 
 function reativarPlano(planoId){
+  if(!isCoordenador()){mxToast("Apenas Coordenadores podem reativar planos.","error");return;}
   if(!confirm("Reativar este plano?")) return;
   var f = fichas[selAtivo.id];
   f.planos = f.planos.map(function(p){
@@ -692,6 +697,7 @@ function reativarPlano(planoId){
 }
 
 function reativarAtivo(ativoId){
+  if(!isCoordenador()){mxToast("Apenas Coordenadores podem reativar ativos.","error");return;}
   if(!confirm("Reativar este ativo?")) return;
   ativos = ativos.map(function(a){
     return a.id===ativoId ? Object.assign({},a,{status:"Operacional",motivo_desativacao:"",desativado_em:""}) : a;
@@ -725,7 +731,7 @@ function renderList(){
   }
   var cards=ativosAtivos.length===0?'<div style="color:#64748b;text-align:center;padding:40px;font-size:14px">Nenhum ativo cadastrado</div>':ativosAtivos.map(function(a){return mkCard(a,false);}).join("");
   var cardsD=ativosDesativ.length===0?"":'<div style="margin-top:14px"><div style="font-size:11px;font-weight:800;color:#64748b;text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px">Desativados ('+ativosDesativ.length+')</div>'+ativosDesativ.map(function(a){return mkCard(a,true);}).join("")+'</div>';
-  return'<div class="fr"><div></div><button class="btn bp" onclick="openModal(\'modal-ativo\')">+ Novo Ativo</button></div>'+'<div class="asset-list">'+cards+cardsD+'</div>';
+  return'<div class="fr"><div></div>'+(isCoordenador()?'<button class="btn bp" onclick="openModal(\'modal-ativo\')">+ Novo Ativo</button>':'')+'</div>'+'<div class="asset-list">'+cards+cardsD+'</div>';
 }
 
 function selAti(id){selAtivo=ativos.find(function(a){return a.id==id;});fichaTab="geral";if(!fichas[id])fichas[id]={historico:[],preditiva:[],planos:[],docs:[],indicadores:["mtbf","mttr","disp","manuplan"]};render();}
@@ -747,7 +753,7 @@ function renderFicha(){
   else if(fichaTab=="criticidade")content=tabCrit(a,f);
   return'<div style="display:flex;align-items:center;gap:10px;margin-bottom:16px">'
     +'<button class="btn bx" onclick="selAtivo=null;render()">&#8592; Voltar</button>'
-    +(selAtivo.status!=="Desativado"
+    +(!isCoordenador() ? '' : selAtivo.status!=="Desativado"
       ?'<button class="btn bsm" onclick="abrirDesativarAtivo()" style="font-size:11px;background:#7f1d1d30;color:#f87171;border:1px solid #f8717140">Desativar</button>'
       :'<button class="btn bsm" onclick="reativarAtivo('+selAtivo.id+')" style="font-size:11px;background:#14532d30;color:#4ade80;border:1px solid #4ade8040">Reativar</button>')
     +'</div>'
@@ -852,8 +858,8 @@ function tabPrev(a,f){
         +(nAcao>0||nMed>0?'<div style="font-size:11px;color:#64748b;margin-top:4px">'+nAcao+' acoes / '+nMed+' medicoes</div>':"")
         +'</div>'
         +'<div style="display:flex;flex-direction:column;gap:6px;flex-shrink:0">'
-        +'<button class="btn bx bsm" onclick="editPlano('+p.id+')" style="font-size:11px">Editar</button>'
-        +(p.ativo===false?'<button class="btn bsm" onclick="reativarPlano('+p.id+')" style="font-size:11px;background:#14532d30;color:#4ade80;border:1px solid #4ade8040">Reativar</button>':'<button class="btn bsm" onclick="abrirDesativarPlano('+p.id+')" style="font-size:11px;background:#7f1d1d30;color:#f87171;border:1px solid #f8717140">Desativar</button>')
+        +(isCoordenador()?'<button class="btn bx bsm" onclick="editPlano('+p.id+')" style="font-size:11px">Editar</button>':'')
+        +(!isCoordenador()?'':p.ativo===false?'<button class="btn bsm" onclick="reativarPlano('+p.id+')" style="font-size:11px;background:#14532d30;color:#4ade80;border:1px solid #4ade8040">Reativar</button>':'<button class="btn bsm" onclick="abrirDesativarPlano('+p.id+')" style="font-size:11px;background:#7f1d1d30;color:#f87171;border:1px solid #f8717140">Desativar</button>')
         +'</div></div>'
         +(acoes.length>0?'<div class="plan-acoes-preview">'+chips+'</div>':"")
         +'<div style="margin-top:10px">'+hasOS+'</div>'
@@ -876,13 +882,14 @@ function tabPrev(a,f){
   return alertHtml
     +'<div class="fr"><div style="font-size:13px;color:#64748b">'+planosFiltro.length+' plano(s) ativo(s)</div>'
     +'<div style="display:flex;gap:8px">'
-    +'<button class="btn bx bsm" onclick="gerarOSTodos()" style="font-size:11px">&#9654; Gerar OS Vencidas</button>'
-    +'<button class="btn bp" onclick="openNewPlano()">+ Novo Plano</button>'
+    +(isCoordenador()?'<button class="btn bx bsm" onclick="gerarOSTodos()" style="font-size:11px">&#9654; Gerar OS Vencidas</button>':'')
+    +(isCoordenador()?'<button class="btn bp" onclick="openNewPlano()">+ Novo Plano</button>':'')
     +'</div></div>'
     +cards+cardsInativos;
 }
 
 function delPlano(planoId){
+  if(!isCoordenador()){mxToast("Apenas Coordenadores podem excluir planos.","error");return;}
   if(!confirm("Excluir este plano?")) return;
   var f=fichas[selAtivo.id];
   f.planos=f.planos.filter(function(p){return p.id!==planoId;});

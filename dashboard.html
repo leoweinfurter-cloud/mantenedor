@@ -237,6 +237,10 @@ function render(){
     +'<div class="card"><div class="card-title">'+t("dash_equipamentos")+'</div>'+ahHtml+'</div>'
     +'<div class="card"><div class="card-title">'+t("dash_planos")+'</div>'+upHtml+'</div>';
 }
+if(new URLSearchParams(location.search).get("erro")==="sem_permissao"){
+  setTimeout(function(){mxToast("Essa área é restrita ao perfil Coordenador.","error");},400);
+  history.replaceState(null,"","dashboard.html");
+}
 initApp(render);
 </script>
 <script>

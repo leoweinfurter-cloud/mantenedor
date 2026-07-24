@@ -122,9 +122,10 @@
   <input type="hidden" id="u-id"/>
   <div class="fg"><label class="lbl" data-i18n="cad_f_nome">Nome completo *</label><input id="u-nome" placeholder="Ex: Joao da Silva"/></div>
   <div class="fg"><label class="lbl" data-i18n="cad_f_email">E-mail *</label><input type="email" id="u-email" placeholder="joao@empresa.com"/></div>
-  <div class="g2">
-    <div class="fg"><label class="lbl" data-i18n="cad_f_telefone">Telefone</label><input id="u-tel" placeholder="(41) 99999-0000"/></div>
-    <div class="fg"><label class="lbl" data-i18n="cad_f_senha">Senha</label><input type="password" id="u-senha" placeholder="••••••••"/></div>
+  <div class="fg"><label class="lbl" data-i18n="cad_f_telefone">Telefone</label><input id="u-tel" placeholder="(41) 99999-0000"/></div>
+  <div class="fg" id="user-invite-hint" style="display:none">
+    <label class="lbl">Acesso ao sistema</label>
+    <div id="user-invite-status" style="font-size:12px;color:#64748b;padding:8px 10px;background:#0d1929;border:1px solid var(--border,#1e3a5f);border-radius:8px"></div>
   </div>
   <div class="fg">
     <label class="lbl" data-i18n="cad_f_perfil">Perfil</label>
@@ -154,11 +155,25 @@
   </div>
   <div class="mf">
     <button class="btn bx" onclick="closeModal('modal-user')"><span data-i18n="btn_cancelar">Cancelar</span></button>
-    <button class="btn bp" onclick="saveUser()"><span data-i18n="btn_salvar">Salvar</span></button>
+    <button class="btn bp" onclick="saveUser()" id="user-save-btn"><span data-i18n="btn_salvar">Salvar</span></button>
+  </div>
+</div></div>
+
+<!-- ── MODAL CONVITE (link gerado) ── -->
+<div class="modal" id="modal-convite"><div class="mc" onclick="event.stopPropagation()">
+  <div class="mt2">Convite gerado</div>
+  <p style="font-size:13px;color:#94a3b8;margin-bottom:12px">Envie este link para a pessoa. Ele expira em 7 dias e permite criar a própria senha e entrar direto na sua empresa, já com o perfil definido.</p>
+  <div class="fg">
+    <input id="convite-link" readonly style="font-size:12px" onclick="this.select()"/>
+  </div>
+  <div class="mf">
+    <button class="btn bx" onclick="closeModal('modal-convite')">Fechar</button>
+    <button class="btn bp" onclick="copiarConviteAtual()">Copiar link</button>
   </div>
 </div></div>
 
 <!-- ── MODAL CATEGORIA ── -->
+
 <div class="modal" id="modal-cat"><div class="mc" onclick="event.stopPropagation()">
   <div class="mt2" id="cat-modal-title">Nova Categoria</div>
   <input type="hidden" id="c-id"/>
@@ -193,6 +208,8 @@
 <script src="_lang.js"></script>
 <script src="_shared.js"></script>
 <script>
+authRequireCoordenador(); // Cadastros é restrito a Coordenador
+
 // ── DADOS ────────────────────────────────────────────────────────────────────
 
 
@@ -246,6 +263,7 @@ function renderUsuarios(){
   var cards = usuarios.map(function(u){
     var cor = PERFIL_COR[u.perfil]||"#475569";
     var ini = u.nome.split(" ").slice(0,2).map(function(n){return n[0];}).join("");
+    var pendente = u.status==="Pendente";
     return '<div class="user-card'+(u.ativo?"":" inativo")+'">'
       +'<div class="user-av" style="background:'+cor+'">'+ini+'</div>'
       +'<div class="user-info">'
@@ -253,9 +271,11 @@ function renderUsuarios(){
       +'<div class="user-email">'+esc(u.email)+'</div>'
       +'<div class="user-meta">'
       +(u.telefone?esc(u.telefone)+' &bull; ':"")+esc(u.perfil)
+      +(pendente?' &bull; <span style="color:#fbbf24">Convite pendente</span>':'')
       +(u.ativo?'':' &bull; <span style="color:#f87171">Inativo</span>')
       +'</div></div>'
       +'<div class="user-btns">'
+      +(pendente?'<button class="btn bp bsm" onclick="copiarLinkConvite('+u.id+')" style="font-size:11px">Copiar link</button>':'')
       +'<button class="btn bx bsm" onclick="editUser('+u.id+')" style="font-size:11px">Editar</button>'
       +'<button class="btn bsm" onclick="toggleUser('+u.id+')" style="font-size:11px;'
       +(u.ativo
@@ -283,9 +303,12 @@ function openNewUser(){
   document.getElementById("u-id").value    = "";
   document.getElementById("u-nome").value  = "";
   document.getElementById("u-email").value = "";
+  document.getElementById("u-email").readOnly = false;
   document.getElementById("u-tel").value   = "";
-  document.getElementById("u-senha").value = "";
   document.getElementById("user-status-wrap").style.display = "none";
+  document.getElementById("user-invite-hint").style.display = "block";
+  document.getElementById("user-invite-status").textContent = "Ao salvar, um link de convite é gerado pra essa pessoa criar a própria senha.";
+  document.getElementById("user-save-btn").querySelector("span").textContent = "Salvar e gerar convite";
   setPerfil("Coordenador", document.getElementById("perfil-Coordenador"));
   openModal("modal-user");
 }
@@ -293,13 +316,19 @@ function openNewUser(){
 function editUser(id){
   var u = usuarios.find(function(x){return x.id==id;});
   if(!u) return;
+  var pendente = u.status==="Pendente";
   document.getElementById("user-modal-title").textContent = "Editar Usuario";
   document.getElementById("u-id").value    = u.id;
   document.getElementById("u-nome").value  = u.nome;
   document.getElementById("u-email").value = u.email;
+  document.getElementById("u-email").readOnly = !pendente; // e-mail já vinculado ao login não pode mudar por aqui
   document.getElementById("u-tel").value   = u.telefone||"";
-  document.getElementById("u-senha").value = u.senha||"";
   document.getElementById("user-status-wrap").style.display = "block";
+  document.getElementById("user-invite-hint").style.display = "block";
+  document.getElementById("user-invite-status").textContent = pendente
+    ? "Convite ainda não aceito. Use \"Copiar link\" no card pra reenviar."
+    : "Esta pessoa já tem login ativo.";
+  document.getElementById("user-save-btn").querySelector("span").textContent = "Salvar";
   setPerfil(u.perfil, document.getElementById("perfil-"+u.perfil));
   setStatus(u.ativo);
   openModal("modal-user");
@@ -328,29 +357,76 @@ function saveUser(){
   var email = document.getElementById("u-email").value.trim();
   if(!nome || !email){ alert("Preencha nome e e-mail."); return; }
 
-  var id    = document.getElementById("u-id").value;
+  var id     = document.getElementById("u-id").value;
   var perfil = document.getElementById("u-perfil").value;
   var ativo  = document.getElementById("u-ativo").value === "true";
   var tel    = document.getElementById("u-tel").value.trim();
-  var senha  = document.getElementById("u-senha").value || "1234";
 
   if(id){
-    // Editar
+    // Editar (mantém status atual — não mexe em Pendente/Ativo aqui)
+    var atual = usuarios.find(function(u){return u.id==parseInt(id);});
     usuarios = usuarios.map(function(u){
       return u.id==parseInt(id)
-        ? {id:u.id, nome:nome, email:email, telefone:tel, senha:senha, perfil:perfil, ativo:ativo}
+        ? {id:u.id, nome:nome, email:email, telefone:tel, perfil:perfil, ativo:ativo, status:(atual&&atual.status)||"Ativo", user_id:atual&&atual.user_id}
         : u;
     });
+    saveUsuarios(usuarios);
+    closeModal("modal-user");
+    render();
   } else {
-    // Novo
+    // Novo — cria como Pendente e gera convite
     if(usuarios.find(function(u){return u.email===email;})){
       alert("Ja existe um usuario com este e-mail."); return;
     }
-    usuarios.push({id:nextId(), nome:nome, email:email, telefone:tel, senha:senha, perfil:perfil, ativo:true});
+    var novo = {id:nextId(), nome:nome, email:email, telefone:tel, perfil:perfil, ativo:true, status:"Pendente"};
+    usuarios.push(novo);
+    saveUsuarios(usuarios);
+    closeModal("modal-user");
+    render();
+    criarConvite(novo).then(function(token){
+      if(token) mostrarLinkConvite(token);
+    });
   }
-  saveUsuarios(usuarios);
-  closeModal("modal-user");
-  render();
+}
+
+// ── CONVITES ─────────────────────────────────────────────────────────────────
+function linkConvite(token){
+  var base = location.href.replace(/cadastros\.html.*$/,"");
+  return base + "login.html?convite=" + token;
+}
+function mostrarLinkConvite(token){
+  document.getElementById("convite-link").value = linkConvite(token);
+  openModal("modal-convite");
+}
+function copiarConviteAtual(){
+  var el = document.getElementById("convite-link");
+  el.select();
+  navigator.clipboard && navigator.clipboard.writeText(el.value).then(function(){
+    mxToast("Link copiado.","success");
+  });
+}
+function criarConvite(u){
+  return sbFetch("convites", {
+    method:"POST",
+    headers:{"Prefer":"return=representation"},
+    body:JSON.stringify({
+      tenant_id: getTenantId(), usuario_id: u.id,
+      email: u.email, nome: u.nome, perfil: u.perfil, status:"pendente"
+    })
+  }).then(function(r){
+    if(!r.ok){ mxToast("Não foi possível gerar o convite.","error"); return null; }
+    return r.json();
+  }).then(function(rows){
+    var row = Array.isArray(rows) && rows[0];
+    return row ? row.token : null;
+  }).catch(function(){ mxToast("Falha de conexão ao gerar convite.","error"); return null; });
+}
+function copiarLinkConvite(id){
+  var u = usuarios.find(function(x){return x.id==id;});
+  if(!u) return;
+  criarConvite(u).then(function(token){
+    if(token) mostrarLinkConvite(token);
+  });
 }
 
 function toggleUser(id){
