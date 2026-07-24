@@ -38,9 +38,6 @@
         <div><div id="tt">OS Preventiva / Preditiva</div><div id="ta"></div></div>
       </div>
       <div style="display:flex;align-items:center;gap:8px">
-        <select id="perfil-sel" onchange="PERFIL_ATIVO=this.value;render()" style="background:#1e3a5f;border:1px solid #2d5a8e;border-radius:8px;padding:6px 10px;font-size:12px;color:#e2e8f0;width:auto">
-          <option value="Coordenador">&#128101; Coordenador</option>
-        </select>
       </div>
     </div>
 
@@ -71,12 +68,10 @@ var fotoBase64=null;
 
 var _tecNomes=[];
 ordens.forEach(function(o){if(o.tecnico&&_tecNomes.indexOf(o.tecnico)===-1)_tecNomes.push(o.tecnico);});
-var PERFIL_ATIVO = "Coordenador";
 
-function setCoordenador(){PERFIL_ATIVO="Coordenador";document.getElementById("perfil-sel").value="Coordenador";render();}
-function setPerfilTecnico(nome){PERFIL_ATIVO=nome;render();}
-function isCoordenador(){ return PERFIL_ATIVO==="Coordenador"; }
-function meuNomeAtivo(){ return PERFIL_ATIVO; }
+// isCoordenador() vem de _shared.js — lê o perfil real da sessão (login).
+// meuNomeAtivo() usa o nome real da pessoa logada.
+function meuNomeAtivo(){ var s=getSession(); return s?s.nome:""; }
 var currentExecTipo="observacao";
 var execFormOpen=false;
 
@@ -463,16 +458,7 @@ function renderExecForm(){
     +'</div>';
 }
 
-// Popula seletor de perfil
-(function(){
-  var sel = document.getElementById("perfil-sel");
-  _tecNomes.forEach(function(nome){
-    var opt = document.createElement("option");
-    opt.value = nome;
-    opt.textContent = "⚒ " + nome;
-    sel.appendChild(opt);
-  });
-})();
+// (Seletor de perfil removido — cada pessoa usa sua própria conta agora.)
 
 initApp(render);
 </script>

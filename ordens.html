@@ -43,9 +43,6 @@
         <div><div id="tt" data-i18n="nav_ordens">Ordens de Servico</div><div id="ta"></div></div>
       </div>
       <div style="display:flex;align-items:center;gap:8px">
-        <select id="perfil-sel" onchange="PERFIL_ATIVO=this.value;render()" style="background:#1e3a5f;border:1px solid #2d5a8e;border-radius:8px;padding:6px 10px;font-size:12px;color:#e2e8f0;width:auto">
-          <option value="Coordenador">&#128101; Coordenador</option>
-        </select>
       </div>
       <button id="logout-btn" onclick="if(confirm('Sair do Mantenedor?'))authLogout()" title="Sair" aria-label="Sair" style="background:transparent;border:1px solid var(--border,#1e3a5f);border-radius:8px;padding:6px 12px;cursor:pointer;font-size:12px;font-weight:700;letter-spacing:.03em;color:inherit;flex-shrink:0;transition:all .2s">Sair</button>
     </div>
@@ -129,12 +126,10 @@
 var D=loadData(), ordens=D.ordens, ativos=D.ativos;
 var filter="Todas";
 
-var PERFIL_ATIVO = "Coordenador";
-
-function setCoordenador(){PERFIL_ATIVO="Coordenador";document.getElementById("perfil-sel").value="Coordenador";render();}
-function setPerfilTecnico(nome){PERFIL_ATIVO=nome;render();}
-function isCoordenador(){ return PERFIL_ATIVO==="Coordenador"; }
-function meuNomeAtivo(){ return PERFIL_ATIVO; }
+// isCoordenador() vem de _shared.js — lê o perfil real da sessão (login),
+// não pode mais ser trocado por seletor. meuNomeAtivo() usa o nome real
+// da pessoa logada (vinculado à conta), pra saber quais OS são "minhas".
+function meuNomeAtivo(){ var s=getSession(); return s?s.nome:""; }
 function setFilter(f){filter=f;render();}
 function selOS(id){
   var o=ordens.find(function(x){return x.id==id;});
@@ -298,20 +293,7 @@ function renderList(){
   return summary+'<div class="fr"><div class="fb">'+fb+'</div>'+acoes+'</div>'+cards;
 }
 
-// Popula seletor de perfil com os tecnicos REALMENTE cadastrados (antes usava
-// _tecNomes, uma lista extraida dos nomes que ja apareciam em OS antigas —
-// se nenhuma OS tivesse sido atribuida a um tecnico ainda, ele nunca
-// aparecia aqui, mesmo ja cadastrado em Cadastros > Usuarios).
-(function(){
-  var sel = document.getElementById("perfil-sel");
-  var usuarios = loadUsuarios().filter(function(u){return u.ativo!==false&&u.perfil!=="Coordenador";});
-  usuarios.forEach(function(u){
-    var opt = document.createElement("option");
-    opt.value = u.nome;
-    opt.textContent = "⚒ " + u.nome;
-    sel.appendChild(opt);
-  });
-})();
+// (Seletor de perfil removido — cada pessoa usa sua própria conta agora.)
 
 // Deep link vindo do calendario — encaminha direto para o arquivo de execucao correto
 (function(){
