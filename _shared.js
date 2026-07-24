@@ -490,8 +490,16 @@ function registrarHistoricoOS(os,fichasObj){
 }
 
 // ── KPIs ──────────────────────────────────────────────────────────────
-function calcInd(ativoNome,hist,ordArr){
-  var bkl=(ordArr||[]).filter(function(o){return o.ativo===ativoNome&&(o.status==="Aberta"||o.status==="Em Andamento");}).length;
+// ativoId e o identificador confiavel; ativoNome fica so como fallback para
+// OS antigas/legadas que foram criadas antes de gravarmos ativo_id (ver
+// correcao em ordens.html). Sem isso, dois ativos com o mesmo nome (ex:
+// dois ativos de teste chamados "Teste") teriam o backlog um do outro
+// contado junto, dando o mesmo resultado para ativos diferentes.
+function calcInd(ativoId,ativoNome,hist,ordArr){
+  var bkl=(ordArr||[]).filter(function(o){
+    var mesmoAtivo=(o.ativo_id!=null)?o.ativo_id===ativoId:o.ativo===ativoNome;
+    return mesmoAtivo&&(o.status==="Aberta"||o.status==="Em Andamento");
+  }).length;
   if(!hist||!hist.length)return{mtbf:null,mttr:null,disp:null,conf:null,lambda:null,manuplan:null,backlog:bkl,nfalhas:0,compliance:null,mttf:null,downtime:0,oee_a:null};
   var corr=hist.filter(function(h){return h.tipo==="Corretiva";});
   var plan=hist.filter(function(h){return h.tipo==="Preventiva"||h.tipo==="Preditiva";});

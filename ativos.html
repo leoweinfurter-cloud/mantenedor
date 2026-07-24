@@ -755,7 +755,7 @@ function setTab(tab){fichaTab=tab;render();}
 
 function tabGeral(a,f){
   var inds=(f.indicadores||["mtbf","mttr","disp"]).slice(0,4);
-  var vals=calcInd(a.nome,f.historico||[],ordens);
+  var vals=calcInd(a.id,a.nome,f.historico||[],ordens);
   var cards='<div class="ind-grid">'+inds.map(function(id){return indCard(id,vals[id],false);}).join("")+'</div>';
   var info='<div class="card"><div class="st">Informacoes do Equipamento</div><div class="g3">'+[[t("at_info_empresa"),a.empresa||"--"],[t("at_info_unidade"),a.unidade||"--"],[t("at_info_local"),a.localizacao||"--"],[t("at_info_cat"),a.categoria],[t("at_info_tag"),a.tag||"--"],[t("at_info_pat"),a.patrimonio||"--"],[t("at_info_fabricante"),a.fabricante],[t("at_info_modelo"),a.modelo],[t("at_info_serie"),a.serie],[t("at_info_ano"),a.ano||"--"]].map(function(x){return'<div class="df"><div class="dk">'+x[0]+'</div><div class="dv">'+esc(x[1]||"--")+'</div></div>';}).join("")+'</div></div>';
   var ult=f.historico.length>0?f.historico[0]:null;
@@ -766,7 +766,7 @@ function tabGeral(a,f){
 }
 
 function tabInds(a,f){
-  var inds=f.indicadores||[];var vals=calcInd(a.nome,f.historico||[],ordens);
+  var inds=f.indicadores||[];var vals=calcInd(a.id,a.nome,f.historico||[],ordens);
   var cards=inds.length==0?'<div style="color:#475569;text-align:center;padding:20px;font-size:13px">Nenhum indicador ativado. Selecione abaixo.</div>':'<div class="ind-grid">'+inds.map(function(id){return indCard(id,vals[id],true);}).join("")+'</div>';
   var catalog=IND_CATALOG.map(function(ind){
     var on=inds.indexOf(ind.id)>=0;
@@ -833,7 +833,8 @@ function tabPrev(a,f){
         return'<span class="plan-acao-chip '+a.tipo+'">'+esc(a.desc.length>25?a.desc.slice(0,25)+"...":a.desc)+'</span>';
       }).join("")+(acoes.length>4?'<span style="font-size:11px;color:#64748b">+'+(acoes.length-4)+' mais</span>':"");
       var sc=bdg(p.status||"OK",LP2)||'<span style="color:#4ade80;font-size:12px">OK</span>';
-      var hasOS=p.os_gerada_id?'<span style="font-size:11px;background:#2563eb20;color:#60a5fa;border:1px solid #2563eb40;padding:2px 8px;border-radius:8px;margin-left:6px">OS #'+p.os_gerada_id+' em aberto</span>':
+      var osVinculada=p.os_gerada_id?ordens.find(function(o){return o.id===p.os_gerada_id;}):null;
+      var hasOS=p.os_gerada_id?'<span style="font-size:11px;background:#2563eb20;color:#60a5fa;border:1px solid #2563eb40;padding:2px 8px;border-radius:8px;margin-left:6px">OS '+(osVinculada?esc(osVinculada.numero_os):"#"+p.os_gerada_id)+' em aberto</span>':
         '<button class="btn bsm" onclick="gerarOSPlano('+a.id+','+p.id+')" style="font-size:11px;background:#14532d30;color:#4ade80;border:1px solid #4ade8040">Gerar OS</button>';
       return'<div class="plan-card">'
         +'<div class="plan-card-header">'
