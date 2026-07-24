@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>MaintenX — Ativos</title>
+<title>Mantenedor — Ativos</title>
 <link rel="stylesheet" href="_style.css" id="theme-link"/>
 <style>
 /* ── PLAN MODAL ACTIONS ── */
@@ -26,7 +26,7 @@
 <body>
 <div id="app">
   <div id="sidebar">
-    <a class="sl" href="index.html"><div class="li">&#9881;</div><span>MaintenX</span></a>
+    <a class="sl" href="index.html"><div class="li">&#9881;</div><span>Mantenedor</span></a>
     <nav>
       <a class="ni" href="dashboard.html"><span class="nx">&#9672;</span><span class="nl" data-i18n="nav_dashboard">Dashboard</span></a>
       <a class="ni" href="ordens.html"><span class="nx">&#9874;</span><span class="nl" data-i18n="nav_ordens">Ordens de Servico</span></a>
@@ -46,7 +46,7 @@
         <span class="topbar-logo">&#9881;</span>
         <div><div id="tt" data-i18n="nav_ativos">Gestao de Ativos</div></div>
       </div>
-      <div class="avatar">G</div>
+      <button id="logout-btn" class="avatar" onclick="if(confirm('Sair do Mantenedor?'))authLogout()" title="Sair" aria-label="Sair" style="cursor:pointer;border:none">&#128682;</button>
     </div>
     <div id="ct"></div>
   </div>
