@@ -270,6 +270,7 @@ var CRIT_DESCS={
   red:["","Redundante em op.","Standby pronto","Redundancia parcial","Sem backup","Ativo unico"]
 };
 var CRIT_CLASS_COLORS={"A":"#f87171","B":"#fb923c","C":"#fbbf24","D":"#4ade80"};
+var CRIT_CLASS_NAMES={"A":"Critica","B":"Alta","C":"Media","D":"Baixa"};
 var CRIT_RECS={
   "A":"Monitoramento continuo. Plano de contingencia obrigatorio. FMEA e analise de causa raiz.",
   "B":"Preventiva sistematica. Monitoramento por condicao recomendado.",
