@@ -125,7 +125,7 @@ function saveExec(){
   if(!os) return;
   if(!os.execLog)os.execLog=[];
   var tipo=currentExecTipo;
-  var entry={id:nextId(),tipo:tipo,data:document.getElementById("exec-data").value,tecnico:document.getElementById("exec-tec").value};
+  var entry={id:nextId(),tipo:tipo,data:document.getElementById("exec-data").value,tecnico:document.getElementById("exec-tec").value,horas:parseFloat(document.getElementById("exec-horas").value)||0};
   if(tipo=="observacao"){
     var d=document.getElementById("exec-desc").value.trim();if(!d){alert("Informe a descricao.");return;}
     entry.desc=d;
@@ -250,13 +250,13 @@ function renderDetail(o){
       return'<div class="exec-log-item">'
         +'<div class="exec-log-header">'
         +'<span class="exec-log-tipo" style="background:'+col+'20;color:'+col+'">'+tipoNames[e.tipo]+'</span>'
-        +'<span class="exec-log-date">'+(e.data||"")+(e.tecnico?' &bull; '+esc(e.tecnico):'')+'</span>'
+        +'<span class="exec-log-date">'+(e.data||"")+(e.tecnico?' &bull; '+esc(e.tecnico):'')+(e.horas?' &bull; '+e.horas+'h':'')+'</span>'
         +'</div>'+body+'</div>';
     }).join("");
   }
 
-  var totalCusto=0;
-  if(o.execLog)o.execLog.forEach(function(e){if(e.tipo=="peca"&&e.custo)totalCusto+=e.qty*e.custo;});
+  var totalCusto=0,totalHoras=0;
+  if(o.execLog)o.execLog.forEach(function(e){if(e.tipo=="peca"&&e.custo)totalCusto+=e.qty*e.custo;if(e.horas)totalHoras+=e.horas;});
 
   return '<button class="btn bx" style="margin-bottom:16px" onclick="voltar()">&#8592; Voltar</button>'
     +'<div style="margin-bottom:16px"><div class="os-numero-big">'+esc(o.numero_os||"")+'</div><div style="font-size:18px;font-weight:800;margin-bottom:8px">'+esc(o.titulo)+'</div>'
@@ -274,7 +274,10 @@ function renderDetail(o){
     +'<div class="card">'
     +'<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">'
     +'<div class="card-title" style="margin-bottom:0">'+t('ord_reg_exec')+'</div>'
+    +'<div style="display:flex;gap:10px;align-items:center">'
+    +(totalHoras>0?'<span style="font-size:12px;color:#60a5fa;font-weight:700">'+totalHoras+'h registradas</span>':"")
     +(totalCusto>0?'<span style="font-size:12px;color:#f59e0b;font-weight:700">R$ '+totalCusto.toLocaleString("pt-BR")+" em pecas</span>":"")
+    +'</div>'
     +'</div>'
     +(logHtml||'<div style="color:#64748b;text-align:center;padding:20px;font-size:13px">'+(o.status=="Aberta"?t('ord_inicia_para_reg'):t('ord_sem_reg'))+'</div>')
     +'</div>'
@@ -301,6 +304,7 @@ function renderExecForm(){
     +'</div>'
     +'<div class="fg"><label class="lbl">Data / Hora</label><input type="datetime-local" id="exec-data" value="'+nowLocalStr()+'"/></div>'
     +'<div class="fg"><label class="lbl">Tecnico</label><select id="exec-tec"><option value="">Selecione...</option>'+optsUsuariosTecnicos(currentSel()?currentSel().tecnico:"")+'</select></div>'
+    +'<div class="fg"><label class="lbl">Horas gastas nesta atividade</label><input type="number" id="exec-horas" step="0.25" min="0" placeholder="0.0"/></div>'
 
     +'<div id="exec-obs-fields">'
     +'<div class="fg"><label class="lbl">Descricao *</label><textarea id="exec-desc" placeholder="O que foi observado, feito ou encontrado..."></textarea></div>'
