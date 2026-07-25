@@ -61,6 +61,21 @@
 .rel-analise-section{margin-bottom:6px}
 .rel-analise-key{font-size:11px;font-weight:700;color:#c4b5fd}
 
+/* ── FORMAL LETTERHEAD HEADER (screen + print) ── */
+.rel-letterhead{background:var(--card-bg,#0d1929);border:1px solid var(--border,#1e3a5f);border-radius:14px;padding:18px 20px;margin-bottom:16px}
+.rel-lh-top{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;border-bottom:2px solid var(--border,#1e3a5f);padding-bottom:12px;margin-bottom:12px}
+.rel-lh-brand{font-size:17px;font-weight:800;letter-spacing:.02em}
+.rel-lh-brand span{color:#3b82f6}
+.rel-lh-titulo{font-size:12px;color:#64748b;margin-top:2px}
+.rel-lh-meta{text-align:right;font-size:11px;color:#64748b;line-height:1.5}
+.rel-lh-cliente{display:grid;grid-template-columns:1fr 1fr;gap:4px 16px;font-size:12px;color:#94a3b8}
+.rel-lh-cliente b{color:inherit;font-weight:700}
+.rel-lh-filtros{margin-top:10px;padding-top:10px;border-top:1px dashed var(--border,#1e3a5f);font-size:11px;color:#64748b}
+
+/* ── BUSCA / IMPRESSAO DE OS ESPECIFICA ── */
+.rel-os-lookup{display:flex;gap:8px;align-items:flex-end;margin-top:12px;padding-top:12px;border-top:1px dashed var(--border,#1e3a5f)}
+.rel-os-lookup input{flex:1}
+
 /* ── EMPTY STATE ── */
 .rel-empty{text-align:center;padding:40px 20px;color:#475569;font-size:14px}
 .rel-empty-icon{font-size:32px;margin-bottom:10px}
@@ -75,6 +90,10 @@
   .rel-ativo-block{border:1px solid #ccc}
   .rel-os-field,.rel-hist-fields{background:#f8f8f8!important}
   .rel-analise{background:#f0ecff!important;border:1px dashed #a78bfa!important}
+  .rel-letterhead{border:none!important;border-bottom:2px solid #000!important;border-radius:0!important;padding:0 0 10px!important;margin-bottom:14px!important}
+  .rel-lh-top{border-bottom:1px solid #000!important}
+  .rel-os-lookup{display:none!important}
+  @page{margin:14mm}
 }
 
 /* ── AD BANNER ── */
@@ -126,11 +145,81 @@ var filtStatus  = "";
 var filtTipo    = "";
 var filtDtIni   = "";
 var filtDtFim   = "";
+var filtEmpresa = "";
+var filtUnidade = "";
+var empresas    = [];
+var osLookupMsg = "";    // mensagem de erro da busca por numero de OS
 
 // ── RENDER ────────────────────────────────────────────────────────────
 function render(){
-  var html = renderFiltros() + renderTipoSelector() + renderRelatorio();
+  empresas = loadEmpresas();
+  var html = renderFiltros() + renderTipoSelector() + renderLetterhead() + renderRelatorio();
   document.getElementById("ct").innerHTML = html;
+}
+
+// ── LETTERHEAD (modelo formal, aparece na tela e na impressao) ────────
+function renderLetterhead(){
+  var agora = new Date();
+  var dataGer = agora.toLocaleDateString("pt-BR")+" "+agora.toLocaleTimeString("pt-BR",{hour:"2-digit",minute:"2-digit"});
+  var tituloRel = relTipo==="os" ? "Relatorio de Ordens de Servico" : "Relatorio de Historico de Manutencao";
+
+  var clienteHtml = "";
+  if(filtEmpresa){
+    var emp = empresas.find(function(e){return e.nome===filtEmpresa;});
+    if(emp){
+      var unidNome = filtUnidade || "Todas as unidades";
+      clienteHtml = '<div class="rel-lh-cliente">'
+        +'<div><b>Cliente:</b> '+esc(emp.nome)+'</div>'
+        +'<div><b>Unidade:</b> '+esc(unidNome)+'</div>'
+        +(emp.cnpj?'<div><b>CNPJ:</b> '+esc(emp.cnpj)+'</div>':"")
+        +(emp.endereco?'<div><b>Endereco:</b> '+esc(emp.endereco)+'</div>':"")
+        +(emp.contato?'<div><b>Contato:</b> '+esc(emp.contato)+'</div>':"")
+        +'</div>';
+    }
+  }
+
+  var filtrosAtivos = [];
+  if(filtAtivoId){var a=ativos.find(function(x){return x.id==filtAtivoId;}); if(a)filtrosAtivos.push("Ativo: "+a.nome);}
+  if(filtStatus)  filtrosAtivos.push((relTipo==="os"?"Status: ":"Tipo: ")+filtStatus);
+  if(filtTipo)    filtrosAtivos.push((relTipo==="os"?"Tipo: ":"")+filtTipo);
+  if(filtDtIni)   filtrosAtivos.push("De: "+filtDtIni);
+  if(filtDtFim)   filtrosAtivos.push("Ate: "+filtDtFim);
+  var filtrosHtml = filtrosAtivos.length ? '<div class="rel-lh-filtros no-print">Filtros aplicados: '+filtrosAtivos.map(esc).join(" &bull; ")+'</div>' : "";
+
+  return '<div class="rel-letterhead">'
+    +'<div class="rel-lh-top">'
+    +'<div><div class="rel-lh-brand">Maintenance<span>X</span></div><div class="rel-lh-titulo">'+tituloRel+'</div></div>'
+    +'<div class="rel-lh-meta">Gerado em<br>'+dataGer+'</div>'
+    +'</div>'
+    +clienteHtml
+    +filtrosHtml
+    +renderOsLookup()
+    +'</div>';
+}
+
+// ── BUSCA E IMPRESSAO DE UMA OS ESPECIFICA ─────────────────────────────
+function renderOsLookup(){
+  if(relTipo!=="os") return "";
+  return '<div class="rel-os-lookup no-print">'
+    +'<div style="flex:1"><div class="rel-filter-label">Imprimir uma OS especifica (numero)</div>'
+    +'<input id="rel-os-busca" placeholder="Ex.: 2026-COR-0004" onkeydown="if(event.key===\'Enter\')buscarEImprimirOS()"/></div>'
+    +'<button class="btn bp bsm" onclick="buscarEImprimirOS()">&#128269; Buscar e imprimir</button>'
+    +(osLookupMsg?'<div style="font-size:11px;color:#f87171;width:100%;margin-top:6px">'+esc(osLookupMsg)+'</div>':"")
+    +'</div>';
+}
+
+function buscarEImprimirOS(){
+  var termo = (document.getElementById("rel-os-busca").value||"").trim().toLowerCase();
+  osLookupMsg = "";
+  if(!termo){ osLookupMsg="Informe o numero da OS."; render(); return; }
+  var achada = ordens.find(function(o){ return (o.numero_os||"").toLowerCase()===termo; })
+    || ordens.find(function(o){ return (o.numero_os||"").toLowerCase().indexOf(termo)!==-1; });
+  if(!achada){ osLookupMsg="Nenhuma OS encontrada com o numero \""+termo+"\"."; render(); return; }
+  // Isola a OS encontrada, limpando os demais filtros, e dispara a impressao
+  filtAtivoId=""; filtStatus=""; filtTipo=""; filtDtIni=""; filtDtFim=""; filtEmpresa=""; filtUnidade="";
+  window.__relOsUnica = achada.id;
+  render();
+  setTimeout(function(){ window.print(); },150);
 }
 
 function renderTipoSelector(){
@@ -144,9 +233,14 @@ function typeBtn(tipo,icon,label){
 }
 
 function renderFiltros(){
-  // Build ativo options
+  // Build ativo options (respeitando filtro de empresa/unidade)
+  var ativosParaSelect = ativos.filter(function(a){
+    if(filtEmpresa && a.empresa!==filtEmpresa) return false;
+    if(filtUnidade && a.unidade!==filtUnidade) return false;
+    return true;
+  });
   var ativoOpts = '<option value="">Todos os ativos</option>'
-    + ativos.map(function(a){return'<option value="'+a.id+'"'+(filtAtivoId==a.id?' selected':'')+'>'+esc(a.nome)+'</option>';}).join("");
+    + ativosParaSelect.map(function(a){return'<option value="'+a.id+'"'+(filtAtivoId==a.id?' selected':'')+'>'+esc(a.nome)+'</option>';}).join("");
 
   var statusOpts, tipoOpts;
   if(relTipo === "os"){
@@ -157,7 +251,18 @@ function renderFiltros(){
     tipoOpts   = '<option value="">Com e sem analise</option><option value="com_analise">Com analise de falha</option><option value="sem_analise">Sem analise de falha</option>';
   }
 
+  var empOpts = '<option value="">Todas as empresas</option>'
+    + empresas.map(function(e){return'<option value="'+esc(e.nome)+'"'+(filtEmpresa===e.nome?' selected':'')+'>'+esc(e.nome)+'</option>';}).join("");
+
+  var empSelecionada = empresas.find(function(e){return e.nome===filtEmpresa;});
+  var unidOpts = '<option value="">Todas as unidades</option>'
+    + (empSelecionada&&empSelecionada.unidades ? empSelecionada.unidades.map(function(u){return'<option value="'+esc(u.nome)+'"'+(filtUnidade===u.nome?' selected':'')+'>'+esc(u.nome)+'</option>';}).join("") : "");
+
   return '<div class="rel-filters no-print">'
+    +'<div class="rel-filter-row">'
+    +'<div><div class="rel-filter-label">Empresa (terceirizada/cliente)</div><select onchange="filtEmpresa=this.value;filtUnidade=\'\';render()">'+empOpts+'</select></div>'
+    +'<div><div class="rel-filter-label">Unidade</div><select'+(empSelecionada?'':' disabled')+' onchange="filtUnidade=this.value;render()">'+unidOpts+'</select></div>'
+    +'</div>'
     +'<div class="rel-filter-row">'
     +'<div><div class="rel-filter-label">Ativo</div><select onchange="filtAtivoId=this.value;render()">'+ativoOpts+'</select></div>'
     +'<div><div class="rel-filter-label">'+(relTipo==="os"?"Status":"Tipo")+'</div><select onchange="'+(relTipo==="os"?"filtStatus":"filtTipo")+'=this.value;render()">'+statusOpts+'</select></div>'
@@ -179,27 +284,49 @@ function renderRelatorio(){
 }
 
 function renderRelOS(){
+  // Impressao de uma OS especifica (busca por numero): ignora demais filtros
+  if(window.__relOsUnica){
+    var unica = ordens.filter(function(o){return o.id===window.__relOsUnica;});
+    window.__relOsUnica = null;
+    if(unica.length) return renderRelOSCards(unica,true);
+  }
+
+  var ativosById = {};
+  ativos.forEach(function(a){ativosById[a.id]=a;});
+
   var filtered = ordens.filter(function(o){
     if(filtAtivoId && o.ativo_id!=filtAtivoId) return false;
     if(filtStatus  && o.status!==filtStatus)   return false;
     if(filtTipo    && o.tipo!==filtTipo)        return false;
     if(filtDtIni   && o.abertura < filtDtIni)  return false;
     if(filtDtFim   && o.abertura > filtDtFim)  return false;
+    if(filtEmpresa || filtUnidade){
+      var atv = ativosById[o.ativo_id];
+      if(filtEmpresa && (!atv || atv.empresa!==filtEmpresa)) return false;
+      if(filtUnidade && (!atv || atv.unidade!==filtUnidade)) return false;
+    }
     return true;
   });
+  return renderRelOSCards(filtered,false);
+}
 
-  // Summary
-  var conc  = filtered.filter(function(o){return o.status==="Concluida";}).length;
-  var aber  = filtered.filter(function(o){return o.status==="Aberta";}).length;
-  var andamento = filtered.filter(function(o){return o.status==="Em Andamento";}).length;
-  var criticas  = filtered.filter(function(o){return o.prioridade==="Critica";}).length;
+function renderRelOSCards(filtered,unica){
 
-  var summary = '<div class="rel-summary">'
-    +sumCard(filtered.length,"Total","#60a5fa")
-    +sumCard(conc,"Concluidas","#4ade80")
-    +sumCard(aber+andamento,"Em aberto","#fbbf24")
-    +sumCard(criticas,"Criticas","#f87171")
-    +'</div>';
+  var summary = "";
+  if(!unica){
+    // Summary
+    var conc  = filtered.filter(function(o){return o.status==="Concluida";}).length;
+    var aber  = filtered.filter(function(o){return o.status==="Aberta";}).length;
+    var andamento = filtered.filter(function(o){return o.status==="Em Andamento";}).length;
+    var criticas  = filtered.filter(function(o){return o.prioridade==="Critica";}).length;
+
+    summary = '<div class="rel-summary">'
+      +sumCard(filtered.length,"Total","#60a5fa")
+      +sumCard(conc,"Concluidas","#4ade80")
+      +sumCard(aber+andamento,"Em aberto","#fbbf24")
+      +sumCard(criticas,"Criticas","#f87171")
+      +'</div>';
+  }
 
   if(!filtered.length) return summary+'<div class="rel-empty"><div class="rel-empty-icon">&#128203;</div>Nenhuma OS encontrada com os filtros selecionados.</div>';
 
@@ -233,7 +360,7 @@ function renderRelOS(){
       +'<div class="rel-os-titulo">'+esc(o.titulo)+'</div>'
       +'<div class="rel-os-meta">'+esc(o.ativo||"")+(o.tecnico?' &bull; '+esc(o.tecnico):'')+'</div>'
       +'</div>'
-      +'<div style="font-size:11px;color:#64748b;text-align:right;white-space:nowrap">OS #'+o.id+'</div>'
+      +'<div style="font-size:11px;color:#64748b;text-align:right;white-space:nowrap">OS '+esc(o.numero_os||("#"+o.id))+'</div>'
       +'</div>'
       +(o.descricao?'<div class="rel-os-body">'+esc(o.descricao)+'</div>':"")
       +'<div class="rel-os-fields">'
@@ -255,9 +382,12 @@ function osField(label,val){
 
 // ── HISTORY REPORT ────────────────────────────────────────────────────
 function renderRelHist(){
-  var ativosRel = filtAtivoId
-    ? ativos.filter(function(a){return a.id==filtAtivoId;})
-    : ativos;
+  var ativosRel = ativos.filter(function(a){
+    if(filtAtivoId && a.id!=filtAtivoId) return false;
+    if(filtEmpresa && a.empresa!==filtEmpresa) return false;
+    if(filtUnidade && a.unidade!==filtUnidade) return false;
+    return true;
+  });
 
   var totalHist=0, totalAnal=0, totalCusto=0, totalHoras=0;
   var blocks = ativosRel.map(function(a){
@@ -363,8 +493,8 @@ function renderAnaliseContent(an){
 function sumCard(val,label,color){
   return'<div class="rel-sum-card"><div class="rel-sum-val" style="color:'+color+'">'+val+'</div><div class="rel-sum-lbl">'+label+'</div></div>';
 }
-function setRelTipo(t){ relTipo=t; filtStatus=""; filtTipo=""; render(); }
-function limparFiltros(){ filtAtivoId=""; filtStatus=""; filtTipo=""; filtDtIni=""; filtDtFim=""; render(); }
+function setRelTipo(t){ relTipo=t; filtStatus=""; filtTipo=""; osLookupMsg=""; render(); }
+function limparFiltros(){ filtAtivoId=""; filtStatus=""; filtTipo=""; filtDtIni=""; filtDtFim=""; filtEmpresa=""; filtUnidade=""; osLookupMsg=""; render(); }
 
 initApp(render);
 </script>
