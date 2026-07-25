@@ -125,7 +125,7 @@ function buildMatrix(critList){
     var ci=Math.min(4,Math.max(0,Math.round(prob*4)));
     if(isNaN(ri)||isNaN(ci)||ri<0||ri>4||ci<0||ci>4) return;
     var col=classColors[item.cl]||"#9ca3af";
-    matDots[ri][ci]+='<span class="mx-dot" style="background:'+col+';margin:1px" title="'+item.nome+' ('+item.cl+')"></span>';
+    matDots[ri][ci]+='<span class="mx-dot" style="background:'+col+';margin:1px" title="'+esc(item.nome)+' ('+item.cl+')"></span>';
   });
   var html='<div class="risk-matrix">';
   html+='<div class="mx-hdr"></div>';

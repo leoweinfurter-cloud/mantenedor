@@ -191,6 +191,42 @@ function sbDelete(table,field,value){
   }).catch(function(e){console.warn("[SB] delete "+table,e);throw e;});
 }
 
+// ── SYNC DE TABELA-FILHA (upsert-first, delete-last) ─────────────────
+// Substitui o padrao antigo delete-then-insert, que tinha uma janela de
+// perda de dados: se o upsert falhasse APOS o delete (rede, RLS, 4xx),
+// todos os registros do ativo eram apagados sem recuperacao.
+// Ordem segura:
+//   1) Upserta as linhas atuais. Se falhar, ABORTA — nada e apagado.
+//   2) So entao deleta os registros obsoletos: os que estao no banco com
+//      esse parentField/parentValue mas cujo id NAO esta na lista enviada.
+// rows vazio significa "usuario removeu tudo" e ai o delete limpa a
+// tabela-filha desse pai — mesmo comportamento de antes, sem a janela.
+function syncChildTable(table,parentField,parentValue,rows){
+  rows=rows||[];
+  var up=rows.length?sbUpsert(table,rows):Promise.resolve();
+  return up.then(function(){
+    var ids=rows.map(function(r){return r&&r.id;}).filter(function(x){return x!=null;});
+    var qs=parentField+"=eq."+parentValue+(ids.length?"&id=not.in.("+ids.join(",")+")":"");
+    return sbFetch(table+"?"+qs,{method:"DELETE"}).then(function(r){
+      if(!r.ok){
+        return r.json().catch(function(){return{message:r.statusText};}).then(function(err){
+          var msg=(err&&err.message)||("Erro "+r.status);
+          console.error("[SB] sync-delete "+table+" falhou ("+r.status+")",err);
+          mxToast("Erro ao remover registros antigos de \""+table+"\": "+msg,"error");
+          throw new Error(msg);
+        });
+      }
+      return r;
+    });
+  }).catch(function(e){
+    // Upsert falhou (sbUpsert ja mostrou toast) ou delete falhou (toast acima).
+    // Em ambos os casos NENHUM dado valido foi perdido: sem upsert nao ha delete,
+    // e o delete so remove ids ausentes da lista atual.
+    console.warn("[SB] syncChildTable "+table,e);
+    throw e;
+  });
+}
+
 // ── NEXT ID ───────────────────────────────────────────────────────────
 function nextId(){
   var n=parseInt(localStorage.getItem("mx_nextid")||"700");
@@ -299,7 +335,11 @@ function mxLabel(v){
   return (d && typeof d[v]==="string") ? d[v] : v;
 }
 function bdg(t,m){var c=m[t]||"#9ca3af";return'<span class="badge" style="background:'+c+'18;color:'+c+';border:1px solid '+c+'35">'+mxLabel(t)+'</span>';}
-function esc(s){return String(s||"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");}
+// Escapa & < > " ' — seguro tanto em conteudo de texto quanto DENTRO de
+// atributos HTML (value="...", title="..."). Sem escapar aspas, um nome de
+// ativo/usuario contendo " escapava do atributo e injetava handlers
+// (XSS armazenado entre usuarios do mesmo tenant).
+function esc(s){return String(s||"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;").replace(/'/g,"&#39;");}
 function gv(id){var e=document.getElementById(id);return e?e.value:"";}
 
 // ── GLOBALS ───────────────────────────────────────────────────────────
@@ -414,9 +454,10 @@ function saveFichas(fichasObj){
     } else {
       sbUpsert("ativos",[{id:ativoId,nome:ativoRef.nome,indicadores:f.indicadores||["mtbf","mttr","disp","manuplan"],crit:f.crit||{},docs:f.docs||[]}]);
     }
-    sbDelete("planos","ativo_id",ativoId).then(function(){if(f.planos&&f.planos.length)sbUpsert("planos",f.planos.map(function(p){return{id:p.id,ativo_id:ativoId,nome:p.nome,tipo:p.tipo||"Preventiva",frequencia:p.frequencia||"Mensal",ultima_execucao:p.ultima_execucao||"--",proxima_execucao:p.proxima_execucao||"--",responsavel:p.responsavel||"",status:p.status||"OK",os_gerada_id:p.os_gerada_id||null,acoes:p.acoes||[],ativo:p.ativo!==false,motivo_desativacao:p.motivo_desativacao||"",desativado_em:p.desativado_em||""};}));});
-    sbDelete("historico","ativo_id",ativoId).then(function(){if(f.historico&&f.historico.length)sbUpsert("historico",f.historico.map(function(h){return{id:h.id,ativo_id:ativoId,descricao:h.desc||"",data:h.data||"",tipo:h.tipo||"Corretiva",tecnico:h.tecnico||"",horas:h.horas||0,custo:h.custo||0,obs:h.obs||"",analise:h.analise||null,os_id:h.os_id||null};}));});
-    sbDelete("medicoes","ativo_id",ativoId).then(function(){if(f.preditiva&&f.preditiva.length)sbUpsert("medicoes",f.preditiva.map(function(m){return{id:m.id,ativo_id:ativoId,data:m.data||"",param:m.param||"",valor:m.valor||0,limite:m.limite||0,obs:m.obs||""};}));});
+    // Sync seguro (upsert-first): nunca deleta antes de garantir a gravacao.
+    syncChildTable("planos","ativo_id",ativoId,(f.planos||[]).map(function(p){return{id:p.id,ativo_id:ativoId,nome:p.nome,tipo:p.tipo||"Preventiva",frequencia:p.frequencia||"Mensal",ultima_execucao:p.ultima_execucao||"--",proxima_execucao:p.proxima_execucao||"--",responsavel:p.responsavel||"",status:p.status||"OK",os_gerada_id:p.os_gerada_id||null,acoes:p.acoes||[],ativo:p.ativo!==false,motivo_desativacao:p.motivo_desativacao||"",desativado_em:p.desativado_em||""};}));
+    syncChildTable("historico","ativo_id",ativoId,(f.historico||[]).map(function(h){return{id:h.id,ativo_id:ativoId,descricao:h.desc||"",data:h.data||"",tipo:h.tipo||"Corretiva",tecnico:h.tecnico||"",horas:h.horas||0,custo:h.custo||0,obs:h.obs||"",analise:h.analise||null,os_id:h.os_id||null};}));
+    syncChildTable("medicoes","ativo_id",ativoId,(f.preditiva||[]).map(function(m){return{id:m.id,ativo_id:ativoId,data:m.data||"",param:m.param||"",valor:m.valor||0,limite:m.limite||0,obs:m.obs||""};}));
   });
 }
 function saveUsuarios(d){localStorage.setItem("mx_usuarios",JSON.stringify(d));sbUpsert("usuarios",d.map(function(u){return{id:u.id,nome:u.nome,email:u.email||"",telefone:u.telefone||"",perfil:u.perfil||"Tecnico",ativo:u.ativo!==false,status:u.status||"Ativo",user_id:u.user_id||null};}));}
