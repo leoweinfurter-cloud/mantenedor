@@ -104,9 +104,9 @@
 
 /* ── PRINT ── */
 @media print {
-  #sidebar,#bottom-nav,#topbar,.rel-filters,.rel-type-grid,.rel-actions,.rel-actions,.no-print{display:none!important}
+  #sidebar,#bottom-nav,#topbar,.rel-filters,.rel-type-grid,.rel-actions,.rel-actions,.ad-banner,#ad-top,.no-print{display:none!important}
   #main{margin:0!important;padding:0!important}
-  #ct{padding:0!important}
+  #ct{padding:14mm 12mm!important}
   body{background:#fff!important;color:#000!important}
   .rel-os-card,.rel-ativo-block,.rel-hist-item{break-inside:avoid}
   .rel-ativo-block,.rel-os-card{border:1px solid #ccc}
@@ -119,8 +119,9 @@
   .rel-os-lookup{display:none!important}
   .rel-signature-block{break-inside:avoid;margin-top:36px!important}
   .rel-signature-line{border-top:1px solid #000!important;color:#000!important}
-  @page{margin:14mm}
+  @page{margin:0}
 }
+
 
 /* ── AD BANNER ── */
 .ad-banner{display:none;background:var(--inner-bg,#060b12);border:1px solid var(--border,#1e3a5f);border-radius:10px;padding:10px;margin:0 0 12px;text-align:center;font-size:11px;color:#64748b;}
@@ -221,7 +222,7 @@ function renderLetterhead(){
   if(minhaEmpresa.endereco) emissorLinha.push(minhaEmpresa.endereco);
   var emissorHtml = '<div class="rel-lh-emissor">'
     +esc(minhaEmpresa.nome||"Mantenedor")
-    +(emissorLinha.length?' &bull; '+esc(emissorLinha.join(" &bull; ")):"")
+    +(emissorLinha.length?' &bull; '+emissorLinha.map(esc).join(" &bull; "):"")
     +(minhaEmpresa.contato?'<br>Responsavel tecnico: '+esc(minhaEmpresa.contato):"")
     +'</div>';
 
@@ -377,7 +378,7 @@ function renderRelOSCards(filtered,unica){
     var col = TC[o.tipo]||"#60a5fa";
     var statCol = SC[o.status]||"#9ca3af";
     var atv = ativosById[o.ativo_id];
-    var localInfo = atv ? [atv.empresa,atv.unidade,atv.localizacao].filter(Boolean).join(" &bull; ") : "";
+    var localInfo = atv ? [atv.empresa,atv.unidade,atv.localizacao].filter(Boolean).map(esc).join(" &bull; ") : "";
 
     var log = (o.execLog||[]);
     var obsEntries  = log.filter(function(e){return e.tipo==="observacao";});
