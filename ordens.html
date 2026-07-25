@@ -249,7 +249,7 @@ function renderList(){
     :list.map(function(o){
       var logCount=(o.execLog&&o.execLog.length)||0;
       var tc=typeColors[o.tipo]||"#60a5fa";
-      var podeExecutar=isCoordenador()||o.tecnico===meuNomeAtivo();
+      var podeExecutar=isCoordenador()||o.tecnico===meuNomeAtivo()||!o.tecnico;
       var atrasada=isAtrasada(o);
       var progresso=checklistProgresso(o);
       var descPreview=o.descricao?esc(o.descricao.length>90?o.descricao.slice(0,90)+"…":o.descricao):"";
