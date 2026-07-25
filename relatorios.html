@@ -28,18 +28,40 @@
 .rel-sum-lbl{font-size:10px;color:#64748b;margin-top:2px}
 
 /* ── OS REPORT ── */
-.rel-os-card{background:var(--card-bg,#0d1929);border:1px solid var(--border,#1e3a5f);border-radius:12px;padding:14px;margin-bottom:10px}
-.rel-os-header{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;margin-bottom:10px}
-.rel-os-titulo{font-size:14px;font-weight:700;margin-bottom:3px}
-.rel-os-meta{font-size:11px;color:#64748b}
-.rel-os-body{font-size:12px;color:#94a3b8;margin-bottom:10px;line-height:1.5}
+.rel-os-card{background:var(--card-bg,#0d1929);border:1px solid var(--border,#1e3a5f);border-radius:12px;padding:0;margin-bottom:14px;overflow:hidden}
+.rel-os-topbar{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:10px 14px;background:var(--inner-bg,#060b12);border-bottom:1px solid var(--border,#1e3a5f)}
+.rel-os-numero{font-size:15px;font-weight:800;letter-spacing:.02em}
+.rel-os-badges{display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end}
+.rel-os-badge{font-size:10px;font-weight:800;padding:2px 8px;border-radius:6px;white-space:nowrap}
+.rel-os-body-wrap{padding:14px}
+.rel-os-titulo{font-size:14px;font-weight:700;margin-bottom:2px}
+.rel-os-meta{font-size:11px;color:#64748b;margin-bottom:10px}
+.rel-os-section{margin-top:12px;padding-top:12px;border-top:1px solid var(--border,#1e3a5f)}
+.rel-os-section-title{font-size:11px;font-weight:800;color:#64748b;text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px}
+.rel-os-body{font-size:12px;color:#94a3b8;line-height:1.5}
 .rel-os-fields{display:grid;grid-template-columns:1fr 1fr;gap:6px}
 .rel-os-field{background:var(--inner-bg,#060b12);border-radius:8px;padding:8px 10px}
 .rel-os-field-label{font-size:10px;color:#64748b;text-transform:uppercase;letter-spacing:.05em;margin-bottom:2px}
 .rel-os-field-val{font-size:13px;font-weight:600}
-.rel-os-log{margin-top:10px;padding-top:10px;border-top:1px solid var(--border,#1e3a5f)}
-.rel-os-log-title{font-size:11px;font-weight:700;color:#64748b;text-transform:uppercase;margin-bottom:6px}
-.rel-os-log-item{font-size:12px;padding:6px 8px;background:var(--inner-bg,#060b12);border-radius:6px;margin-bottom:4px;color:#94a3b8}
+.rel-os-log-item{font-size:12px;padding:8px 10px;background:var(--inner-bg,#060b12);border-radius:6px;margin-bottom:5px;color:#94a3b8}
+.rel-os-log-item b{color:inherit}
+.rel-exec-cat-title{font-size:10px;font-weight:800;color:#64748b;text-transform:uppercase;letter-spacing:.05em;margin:10px 0 5px}
+.rel-exec-cat-title:first-child{margin-top:0}
+.rel-parts-table{width:100%;border-collapse:collapse;font-size:12px;margin-bottom:4px}
+.rel-parts-table th{text-align:left;font-size:10px;color:#64748b;text-transform:uppercase;letter-spacing:.04em;padding:5px 8px;border-bottom:1px solid var(--border,#1e3a5f)}
+.rel-parts-table td{padding:6px 8px;border-bottom:1px solid var(--border,#1e3a5f);color:#94a3b8}
+.rel-parts-table tr:last-child td{border-bottom:none}
+.rel-parts-total td{font-weight:800;color:inherit;border-top:2px solid var(--border,#1e3a5f);border-bottom:none}
+.rel-photo-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:8px;margin-top:4px}
+.rel-photo-item{border-radius:8px;overflow:hidden;border:1px solid var(--border,#1e3a5f);background:var(--inner-bg,#060b12)}
+.rel-photo-item img{width:100%;height:100px;object-fit:cover;display:block}
+.rel-photo-cap{font-size:10px;color:#64748b;padding:4px 6px}
+.rel-os-totais{display:flex;gap:16px;margin-top:12px;padding:10px 14px;background:var(--inner-bg,#060b12);border-radius:10px;flex-wrap:wrap}
+.rel-os-totais div{font-size:12px;color:#94a3b8}
+.rel-os-totais b{color:inherit;font-size:14px}
+.rel-signature-block{margin-top:20px;padding-top:16px;border-top:1px dashed var(--border,#1e3a5f);display:grid;grid-template-columns:1fr 1fr;gap:24px}
+.rel-signature-line{border-top:1px solid #64748b;padding-top:6px;text-align:center;font-size:11px;color:#64748b}
+.rel-signature-line small{display:block;margin-top:2px;color:#475569}
 
 /* ── HISTORY REPORT ── */
 .rel-ativo-block{background:var(--card-bg,#0d1929);border:1px solid var(--border,#1e3a5f);border-radius:14px;margin-bottom:14px;overflow:hidden}
@@ -87,12 +109,16 @@
   #ct{padding:0!important}
   body{background:#fff!important;color:#000!important}
   .rel-os-card,.rel-ativo-block,.rel-hist-item{break-inside:avoid}
-  .rel-ativo-block{border:1px solid #ccc}
-  .rel-os-field,.rel-hist-fields{background:#f8f8f8!important}
+  .rel-ativo-block,.rel-os-card{border:1px solid #ccc}
+  .rel-os-topbar{background:#f2f2f2!important;border-bottom:1px solid #ccc!important}
+  .rel-os-field,.rel-hist-fields,.rel-os-log-item,.rel-os-totais{background:#f8f8f8!important}
+  .rel-parts-table th,.rel-parts-table td{border-color:#ccc!important}
   .rel-analise{background:#f0ecff!important;border:1px dashed #a78bfa!important}
   .rel-letterhead{border:none!important;border-bottom:2px solid #000!important;border-radius:0!important;padding:0 0 10px!important;margin-bottom:14px!important}
   .rel-lh-top{border-bottom:1px solid #000!important}
   .rel-os-lookup{display:none!important}
+  .rel-signature-block{break-inside:avoid;margin-top:36px!important}
+  .rel-signature-line{border-top:1px solid #000!important;color:#000!important}
   @page{margin:14mm}
 }
 
@@ -344,47 +370,112 @@ function renderRelOSCards(filtered,unica){
 
   if(!filtered.length) return summary+'<div class="rel-empty"><div class="rel-empty-icon">&#128203;</div>Nenhuma OS encontrada com os filtros selecionados.</div>';
 
+  var ativosById = {};
+  ativos.forEach(function(a){ativosById[a.id]=a;});
+
   var cards = filtered.map(function(o){
     var col = TC[o.tipo]||"#60a5fa";
     var statCol = SC[o.status]||"#9ca3af";
+    var atv = ativosById[o.ativo_id];
+    var localInfo = atv ? [atv.empresa,atv.unidade,atv.localizacao].filter(Boolean).join(" &bull; ") : "";
+
     var log = (o.execLog||[]);
-    var logHtml = log.length>0
-      ? '<div class="rel-os-log"><div class="rel-os-log-title">Registros de execucao ('+log.length+')</div>'
-        +log.map(function(e){return'<div class="rel-os-log-item">'+esc(e.data||"")+(e.tipo?' ['+esc(e.tipo)+']':'')+(e.desc?' — '+esc(e.desc):'')+(e.horas?' | '+e.horas+'h':'')+'</div>';}).join("")
-        +'</div>' : "";
+    var obsEntries  = log.filter(function(e){return e.tipo==="observacao";});
+    var medEntries  = log.filter(function(e){return e.tipo==="medicao";});
+    var pecaEntries = log.filter(function(e){return e.tipo==="peca";});
+    var fotoEntries = log.filter(function(e){return e.tipo==="foto";});
+
+    var totalHoras=0, totalPecas=0;
+    log.forEach(function(e){
+      totalHoras += e.horas||0;
+      if(e.tipo==="peca") totalPecas += (e.qty||1)*(e.custo||0);
+    });
+
+    var execHtml = "";
+    if(log.length){
+      execHtml += '<div class="rel-os-section"><div class="rel-os-section-title">Registro de Execucao ('+log.length+')</div>';
+
+      if(obsEntries.length){
+        execHtml += '<div class="rel-exec-cat-title">Observacoes Tecnicas</div>'
+          +obsEntries.map(function(e){
+            return '<div class="rel-os-log-item">'+esc(e.data||"")+(e.tecnico?' &bull; <b>'+esc(e.tecnico)+'</b>':"")+(e.horas?' &bull; '+e.horas+'h':"")+'<br>'+esc(e.desc||"")+'</div>';
+          }).join("");
+      }
+      if(medEntries.length){
+        execHtml += '<div class="rel-exec-cat-title">Medicoes Registradas</div>'
+          +'<table class="rel-parts-table"><tr><th>Data</th><th>Parametro</th><th>Valor</th><th>Limite</th><th>Condicao</th></tr>'
+          +medEntries.map(function(e){
+            var fora = e.cond && /fora/i.test(e.cond);
+            return '<tr><td>'+esc(e.data||"")+'</td><td>'+esc(e.param||"")+'</td><td>'+esc(e.valor)+'</td><td>'+esc(e.limite)+'</td>'
+              +'<td style="'+(fora?"color:#f87171;font-weight:700":"")+'">'+esc(e.cond||"--")+'</td></tr>';
+          }).join("")
+          +'</table>';
+      }
+      if(pecaEntries.length){
+        execHtml += '<div class="rel-exec-cat-title">Pecas e Materiais Utilizados</div>'
+          +'<table class="rel-parts-table"><tr><th>Descricao</th><th>Qtd</th><th>Custo Unit.</th><th>Subtotal</th></tr>'
+          +pecaEntries.map(function(e){
+            var qty=e.qty||1, sub=qty*(e.custo||0);
+            return '<tr><td>'+esc(e.desc||"")+(e.obs?'<br><span style="font-size:10px">'+esc(e.obs)+'</span>':"")+'</td><td>'+qty+'</td><td>R$ '+(e.custo||0).toLocaleString("pt-BR")+'</td><td>R$ '+sub.toLocaleString("pt-BR")+'</td></tr>';
+          }).join("")
+          +'<tr class="rel-parts-total"><td colspan="3">Total em pecas</td><td>R$ '+totalPecas.toLocaleString("pt-BR")+'</td></tr>'
+          +'</table>';
+      }
+      if(fotoEntries.length){
+        execHtml += '<div class="rel-exec-cat-title">Registros Fotograficos</div>'
+          +'<div class="rel-photo-grid">'
+          +fotoEntries.map(function(e){
+            return '<div class="rel-photo-item">'+(e.foto?'<img src="'+e.foto+'" alt="Foto da execucao"/>':'')+(e.desc?'<div class="rel-photo-cap">'+esc(e.desc)+'</div>':'')+'</div>';
+          }).join("")
+          +'</div>';
+      }
+      execHtml += '</div>';
+    }
+
     // Checklist de planos
     var checkHtml = "";
     if(o.planos_exec && o.planos_exec.length){
-      checkHtml = '<div class="rel-os-log"><div class="rel-os-log-title">Checklist de planos</div>'
+      checkHtml = '<div class="rel-os-section"><div class="rel-os-section-title">Checklist de Planos</div>'
         +o.planos_exec.map(function(pe){
-          var conc=pe.acoes.filter(function(a){return a.concluida;}).length;
-          return'<div class="rel-os-log-item" style="margin-bottom:6px"><b>'+esc(pe.plano_nome)+'</b> — '+conc+'/'+pe.acoes.length+' acoes<br>'
+          var concCount=pe.acoes.filter(function(a){return a.concluida;}).length;
+          return'<div class="rel-os-log-item" style="margin-bottom:6px"><b>'+esc(pe.plano_nome)+'</b> — '+concCount+'/'+pe.acoes.length+' acoes<br>'
             +pe.acoes.map(function(a){return'<span style="color:'+(a.concluida?"#4ade80":"#f87171")+'">'+( a.concluida?"✓":"✗")+'</span> '+esc(a.desc)+(a.valor_exec?' = '+a.valor_exec+(a.unidade?' '+a.unidade:''):'');}).join(' &bull; ')
             +'</div>';
         }).join("")+'</div>';
     }
+
+    var totaisHtml = (totalHoras>0||totalPecas>0)
+      ? '<div class="rel-os-totais">'
+        +(totalHoras>0?'<div>Total de horas: <b>'+totalHoras.toFixed(1)+'h</b></div>':"")
+        +(totalPecas>0?'<div>Total em pecas: <b>R$ '+totalPecas.toLocaleString("pt-BR")+'</b></div>':"")
+        +'</div>' : "";
+
+    var assinaturaHtml = unica
+      ? '<div class="rel-signature-block">'
+        +'<div class="rel-signature-line">'+esc(o.tecnico||"")+'<small>Tecnico Executante</small></div>'
+        +'<div class="rel-signature-line">&nbsp;<small>Responsavel do Cliente — Aceite do Servico</small></div>'
+        +'</div>' : "";
+
     return '<div class="rel-os-card">'
-      +'<div class="rel-os-header">'
-      +'<div style="flex:1">'
-      +'<div style="display:flex;gap:6px;margin-bottom:4px">'
-      +'<span style="font-size:10px;font-weight:800;padding:2px 8px;border-radius:6px;background:'+col+'20;color:'+col+'">'+esc(o.tipo)+'</span>'
-      +'<span style="font-size:10px;font-weight:800;padding:2px 8px;border-radius:6px;background:'+statCol+'20;color:'+statCol+'">'+esc(o.status)+'</span>'
-      +(o.prioridade==="Critica"?'<span style="font-size:10px;font-weight:800;padding:2px 8px;border-radius:6px;background:#f8717120;color:#f87171">CRITICA</span>':"")
-      +'</div>'
+      +'<div class="rel-os-topbar">'
+      +'<div class="rel-os-numero">OS '+esc(o.numero_os||("#"+o.id))+'</div>'
+      +'<div class="rel-os-badges">'
+      +'<span class="rel-os-badge" style="background:'+col+'20;color:'+col+'">'+esc(o.tipo)+'</span>'
+      +'<span class="rel-os-badge" style="background:'+statCol+'20;color:'+statCol+'">'+esc(o.status)+'</span>'
+      +(o.prioridade==="Critica"?'<span class="rel-os-badge" style="background:#f8717120;color:#f87171">CRITICA</span>':"")
+      +'</div></div>'
+      +'<div class="rel-os-body-wrap">'
       +'<div class="rel-os-titulo">'+esc(o.titulo)+'</div>'
-      +'<div class="rel-os-meta">'+esc(o.ativo||"")+(o.tecnico?' &bull; '+esc(o.tecnico):'')+'</div>'
-      +'</div>'
-      +'<div style="font-size:11px;color:#64748b;text-align:right;white-space:nowrap">OS '+esc(o.numero_os||("#"+o.id))+'</div>'
-      +'</div>'
-      +(o.descricao?'<div class="rel-os-body">'+esc(o.descricao)+'</div>':"")
-      +'<div class="rel-os-fields">'
+      +'<div class="rel-os-meta">'+esc(o.ativo||"")+(localInfo?' &bull; '+localInfo:'')+'</div>'
+      +(o.descricao?'<div class="rel-os-section"><div class="rel-os-section-title">Descricao do Servico Solicitado</div><div class="rel-os-body">'+esc(o.descricao)+'</div></div>':"")
+      +'<div class="rel-os-section"><div class="rel-os-section-title">Dados Gerais</div><div class="rel-os-fields">'
       +osField("Abertura",o.abertura||"--")
       +osField("Prazo",o.prazo||"--")
-      +osField("Tecnico",o.tecnico||"--")
+      +osField("Tecnico Responsavel",o.tecnico||"--")
       +osField("Prioridade",o.prioridade||"--")
-      +'</div>'
-      +logHtml+checkHtml
-      +'</div>';
+      +'</div></div>'
+      +execHtml+checkHtml+totaisHtml+assinaturaHtml
+      +'</div></div>';
   }).join("");
 
   return summary+cards;
