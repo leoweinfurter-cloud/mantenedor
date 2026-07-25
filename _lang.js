@@ -1,4 +1,4 @@
-// ── MAINTENX LANGUAGE MANAGER ─────────────────────────────────────────────
+// ── MANTENEDOR LANGUAGE MANAGER ─────────────────────────────────────────────
 var LANG = (function(){
 
 var TRANSLATIONS = {

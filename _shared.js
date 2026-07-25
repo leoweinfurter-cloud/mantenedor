@@ -674,7 +674,7 @@ function initApp(renderFn){
 
     // Auto-gera OS de planos vencidos
     var novasOS=gerarOSProgramadas(7);
-    if(novasOS.length)console.log("[MaintenX] "+novasOS.length+" OS gerada(s) automaticamente.");
+    if(novasOS.length)console.log("[Mantenedor] "+novasOS.length+" OS gerada(s) automaticamente.");
     // Sincroniza nextId para evitar colisao de IDs entre dispositivos
     syncNextId([ativos, ordens, dbPl, dbHist, dbMed]);
     console.log("[Supabase] Carregado: "+ativos.length+" ativos, "+ordens.length+" ordens | nextId="+localStorage.getItem("mx_nextid"));

@@ -1,4 +1,4 @@
-// ── MAINTENX THEME MANAGER ────────────────────────────────────────────────
+// ── MANTENEDOR THEME MANAGER ────────────────────────────────────────────────
 (function(){
   var DARK  = "_style.css";
   var LIGHT = "_style_light.css";
