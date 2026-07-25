@@ -74,7 +74,7 @@
 .ad-banner ins{display:block;}
 </style>
 </head>
-<body>
+<body data-i18n-doctitle="title_calendario">
 <div id="app">
   <div id="sidebar">
     <a class="sl" href="dashboard.html"><div class="li">&#9881;</div><span class="sl-text">Mantenedor</span></a>
@@ -83,17 +83,17 @@
       <a class="ni" href="ordens.html"><span class="nx">&#9874;</span><span class="nl" data-i18n="nav_ordens">Ordens de Servico</span></a>
       <a class="ni" href="ativos.html"><span class="nx">&#11041;</span><span class="nl" data-i18n="nav_ativos">Gestao de Ativos</span></a>
       <a class="ni" href="cadastros.html"><span class="nx">&#9998;</span><span class="nl" data-i18n="nav_cadastros">Cadastros</span></a>
-      <a class="ni active" href="calendario.html"><span class="nx">&#128197;</span><span class="nl">Calendario</span></a>
-      <a class="ni" href="relatorios.html"><span class="nx">&#128202;</span><span class="nl">Relatorios</span></a>
+      <a class="ni active" href="calendario.html"><span class="nx">&#128197;</span><span class="nl" data-i18n="nav_calendario">Calendario</span></a>
+      <a class="ni" href="relatorios.html"><span class="nx">&#128202;</span><span class="nl" data-i18n="nav_relatorios">Relatorios</span></a>
     </nav>
   </div>
   <div id="main">
     <div id="topbar">
       <div id="topbar-left">
         <span class="topbar-logo">&#9881;</span>
-        <div><div id="tt">Calendario</div></div>
+        <div><div id="tt" data-i18n="title_calendario">Calendario</div></div>
       </div>
-      <button id="logout-btn" onclick="if(confirm('Sair do Mantenedor?'))authLogout()" title="Sair" aria-label="Sair" style="background:transparent;border:1px solid var(--border,#1e3a5f);border-radius:8px;padding:6px 12px;cursor:pointer;font-size:12px;font-weight:700;letter-spacing:.03em;color:inherit;flex-shrink:0;transition:all .2s">Sair</button>
+      <button id="logout-btn" onclick="if(confirm(t('msg_sair')))authLogout()" data-i18n-title="btn_sair" title="Sair" aria-label="Sair" style="background:transparent;border:1px solid var(--border,#1e3a5f);border-radius:8px;padding:6px 12px;cursor:pointer;font-size:12px;font-weight:700;letter-spacing:.03em;color:inherit;flex-shrink:0;transition:all .2s" data-i18n="btn_sair">Sair</button>
     </div>
     
   <div class="ad-banner" id="ad-top"><!-- Anuncio Mantenedor Free --></div>
@@ -105,8 +105,8 @@
   <a class="bn-item" href="ordens.html"><span class="bn-icon">&#9874;</span><span class="bn-label" data-i18n="nav_os">OS</span></a>
   <a class="bn-item" href="ativos.html"><span class="bn-icon">&#11041;</span><span class="bn-label" data-i18n="nav_ativos_short">Ativos</span></a>
   <a class="bn-item" href="cadastros.html"><span class="bn-icon">&#9998;</span><span class="bn-label" data-i18n="nav_cadastros">Cadastros</span></a>
-  <a class="bn-item active" href="calendario.html"><span class="bn-icon">&#128197;</span><span class="bn-label">Cal.</span></a>
-  <a class="bn-item" href="relatorios.html"><span class="bn-icon">&#128202;</span><span class="bn-label">Rel.</span></a>
+  <a class="bn-item active" href="calendario.html"><span class="bn-icon">&#128197;</span><span class="bn-label" data-i18n="nav_cal_short">Cal.</span></a>
+  <a class="bn-item" href="relatorios.html"><span class="bn-icon">&#128202;</span><span class="bn-label" data-i18n="nav_rel_short">Rel.</span></a>
 </nav>
 <script src="_lang.js"></script>
 <script src="_shared.js"></script>
@@ -121,10 +121,13 @@ var viewMode   = "month";
 var weekOffset = 0;
 var selDay     = null; // "YYYY-MM-DD" of selected day
 
-var MONTHS = ["Janeiro","Fevereiro","Marco","Abril","Maio","Junho",
-              "Julho","Agosto","Setembro","Outubro","Novembro","Dezembro"];
-var MONTHS_SHORT = ["Jan","Fev","Mar","Abr","Mai","Jun","Jul","Ago","Set","Out","Nov","Dez"];
-var DAYS   = ["Dom","Seg","Ter","Qua","Qui","Sex","Sab"];
+// i18n: lidos do dicionario a cada chamada (respeitam troca de idioma)
+function MONTHS_(){ return t("cal_meses"); }
+function MONTHS_SHORT_(){ return t("cal_meses_short"); }
+function DAYS_(){ return t("cal_dias"); }
+Object.defineProperty(window,"MONTHS",{get:MONTHS_});
+Object.defineProperty(window,"MONTHS_SHORT",{get:MONTHS_SHORT_});
+Object.defineProperty(window,"DAYS",{get:DAYS_});
 
 // ── EVENT COLORS ─────────────────────────────────────────────────────────────
 var EC = {
@@ -179,8 +182,8 @@ function render() {
 
 function viewToggle() {
   return '<div class="cal-view-toggle">'
-    +'<div class="cal-view-btn'+(viewMode==="month"?" active":"")+'" onclick="setView(\'month\')">&#128197; M&ecirc;s</div>'
-    +'<div class="cal-view-btn'+(viewMode==="week"?" active":"")+'" onclick="setView(\'week\')">&#128198; Semana</div>'
+    +'<div class="cal-view-btn'+(viewMode==="month"?" active":"")+'" onclick="setView(\'month\')">&#128197; '+t("cal_mes")+'</div>'
+    +'<div class="cal-view-btn'+(viewMode==="week"?" active":"")+'" onclick="setView(\'week\')">&#128198; '+t("cal_semana")+'</div>'
     +'</div>';
 }
 
@@ -193,10 +196,10 @@ function renderMonth() {
   // Summary
   var me = evs.filter(function(e){return e.date&&e.date.startsWith(curYear+"-"+pad(curMonth+1));});
   var summary = '<div class="cal-summary">'
-    +sumIt(me.filter(function(e){return e.kind==="os";}).length,"OS no M&ecirc;s","#60a5fa")
-    +sumIt(me.filter(function(e){return e.kind==="plano";}).length,"Planos","#f59e0b")
-    +sumIt(me.filter(function(e){return e.prio==="Critica";}).length,"Cr&iacute;ticas","#f87171")
-    +sumIt(me.filter(function(e){return e.status==="Atrasado";}).length,"Atrasados","#fb923c")
+    +sumIt(me.filter(function(e){return e.kind==="os";}).length,t("cal_os_mes"),"#60a5fa")
+    +sumIt(me.filter(function(e){return e.kind==="plano";}).length,t("cal_planos"),"#f59e0b")
+    +sumIt(me.filter(function(e){return e.prio==="Critica";}).length,t("cal_criticas"),"#f87171")
+    +sumIt(me.filter(function(e){return e.status==="Atrasado";}).length,t("cal_atrasados"),"#fb923c")
     +'</div>';
 
   // Nav
@@ -206,14 +209,14 @@ function renderMonth() {
     +'<div class="cal-nav-title">'+MONTHS[curMonth]+' '+curYear+'</div>'
     +'</div>'
     +'<div style="display:flex;gap:6px">'
-    +'<button class="btn bx bsm" onclick="goToday()">Hoje</button>'
+    +'<button class="btn bx bsm" onclick="goToday()">'+t("cal_hoje")+'</button>'
     +'<button class="btn bx bsm" onclick="nextMonth()">&#8594;</button>'
     +'</div></div>';
 
   // Legend
   var legend = '<div class="cal-legend">'
-    +legIt("#f87171","Corretiva")+legIt("#4ade80","Preventiva")
-    +legIt("#a78bfa","Preditiva")+legIt("#60a5fa","OS Plano")+legIt("#f59e0b","Plano")
+    +legIt("#f87171",t("ord_tipo_corr"))+legIt("#4ade80",t("ord_tipo_prev"))
+    +legIt("#a78bfa",t("ord_tipo_pred"))+legIt("#60a5fa",t("cal_os_plano"))+legIt("#f59e0b",t("cal_plano"))
     +'</div>';
 
   // Grid
@@ -242,9 +245,9 @@ function renderMonth() {
   var panel = "";
   if (selDay && byDate[selDay] && byDate[selDay].length > 0) {
     var dParts = selDay.split("-");
-    var dLabel = parseInt(dParts[2])+" de "+MONTHS[parseInt(dParts[1])-1];
+    var dLabel = parseInt(dParts[2])+(LANG.current()==="en"?" ":" de ")+MONTHS[parseInt(dParts[1])-1];
     var cards = byDate[selDay].map(function(e){
-      var typeLabel = e.kind==="os" ? e.tipo : (e.tipo+" — Plano");
+      var typeLabel = e.kind==="os" ? e.tipo : (e.tipo+t("cal_plano_suf"));
       return '<div class="cal-ev-card" '
         +'style="background:'+e.col.bg+';border-left-color:'+e.col.dot+'" '
         +'onclick="goToEvent(\''+e.kind+'\','+(e.kind==="os"?e.id:e.ativoId+','+e.planoId)+')">'
@@ -316,10 +319,10 @@ function renderWeek() {
     +'<button class="btn bx bsm" onclick="prevWeek()">&#8592;</button>'
     +'<div class="cal-nav-center">'
     +'<div class="cal-nav-title" style="font-size:14px">'+startStr+' &mdash; '+endStr+'</div>'
-    +'<div class="cal-nav-sub">Semana</div>'
+    +'<div class="cal-nav-sub">'+t("cal_semana")+'</div>'
     +'</div>'
     +'<div style="display:flex;gap:6px">'
-    +'<button class="btn bx bsm" onclick="goToday()">Hoje</button>'
+    +'<button class="btn bx bsm" onclick="goToday()">'+t("cal_hoje")+'</button>'
     +'<button class="btn bx bsm" onclick="nextWeek()">&#8594;</button>'
     +'</div></div>';
 
@@ -328,9 +331,9 @@ function renderWeek() {
     var isT = dk === todayKey();
     var dayEvs = byDate[dk] || [];
     var evCards = dayEvs.length===0
-      ? '<div class="week-empty">Sem eventos</div>'
+      ? '<div class="week-empty">'+t("cal_sem_eventos")+'</div>'
       : dayEvs.map(function(e){
-          var typeLabel = e.kind==="os" ? e.tipo : (e.tipo+" — Plano");
+          var typeLabel = e.kind==="os" ? e.tipo : (e.tipo+t("cal_plano_suf"));
           return '<div class="week-ev" style="background:'+e.col.bg+';border-left-color:'+e.col.dot+'" '
             +'onclick="goToEvent(\''+e.kind+'\','+(e.kind==="os"?e.id:e.ativoId+','+e.planoId)+')">'
             +'<div class="week-ev-header">'
@@ -445,9 +448,7 @@ initApp(render);
 </script>
 <script>
 window.addEventListener("langchange", function(){
-  document.querySelectorAll("[data-i18n]").forEach(function(el){
-    el.textContent = t(el.getAttribute("data-i18n"));
-  });
+  LANG.applyStatic();
   render();
 });
 </script>

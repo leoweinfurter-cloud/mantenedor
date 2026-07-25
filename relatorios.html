@@ -128,7 +128,7 @@
 .ad-banner ins{display:block;}
 </style>
 </head>
-<body>
+<body data-i18n-doctitle="title_relatorios">
 <div id="app">
   <div id="sidebar">
     <a class="sl" href="dashboard.html"><div class="li">&#9881;</div><span class="sl-text">Mantenedor</span></a>
@@ -137,17 +137,17 @@
       <a class="ni" href="ordens.html"><span class="nx">&#9874;</span><span class="nl" data-i18n="nav_ordens">Ordens de Servico</span></a>
       <a class="ni" href="ativos.html"><span class="nx">&#11041;</span><span class="nl" data-i18n="nav_ativos">Gestao de Ativos</span></a>
       <a class="ni" href="cadastros.html"><span class="nx">&#9998;</span><span class="nl" data-i18n="nav_cadastros">Cadastros</span></a>
-      <a class="ni" href="calendario.html"><span class="nx">&#128197;</span><span class="nl">Calendario</span></a>
-      <a class="ni active" href="relatorios.html"><span class="nx">&#128202;</span><span class="nl">Relatorios</span></a>
+      <a class="ni" href="calendario.html"><span class="nx">&#128197;</span><span class="nl" data-i18n="nav_calendario">Calendario</span></a>
+      <a class="ni active" href="relatorios.html"><span class="nx">&#128202;</span><span class="nl" data-i18n="nav_relatorios">Relatorios</span></a>
     </nav>
   </div>
   <div id="main">
     <div id="topbar">
       <div id="topbar-left">
         <span class="topbar-logo">&#9881;</span>
-        <div><div id="tt">Relatorios</div></div>
+        <div><div id="tt" data-i18n="title_relatorios">Relatorios</div></div>
       </div>
-      <button id="logout-btn" onclick="if(confirm('Sair do Mantenedor?'))authLogout()" title="Sair" aria-label="Sair" style="background:transparent;border:1px solid var(--border,#1e3a5f);border-radius:8px;padding:6px 12px;cursor:pointer;font-size:12px;font-weight:700;letter-spacing:.03em;color:inherit;flex-shrink:0;transition:all .2s">Sair</button>
+      <button id="logout-btn" onclick="if(confirm(t('msg_sair')))authLogout()" data-i18n-title="btn_sair" title="Sair" aria-label="Sair" style="background:transparent;border:1px solid var(--border,#1e3a5f);border-radius:8px;padding:6px 12px;cursor:pointer;font-size:12px;font-weight:700;letter-spacing:.03em;color:inherit;flex-shrink:0;transition:all .2s" data-i18n="btn_sair">Sair</button>
     </div>
     
   <div class="ad-banner" id="ad-top"><!-- Anuncio Mantenedor Free --></div>
@@ -155,11 +155,11 @@
   </div>
 </div>
 <nav id="bottom-nav">
-  <a class="bn-item" href="dashboard.html"><span class="bn-icon">&#9672;</span><span class="bn-label">Dashboard</span></a>
-  <a class="bn-item" href="ordens.html"><span class="bn-icon">&#9874;</span><span class="bn-label">OS</span></a>
-  <a class="bn-item" href="ativos.html"><span class="bn-icon">&#11041;</span><span class="bn-label">Ativos</span></a>
-  <a class="bn-item" href="cadastros.html"><span class="bn-icon">&#9998;</span><span class="bn-label">Cadastros</span></a>
-  <a class="bn-item active" href="relatorios.html"><span class="bn-icon">&#128202;</span><span class="bn-label">Rel.</span></a>
+  <a class="bn-item" href="dashboard.html"><span class="bn-icon">&#9672;</span><span class="bn-label" data-i18n="nav_dashboard">Dashboard</span></a>
+  <a class="bn-item" href="ordens.html"><span class="bn-icon">&#9874;</span><span class="bn-label" data-i18n="nav_os">OS</span></a>
+  <a class="bn-item" href="ativos.html"><span class="bn-icon">&#11041;</span><span class="bn-label" data-i18n="nav_ativos_short">Ativos</span></a>
+  <a class="bn-item" href="cadastros.html"><span class="bn-icon">&#9998;</span><span class="bn-label" data-i18n="nav_cadastros">Cadastros</span></a>
+  <a class="bn-item active" href="relatorios.html"><span class="bn-icon">&#128202;</span><span class="bn-label" data-i18n="nav_rel_short">Rel.</span></a>
 </nav>
 <script src="_lang.js"></script>
 <script src="_shared.js"></script>
@@ -180,6 +180,8 @@ var osLookupMsg = "";    // mensagem de erro da busca por numero de OS
 // ── RENDER ────────────────────────────────────────────────────────────
 var minhaEmpresa = {nome:"",cnpj:"",telefone:"",endereco:"",contato:""};
 
+function mxLocale(){ var L={pt:"pt-BR",en:"en-US",es:"es-ES"}; return L[LANG.current()]||"pt-BR"; }
+
 function render(){
   empresas = loadEmpresas();
   minhaEmpresa = loadMinhaEmpresa();
@@ -190,46 +192,46 @@ function render(){
 // ── LETTERHEAD (modelo formal, aparece na tela e na impressao) ────────
 function renderLetterhead(){
   var agora = new Date();
-  var dataGer = agora.toLocaleDateString("pt-BR")+" "+agora.toLocaleTimeString("pt-BR",{hour:"2-digit",minute:"2-digit"});
-  var tituloRel = relTipo==="os" ? "Relatorio de Ordens de Servico" : "Relatorio de Historico de Manutencao";
+  var dataGer = agora.toLocaleDateString(mxLocale())+" "+agora.toLocaleTimeString(mxLocale(),{hour:"2-digit",minute:"2-digit"});
+  var tituloRel = relTipo==="os" ? t("rel_titulo_os_rel") : t("rel_titulo_hist_rel");
 
   var clienteHtml = "";
   if(filtEmpresa){
     var emp = empresas.find(function(e){return e.nome===filtEmpresa;});
     if(emp){
-      var unidNome = filtUnidade || "Todas as unidades";
+      var unidNome = filtUnidade || t("rel_todas_unidades");
       clienteHtml = '<div class="rel-lh-cliente">'
-        +'<div><b>Cliente:</b> '+esc(emp.nome)+'</div>'
-        +'<div><b>Unidade:</b> '+esc(unidNome)+'</div>'
-        +(emp.cnpj?'<div><b>CNPJ:</b> '+esc(emp.cnpj)+'</div>':"")
-        +(emp.endereco?'<div><b>Endereco:</b> '+esc(emp.endereco)+'</div>':"")
-        +(emp.contato?'<div><b>Contato:</b> '+esc(emp.contato)+'</div>':"")
+        +'<div><b>'+t("rel_cliente")+'</b> '+esc(emp.nome)+'</div>'
+        +'<div><b>'+t("rel_unidade_lbl")+'</b> '+esc(unidNome)+'</div>'
+        +(emp.cnpj?'<div><b>'+t("rel_cnpj")+'</b> '+esc(emp.cnpj)+'</div>':"")
+        +(emp.endereco?'<div><b>'+t("rel_endereco")+'</b> '+esc(emp.endereco)+'</div>':"")
+        +(emp.contato?'<div><b>'+t("cad_contato_lbl")+'</b> '+esc(emp.contato)+'</div>':"")
         +'</div>';
     }
   }
 
   var filtrosAtivos = [];
-  if(filtAtivoId){var a=ativos.find(function(x){return x.id==filtAtivoId;}); if(a)filtrosAtivos.push("Ativo: "+a.nome);}
-  if(filtStatus)  filtrosAtivos.push((relTipo==="os"?"Status: ":"Tipo: ")+filtStatus);
-  if(filtTipo)    filtrosAtivos.push((relTipo==="os"?"Tipo: ":"")+filtTipo);
-  if(filtDtIni)   filtrosAtivos.push("De: "+filtDtIni);
-  if(filtDtFim)   filtrosAtivos.push("Ate: "+filtDtFim);
-  var filtrosHtml = filtrosAtivos.length ? '<div class="rel-lh-filtros no-print">Filtros aplicados: '+filtrosAtivos.map(esc).join(" &bull; ")+'</div>' : "";
+  if(filtAtivoId){var a=ativos.find(function(x){return x.id==filtAtivoId;}); if(a)filtrosAtivos.push(t("rel_ativo")+a.nome);}
+  if(filtStatus)  filtrosAtivos.push((relTipo==="os"?t("rel_status_lbl"):t("rel_tipo_lbl"))+filtStatus);
+  if(filtTipo)    filtrosAtivos.push((relTipo==="os"?t("rel_tipo_lbl"):"")+filtTipo);
+  if(filtDtIni)   filtrosAtivos.push(t("rel_de")+" "+filtDtIni);
+  if(filtDtFim)   filtrosAtivos.push(t("rel_ate")+filtDtFim);
+  var filtrosHtml = filtrosAtivos.length ? '<div class="rel-lh-filtros no-print">'+t("rel_filtros_apl")+''+filtrosAtivos.map(esc).join(" &bull; ")+'</div>' : "";
 
   var emissorLinha = [];
-  if(minhaEmpresa.cnpj)     emissorLinha.push("CNPJ "+minhaEmpresa.cnpj);
+  if(minhaEmpresa.cnpj)     emissorLinha.push(t("rel_cnpj")+minhaEmpresa.cnpj);
   if(minhaEmpresa.telefone) emissorLinha.push(minhaEmpresa.telefone);
   if(minhaEmpresa.endereco) emissorLinha.push(minhaEmpresa.endereco);
   var emissorHtml = '<div class="rel-lh-emissor">'
     +esc(minhaEmpresa.nome||"Mantenedor")
     +(emissorLinha.length?' &bull; '+emissorLinha.map(esc).join(" &bull; "):"")
-    +(minhaEmpresa.contato?'<br>Responsavel tecnico: '+esc(minhaEmpresa.contato):"")
+    +(minhaEmpresa.contato?'<br>'+t("cad_contato_resp")+': '+esc(minhaEmpresa.contato):"")
     +'</div>';
 
   return '<div class="rel-letterhead">'
     +'<div class="rel-lh-top">'
     +'<div><div class="rel-lh-brand">Mantenedor</div><div class="rel-lh-titulo">'+tituloRel+'</div></div>'
-    +'<div class="rel-lh-meta">Gerado em<br>'+dataGer+'</div>'
+    +'<div class="rel-lh-meta">'+t("rel_gerado_em")+'<br>'+dataGer+'</div>'
     +'</div>'
     +emissorHtml
     +clienteHtml
@@ -242,9 +244,9 @@ function renderLetterhead(){
 function renderOsLookup(){
   if(relTipo!=="os") return "";
   return '<div class="rel-os-lookup no-print">'
-    +'<div style="flex:1"><div class="rel-filter-label">Imprimir uma OS especifica (numero)</div>'
-    +'<input id="rel-os-busca" placeholder="Ex.: 2026-COR-0004" onkeydown="if(event.key===\'Enter\')buscarEImprimirOS()"/></div>'
-    +'<button class="btn bp bsm" onclick="buscarEImprimirOS()">&#128269; Buscar e imprimir</button>'
+    +'<div style="flex:1"><div class="rel-filter-label">'+t("rel_imprimir_os")+'</div>'
+    +'<input id="rel-os-busca" placeholder="'+t("rel_num_exemplo")+'" onkeydown="if(event.key===\'Enter\')buscarEImprimirOS()"/></div>'
+    +'<button class="btn bp bsm" onclick="buscarEImprimirOS()">&#128269; '+t("rel_buscar_impr")+'</button>'
     +(osLookupMsg?'<div style="font-size:11px;color:#f87171;width:100%;margin-top:6px">'+esc(osLookupMsg)+'</div>':"")
     +'</div>';
 }
@@ -252,10 +254,10 @@ function renderOsLookup(){
 function buscarEImprimirOS(){
   var termo = (document.getElementById("rel-os-busca").value||"").trim().toLowerCase();
   osLookupMsg = "";
-  if(!termo){ osLookupMsg="Informe o numero da OS."; render(); return; }
+  if(!termo){ osLookupMsg=t("rel_informe_num"); render(); return; }
   var achada = ordens.find(function(o){ return (o.numero_os||"").toLowerCase()===termo; })
     || ordens.find(function(o){ return (o.numero_os||"").toLowerCase().indexOf(termo)!==-1; });
-  if(!achada){ osLookupMsg="Nenhuma OS encontrada com o numero \""+termo+"\"."; render(); return; }
+  if(!achada){ osLookupMsg=t("rel_nao_encontrada")+"\""+termo+"\"."; render(); return; }
   // Isola a OS encontrada, limpando os demais filtros, e dispara a impressao
   filtAtivoId=""; filtStatus=""; filtTipo=""; filtDtIni=""; filtDtFim=""; filtEmpresa=""; filtUnidade="";
   window.__relOsUnica = achada.id;
@@ -265,8 +267,8 @@ function buscarEImprimirOS(){
 
 function renderTipoSelector(){
   return '<div class="rel-type-grid no-print">'
-    +typeBtn("os","&#128203;","OS Realizadas")
-    +typeBtn("historico","&#128196;","Historico de Ativos")
+    +typeBtn("os","&#128203;",t("rel_tipo_os"))
+    +typeBtn("historico","&#128196;",t("rel_tipo_hist"))
     +'</div>';
 }
 function typeBtn(tipo,icon,label){
@@ -280,42 +282,42 @@ function renderFiltros(){
     if(filtUnidade && a.unidade!==filtUnidade) return false;
     return true;
   });
-  var ativoOpts = '<option value="">Todos os ativos</option>'
+  var ativoOpts = '<option value="">'+t("rel_todos_ativos")+'</option>'
     + ativosParaSelect.map(function(a){return'<option value="'+a.id+'"'+(filtAtivoId==a.id?' selected':'')+'>'+esc(a.nome)+'</option>';}).join("");
 
   var statusOpts, tipoOpts;
   if(relTipo === "os"){
-    statusOpts = '<option value="">Todos</option><option value="Concluida">Concluida</option><option value="Aberta">Aberta</option><option value="Em Andamento">Em Andamento</option><option value="Cancelada">Cancelada</option>';
-    tipoOpts   = '<option value="">Todos</option><option value="Corretiva">Corretiva</option><option value="Preventiva">Preventiva</option><option value="Preditiva">Preditiva</option><option value="Mista">Mista</option>';
+    statusOpts = '<option value="">'+t("rel_todos")+'</option><option value="Concluida">'+t("ord_status_conc")+'</option><option value="Aberta">'+t("ord_status_aberta")+'</option><option value="Em Andamento">'+t("ord_status_and")+'</option><option value="Cancelada">'+t("ord_status_canc")+'</option>';
+    tipoOpts   = '<option value="">'+t("rel_todos")+'</option><option value="Corretiva">'+t("ord_tipo_corr")+'</option><option value="Preventiva">'+t("ord_tipo_prev")+'</option><option value="Preditiva">'+t("ord_tipo_pred")+'</option><option value="Mista">'+t("rel_mista")+'</option>';
   } else {
-    statusOpts = '<option value="">Todos</option><option value="Corretiva">Corretiva</option><option value="Preventiva">Preventiva</option><option value="Preditiva">Preditiva</option>';
-    tipoOpts   = '<option value="">Com e sem analise</option><option value="com_analise">Com analise de falha</option><option value="sem_analise">Sem analise de falha</option>';
+    statusOpts = '<option value="">'+t("rel_todos")+'</option><option value="Corretiva">'+t("ord_tipo_corr")+'</option><option value="Preventiva">'+t("ord_tipo_prev")+'</option><option value="Preditiva">'+t("ord_tipo_pred")+'</option>';
+    tipoOpts   = '<option value="">'+t("rel_com_e_sem")+'</option><option value="com_analise">'+t("rel_com_analise")+'</option><option value="sem_analise">'+t("rel_sem_analise")+'</option>';
   }
 
-  var empOpts = '<option value="">Todas as empresas</option>'
+  var empOpts = '<option value="">'+t("rel_todas_empresas")+'</option>'
     + empresas.map(function(e){return'<option value="'+esc(e.nome)+'"'+(filtEmpresa===e.nome?' selected':'')+'>'+esc(e.nome)+'</option>';}).join("");
 
   var empSelecionada = empresas.find(function(e){return e.nome===filtEmpresa;});
-  var unidOpts = '<option value="">Todas as unidades</option>'
+  var unidOpts = '<option value="">'+t("rel_todas_unidades")+'</option>'
     + (empSelecionada&&empSelecionada.unidades ? empSelecionada.unidades.map(function(u){return'<option value="'+esc(u.nome)+'"'+(filtUnidade===u.nome?' selected':'')+'>'+esc(u.nome)+'</option>';}).join("") : "");
 
   return '<div class="rel-filters no-print">'
     +'<div class="rel-filter-row">'
-    +'<div><div class="rel-filter-label">Empresa (terceirizada/cliente)</div><select onchange="filtEmpresa=this.value;filtUnidade=\'\';render()">'+empOpts+'</select></div>'
-    +'<div><div class="rel-filter-label">Unidade</div><select'+(empSelecionada?'':' disabled')+' onchange="filtUnidade=this.value;render()">'+unidOpts+'</select></div>'
+    +'<div><div class="rel-filter-label">'+t("rel_empresa")+'</div><select onchange="filtEmpresa=this.value;filtUnidade=\'\';render()">'+empOpts+'</select></div>'
+    +'<div><div class="rel-filter-label">'+t("rel_unidade")+'</div><select'+(empSelecionada?'':' disabled')+' onchange="filtUnidade=this.value;render()">'+unidOpts+'</select></div>'
     +'</div>'
     +'<div class="rel-filter-row">'
-    +'<div><div class="rel-filter-label">Ativo</div><select onchange="filtAtivoId=this.value;render()">'+ativoOpts+'</select></div>'
-    +'<div><div class="rel-filter-label">'+(relTipo==="os"?"Status":"Tipo")+'</div><select onchange="'+(relTipo==="os"?"filtStatus":"filtTipo")+'=this.value;render()">'+statusOpts+'</select></div>'
+    +'<div><div class="rel-filter-label">'+t("ord_f_ativo_label")+'</div><select onchange="filtAtivoId=this.value;render()">'+ativoOpts+'</select></div>'
+    +'<div><div class="rel-filter-label">'+(relTipo==="os"?t("rel_status"):t("ord_f_tipo"))+'</div><select onchange="'+(relTipo==="os"?"filtStatus":"filtTipo")+'=this.value;render()">'+statusOpts+'</select></div>'
     +'</div>'
     +'<div class="rel-filter-row three">'
-    +'<div><div class="rel-filter-label">'+(relTipo==="os"?"Tipo":"Analise")+'</div><select onchange="'+(relTipo==="os"?"filtTipo":"filtStatus")+'=this.value;render()">'+tipoOpts+'</select></div>'
-    +'<div><div class="rel-filter-label">Data inicio</div><input type="date" value="'+filtDtIni+'" onchange="filtDtIni=this.value;render()"/></div>'
-    +'<div><div class="rel-filter-label">Data fim</div><input type="date" value="'+filtDtFim+'" onchange="filtDtFim=this.value;render()"/></div>'
+    +'<div><div class="rel-filter-label">'+(relTipo==="os"?t("ord_f_tipo"):t("rel_analise"))+'</div><select onchange="'+(relTipo==="os"?"filtTipo":"filtStatus")+'=this.value;render()">'+tipoOpts+'</select></div>'
+    +'<div><div class="rel-filter-label">'+t("rel_data_inicio")+'</div><input type="date" value="'+filtDtIni+'" onchange="filtDtIni=this.value;render()"/></div>'
+    +'<div><div class="rel-filter-label">'+t("rel_data_fim")+'</div><input type="date" value="'+filtDtFim+'" onchange="filtDtFim=this.value;render()"/></div>'
     +'</div>'
     +'<div class="rel-actions">'
-    +'<button class="btn bx bsm" onclick="limparFiltros()">Limpar filtros</button>'
-    +'<button class="btn bp bsm" onclick="window.print()">&#128424; Imprimir / Salvar PDF</button>'
+    +'<button class="btn bx bsm" onclick="limparFiltros()">'+t("rel_limpar")+'</button>'
+    +'<button class="btn bp bsm" onclick="window.print()">&#128424; '+t("rel_imprimir_pdf")+'</button>'
     +'</div></div>';
 }
 
@@ -362,14 +364,14 @@ function renderRelOSCards(filtered,unica){
     var criticas  = filtered.filter(function(o){return o.prioridade==="Critica";}).length;
 
     summary = '<div class="rel-summary">'
-      +sumCard(filtered.length,"Total","#60a5fa")
-      +sumCard(conc,"Concluidas","#4ade80")
-      +sumCard(aber+andamento,"Em aberto","#fbbf24")
-      +sumCard(criticas,"Criticas","#f87171")
+      +sumCard(filtered.length,t("rel_total"),"#60a5fa")
+      +sumCard(conc,t("rel_concluidas"),"#4ade80")
+      +sumCard(aber+andamento,t("rel_em_aberto"),"#fbbf24")
+      +sumCard(criticas,t("rel_criticas"),"#f87171")
       +'</div>';
   }
 
-  if(!filtered.length) return summary+'<div class="rel-empty"><div class="rel-empty-icon">&#128203;</div>Nenhuma OS encontrada com os filtros selecionados.</div>';
+  if(!filtered.length) return summary+'<div class="rel-empty"><div class="rel-empty-icon">&#128203;</div>'+t("rel_vazio_os")+'</div>';
 
   var ativosById = {};
   ativos.forEach(function(a){ativosById[a.id]=a;});
@@ -394,17 +396,17 @@ function renderRelOSCards(filtered,unica){
 
     var execHtml = "";
     if(log.length){
-      execHtml += '<div class="rel-os-section"><div class="rel-os-section-title">Registro de Execucao ('+log.length+')</div>';
+      execHtml += '<div class="rel-os-section"><div class="rel-os-section-title">'+t("ord_reg_exec")+' ('+log.length+')</div>';
 
       if(obsEntries.length){
-        execHtml += '<div class="rel-exec-cat-title">Observacoes Tecnicas</div>'
+        execHtml += '<div class="rel-exec-cat-title">'+t("rel_obs_tec")+'</div>'
           +obsEntries.map(function(e){
             return '<div class="rel-os-log-item">'+esc(e.data||"")+(e.tecnico?' &bull; <b>'+esc(e.tecnico)+'</b>':"")+(e.horas?' &bull; '+e.horas+'h':"")+'<br>'+esc(e.desc||"")+'</div>';
           }).join("");
       }
       if(medEntries.length){
-        execHtml += '<div class="rel-exec-cat-title">Medicoes Registradas</div>'
-          +'<table class="rel-parts-table"><tr><th>Data</th><th>Parametro</th><th>Valor</th><th>Limite</th><th>Condicao</th></tr>'
+        execHtml += '<div class="rel-exec-cat-title">'+t("rel_med_reg")+'</div>'
+          +'<table class="rel-parts-table"><tr><th>'+t("rel_col_data")+'</th><th>'+t("rel_col_param")+'</th><th>'+t("rel_col_valor")+'</th><th>'+t("rel_col_limite")+'</th><th>'+t("rel_col_cond")+'</th></tr>'
           +medEntries.map(function(e){
             var fora = e.cond && /fora/i.test(e.cond);
             return '<tr><td>'+esc(e.data||"")+'</td><td>'+esc(e.param||"")+'</td><td>'+esc(e.valor)+'</td><td>'+esc(e.limite)+'</td>'
@@ -413,17 +415,17 @@ function renderRelOSCards(filtered,unica){
           +'</table>';
       }
       if(pecaEntries.length){
-        execHtml += '<div class="rel-exec-cat-title">Pecas e Materiais Utilizados</div>'
-          +'<table class="rel-parts-table"><tr><th>Descricao</th><th>Qtd</th><th>Custo Unit.</th><th>Subtotal</th></tr>'
+        execHtml += '<div class="rel-exec-cat-title">'+t("rel_pecas_mat")+'</div>'
+          +'<table class="rel-parts-table"><tr><th>'+t("rel_col_desc")+'</th><th>'+t("rel_col_qtd")+'</th><th>'+t("rel_col_custo_un")+'</th><th>'+t("rel_col_subtotal")+'</th></tr>'
           +pecaEntries.map(function(e){
             var qty=e.qty||1, sub=qty*(e.custo||0);
             return '<tr><td>'+esc(e.desc||"")+(e.obs?'<br><span style="font-size:10px">'+esc(e.obs)+'</span>':"")+'</td><td>'+qty+'</td><td>R$ '+(e.custo||0).toLocaleString("pt-BR")+'</td><td>R$ '+sub.toLocaleString("pt-BR")+'</td></tr>';
           }).join("")
-          +'<tr class="rel-parts-total"><td colspan="3">Total em pecas</td><td>R$ '+totalPecas.toLocaleString("pt-BR")+'</td></tr>'
+          +'<tr class="rel-parts-total"><td colspan="3">'+t("rel_total_pecas")+'</td><td>R$ '+totalPecas.toLocaleString("pt-BR")+'</td></tr>'
           +'</table>';
       }
       if(fotoEntries.length){
-        execHtml += '<div class="rel-exec-cat-title">Registros Fotograficos</div>'
+        execHtml += '<div class="rel-exec-cat-title">'+t("rel_reg_foto")+'</div>'
           +'<div class="rel-photo-grid">'
           +fotoEntries.map(function(e){
             return '<div class="rel-photo-item">'+(e.foto?'<img src="'+e.foto+'" alt="Foto da execucao"/>':'')+(e.desc?'<div class="rel-photo-cap">'+esc(e.desc)+'</div>':'')+'</div>';
@@ -436,7 +438,7 @@ function renderRelOSCards(filtered,unica){
     // Checklist de planos
     var checkHtml = "";
     if(o.planos_exec && o.planos_exec.length){
-      checkHtml = '<div class="rel-os-section"><div class="rel-os-section-title">Checklist de Planos</div>'
+      checkHtml = '<div class="rel-os-section"><div class="rel-os-section-title">'+t("rel_checklist")+'</div>'
         +o.planos_exec.map(function(pe){
           var concCount=pe.acoes.filter(function(a){return a.concluida;}).length;
           return'<div class="rel-os-log-item" style="margin-bottom:6px"><b>'+esc(pe.plano_nome)+'</b> — '+concCount+'/'+pe.acoes.length+' acoes<br>'
@@ -447,14 +449,14 @@ function renderRelOSCards(filtered,unica){
 
     var totaisHtml = (totalHoras>0||totalPecas>0)
       ? '<div class="rel-os-totais">'
-        +(totalHoras>0?'<div>Total de horas: <b>'+totalHoras.toFixed(1)+'h</b></div>':"")
-        +(totalPecas>0?'<div>Total em pecas: <b>R$ '+totalPecas.toLocaleString("pt-BR")+'</b></div>':"")
+        +(totalHoras>0?'<div>'+t("rel_total_horas")+'<b>'+totalHoras.toFixed(1)+'h</b></div>':"")
+        +(totalPecas>0?'<div>'+t("rel_total_pecas")+'<b>R$ '+totalPecas.toLocaleString("pt-BR")+'</b></div>':"")
         +'</div>' : "";
 
     var assinaturaHtml = unica
       ? '<div class="rel-signature-block">'
-        +'<div class="rel-signature-line">'+esc(o.tecnico||"")+'<small>Tecnico Executante</small></div>'
-        +'<div class="rel-signature-line">&nbsp;<small>Responsavel do Cliente — Aceite do Servico</small></div>'
+        +'<div class="rel-signature-line">'+esc(o.tecnico||"")+'<small>'+t("rel_tec_exec")+'</small></div>'
+        +'<div class="rel-signature-line">&nbsp;<small>'+t("rel_aceite")+'</small></div>'
         +'</div>' : "";
 
     return '<div class="rel-os-card">'
@@ -468,12 +470,12 @@ function renderRelOSCards(filtered,unica){
       +'<div class="rel-os-body-wrap">'
       +'<div class="rel-os-titulo">'+esc(o.titulo)+'</div>'
       +'<div class="rel-os-meta">'+esc(o.ativo||"")+(localInfo?' &bull; '+localInfo:'')+'</div>'
-      +(o.descricao?'<div class="rel-os-section"><div class="rel-os-section-title">Descricao do Servico Solicitado</div><div class="rel-os-body">'+esc(o.descricao)+'</div></div>':"")
-      +'<div class="rel-os-section"><div class="rel-os-section-title">Dados Gerais</div><div class="rel-os-fields">'
-      +osField("Abertura",o.abertura||"--")
-      +osField("Prazo",o.prazo||"--")
-      +osField("Tecnico Responsavel",o.tecnico||"--")
-      +osField("Prioridade",o.prioridade||"--")
+      +(o.descricao?'<div class="rel-os-section"><div class="rel-os-section-title">'+t("rel_desc_servico")+'</div><div class="rel-os-body">'+esc(o.descricao)+'</div></div>':"")
+      +'<div class="rel-os-section"><div class="rel-os-section-title">'+t("rel_dados_gerais")+'</div><div class="rel-os-fields">'
+      +osField(t("rel_abertura"),o.abertura||"--")
+      +osField(t("rel_prazo"),o.prazo||"--")
+      +osField(t("rel_tecnico"),o.tecnico||"--")
+      +osField(t("rel_prioridade"),o.prioridade||"--")
       +'</div></div>'
       +execHtml+checkHtml+totaisHtml+assinaturaHtml
       +'</div></div>';
@@ -533,9 +535,9 @@ function renderRelHist(){
         +'</div></div>'
         +(h.obs?'<div style="font-size:12px;color:#64748b;margin:6px 0">'+esc(h.obs)+'</div>':"")
         +'<div class="rel-hist-fields">'
-        +'<div><div class="rel-hist-flbl">Horas</div><div class="rel-hist-fval">'+(h.horas||0)+'h</div></div>'
-        +'<div><div class="rel-hist-flbl">Custo</div><div class="rel-hist-fval">R$ '+(h.custo||0)+'</div></div>'
-        +'<div><div class="rel-hist-flbl">Analise</div><div class="rel-hist-fval" style="color:'+(h.analise?"#a78bfa":"#475569")+'">'+(h.analise?"Sim":"Nao")+'</div></div>'
+        +'<div><div class="rel-hist-flbl">'+t("rel_col_horas")+'</div><div class="rel-hist-fval">'+(h.horas||0)+'h</div></div>'
+        +'<div><div class="rel-hist-flbl">'+t("rel_col_custo")+'</div><div class="rel-hist-fval">R$ '+(h.custo||0)+'</div></div>'
+        +'<div><div class="rel-hist-flbl">'+t("rel_analise")+'</div><div class="rel-hist-fval" style="color:'+(h.analise?"#a78bfa":"#475569")+'">'+(h.analise?t("rel_sim"):t("rel_nao"))+'</div></div>'
         +'</div>'
         +analHtml+'</div>';
     }).join("");
@@ -557,7 +559,7 @@ function renderRelHist(){
     +'</div>';
 
   if(!blocks.replace(/\s/g,"")){
-    return summary+'<div class="rel-empty"><div class="rel-empty-icon">&#128196;</div>Nenhum registro de manutencao encontrado.</div>';
+    return summary+'<div class="rel-empty"><div class="rel-empty-icon">&#128196;</div>'+t("rel_vazio_hist")+'</div>';
   }
   return summary+blocks;
 }
@@ -567,29 +569,29 @@ function renderAnaliseContent(an){
   var tipo = an.tipo||"5porques";
   if(tipo==="5porques"&&an.porques){
     html += '<div class="rel-analise-content">'
-      +an.porques.filter(Boolean).map(function(p,i){return'<div class="rel-analise-section"><span class="rel-analise-key">Por que '+(i+1)+':</span> '+esc(p)+'</div>';}).join("")
-      +(an.causa_raiz?'<div class="rel-analise-section"><span class="rel-analise-key">Causa raiz:</span> '+esc(an.causa_raiz)+'</div>':"")
-      +(an.acao?'<div class="rel-analise-section"><span class="rel-analise-key">Acao corretiva:</span> '+esc(an.acao)+'</div>':"")
+      +an.porques.filter(Boolean).map(function(p,i){return'<div class="rel-analise-section"><span class="rel-analise-key">'+t("an_porque")+(i+1)+':</span> '+esc(p)+'</div>';}).join("")
+      +(an.causa_raiz?'<div class="rel-analise-section"><span class="rel-analise-key">'+t("an_causa_raiz")+'</span> '+esc(an.causa_raiz)+'</div>':"")
+      +(an.acao?'<div class="rel-analise-section"><span class="rel-analise-key">'+t("an_acao_corr")+'</span> '+esc(an.acao)+'</div>':"")
       +'</div>';
   } else if(tipo==="ishikawa"&&an.causas){
     var cats=Object.keys(an.causas).filter(function(k){return an.causas[k];});
     html += '<div class="rel-analise-content">'
       +cats.map(function(k){return'<div class="rel-analise-section"><span class="rel-analise-key">'+k+':</span> '+esc(an.causas[k])+'</div>';}).join("")
-      +(an.causa_raiz?'<div class="rel-analise-section"><span class="rel-analise-key">Causa raiz:</span> '+esc(an.causa_raiz)+'</div>':"")
+      +(an.causa_raiz?'<div class="rel-analise-section"><span class="rel-analise-key">'+t("an_causa_raiz")+'</span> '+esc(an.causa_raiz)+'</div>':"")
       +'</div>';
   } else if(tipo==="fmea"&&an.modo){
     html += '<div class="rel-analise-content">'
-      +(an.modo?'<div class="rel-analise-section"><span class="rel-analise-key">Modo de falha:</span> '+esc(an.modo)+'</div>':"")
-      +(an.efeito?'<div class="rel-analise-section"><span class="rel-analise-key">Efeito:</span> '+esc(an.efeito)+'</div>':"")
-      +(an.causa?'<div class="rel-analise-section"><span class="rel-analise-key">Causa:</span> '+esc(an.causa)+'</div>':"")
-      +(an.nprs!==undefined?'<div class="rel-analise-section"><span class="rel-analise-key">NPR:</span> S:'+an.nprs+' O:'+an.npro+' D:'+an.nprd+' = <b>'+(an.nprs*an.npro*an.nprd)+'</b></div>':"")
-      +(an.acao?'<div class="rel-analise-section"><span class="rel-analise-key">Acao:</span> '+esc(an.acao)+'</div>':"")
+      +(an.modo?'<div class="rel-analise-section"><span class="rel-analise-key">'+t("an_modo_falha")+'</span> '+esc(an.modo)+'</div>':"")
+      +(an.efeito?'<div class="rel-analise-section"><span class="rel-analise-key">'+t("an_efeito")+'</span> '+esc(an.efeito)+'</div>':"")
+      +(an.causa?'<div class="rel-analise-section"><span class="rel-analise-key">'+t("an_causa")+'</span> '+esc(an.causa)+'</div>':"")
+      +(an.nprs!==undefined?'<div class="rel-analise-section"><span class="rel-analise-key">'+t("an_npr")+'</span> S:'+an.nprs+' O:'+an.npro+' D:'+an.nprd+' = <b>'+(an.nprs*an.npro*an.nprd)+'</b></div>':"")
+      +(an.acao?'<div class="rel-analise-section"><span class="rel-analise-key">'+t("an_acao")+'</span> '+esc(an.acao)+'</div>':"")
       +'</div>';
   } else if(an.descricao||an.acao||an.causa_raiz){
     html += '<div class="rel-analise-content">'
-      +(an.descricao?'<div class="rel-analise-section"><span class="rel-analise-key">Descricao:</span> '+esc(an.descricao)+'</div>':"")
-      +(an.causa_raiz?'<div class="rel-analise-section"><span class="rel-analise-key">Causa raiz:</span> '+esc(an.causa_raiz)+'</div>':"")
-      +(an.acao?'<div class="rel-analise-section"><span class="rel-analise-key">Acao corretiva:</span> '+esc(an.acao)+'</div>':"")
+      +(an.descricao?'<div class="rel-analise-section"><span class="rel-analise-key">'+t("an_descricao")+'</span> '+esc(an.descricao)+'</div>':"")
+      +(an.causa_raiz?'<div class="rel-analise-section"><span class="rel-analise-key">'+t("an_causa_raiz")+'</span> '+esc(an.causa_raiz)+'</div>':"")
+      +(an.acao?'<div class="rel-analise-section"><span class="rel-analise-key">'+t("an_acao_corr")+'</span> '+esc(an.acao)+'</div>':"")
       +'</div>';
   }
   return html;
@@ -606,7 +608,7 @@ initApp(render);
 fetchMinhaEmpresa().then(function(d){ minhaEmpresa=d; render(); }).catch(function(){/* fica com o cache local */});
 </script>
 <script>
-window.addEventListener("langchange",function(){render();});
+window.addEventListener("langchange",function(){ LANG.applyStatic(); render(); });
 </script>
 <script src="_theme.js"></script>
 </body>

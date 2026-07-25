@@ -74,7 +74,9 @@ input::placeholder{color:#334155;}
 .card{animation:fadeIn .3s ease;}
 </style>
 </head>
-<body>
+<body data-i18n-doctitle="title_login">
+<div id="lang-slot" style="position:fixed;top:14px;right:14px;z-index:50"></div>
+
 <div style="display:flex;flex-direction:column;align-items:center;width:100%;min-height:calc(100vh - 80px);justify-content:center;padding:20px 0"><div class="logo">
   <div class="logo-icon">⚙</div>
   <div class="logo-text">Manten<span>edor</span></div>
@@ -82,8 +84,8 @@ input::placeholder{color:#334155;}
 
 <div class="card">
   <div class="tabs">
-    <div class="tab active" onclick="setTab('login')" id="tab-login">Entrar</div>
-    <div class="tab" onclick="setTab('signup')" id="tab-signup">Criar Conta</div>
+    <div class="tab active" onclick="setTab('login')" id="tab-login" data-i18n="lg_entrar">Entrar</div>
+    <div class="tab" onclick="setTab('signup')" id="tab-signup" data-i18n="lg_criar_conta">Criar Conta</div>
   </div>
 
   <div id="msg" class="msg"></div>
@@ -91,15 +93,15 @@ input::placeholder{color:#334155;}
   <!-- LOGIN -->
   <div id="form-login">
     <div class="field">
-      <label class="label">E-mail</label>
-      <input type="email" id="login-email" placeholder="seu@email.com" autocomplete="email"/>
+      <label class="label" data-i18n="lg_email">E-mail</label>
+      <input type="email" id="login-email" data-i18n-ph="lg_ph_email" placeholder="seu@email.com" autocomplete="email"/>
     </div>
     <div class="field">
-      <label class="label">Senha</label>
+      <label class="label" data-i18n="lg_senha">Senha</label>
       <input type="password" id="login-senha" placeholder="••••••••" autocomplete="current-password"/>
     </div>
     <button class="btn-primary" id="btn-login" onclick="doLogin()">
-      <span>Entrar</span>
+      <span data-i18n="lg_entrar">Entrar</span>
       <div class="spinner"></div>
     </button>
   </div>
@@ -107,61 +109,62 @@ input::placeholder{color:#334155;}
   <!-- SIGNUP -->
   <div id="form-signup" style="display:none">
     <div class="field">
-      <label class="label">Seu Nome</label>
-      <input type="text" id="signup-nome" placeholder="Nome completo"/>
+      <label class="label" data-i18n="lg_seu_nome">Seu Nome</label>
+      <input type="text" id="signup-nome" data-i18n-ph="lg_ph_nome" placeholder="Nome completo"/>
     </div>
     <div class="field">
-      <label class="label">Nome da Empresa</label>
-      <input type="text" id="signup-empresa" placeholder="Ex: Metalúrgica São Paulo"/>
-      <div class="hint">Será o nome da sua conta no Mantenedor</div>
+      <label class="label" data-i18n="lg_empresa">Nome da Empresa</label>
+      <input type="text" id="signup-empresa" data-i18n-ph="lg_ph_empresa" placeholder="Ex: Metalúrgica São Paulo"/>
+      <div class="hint" data-i18n="lg_empresa_hint">Será o nome da sua conta no Mantenedor</div>
     </div>
     <div class="field">
-      <label class="label">E-mail</label>
-      <input type="email" id="signup-email" placeholder="seu@email.com" autocomplete="email"/>
+      <label class="label" data-i18n="lg_email">E-mail</label>
+      <input type="email" id="signup-email" data-i18n-ph="lg_ph_email" placeholder="seu@email.com" autocomplete="email"/>
     </div>
     <div class="field">
-      <label class="label">Senha</label>
-      <input type="password" id="signup-senha" placeholder="Mínimo 6 caracteres" autocomplete="new-password"/>
+      <label class="label" data-i18n="lg_senha">Senha</label>
+      <input type="password" id="signup-senha" data-i18n-ph="lg_ph_min6" placeholder="Mínimo 6 caracteres" autocomplete="new-password"/>
     </div>
     <button class="btn-primary" id="btn-signup" onclick="doSignup()">
-      <span>Criar Conta Grátis</span>
+      <span data-i18n="lg_criar_gratis">Criar Conta Grátis</span>
       <div class="spinner"></div>
     </button>
-    <div class="divider">plano gratuito inclui</div>
+    <div class="divider" data-i18n="lg_plano_inclui">plano gratuito inclui</div>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;font-size:12px;color:#475569">
-      <div>✓ Ativos ilimitados</div>
-      <div>✓ OS ilimitadas</div>
-      <div>✓ Planos de manutenção</div>
-      <div>✓ Relatórios</div>
+      <div data-i18n="lg_ativos_ilim">✓ Ativos ilimitados</div>
+      <div data-i18n="lg_os_ilim">✓ OS ilimitadas</div>
+      <div data-i18n="lg_planos_manut">✓ Planos de manutenção</div>
+      <div data-i18n="lg_relatorios">✓ Relatórios</div>
     </div>
   </div>
 
   <!-- ACEITAR CONVITE -->
   <div id="form-convite" style="display:none">
-    <div class="hint" style="margin-bottom:16px" id="convite-desc">Carregando convite...</div>
+    <div class="hint" style="margin-bottom:16px" id="convite-desc" data-i18n="lg_carregando">Carregando convite...</div>
     <div class="field">
-      <label class="label">E-mail</label>
+      <label class="label" data-i18n="lg_email">E-mail</label>
       <input type="email" id="convite-email" disabled/>
     </div>
     <div class="field">
-      <label class="label">Crie uma senha</label>
-      <input type="password" id="convite-senha" placeholder="Mínimo 6 caracteres" autocomplete="new-password"/>
+      <label class="label" data-i18n="lg_crie_senha">Crie uma senha</label>
+      <input type="password" id="convite-senha" data-i18n-ph="lg_ph_min6" placeholder="Mínimo 6 caracteres" autocomplete="new-password"/>
     </div>
     <div class="field">
-      <label class="label">Confirme a senha</label>
-      <input type="password" id="convite-senha2" placeholder="Repita a senha" autocomplete="new-password"/>
+      <label class="label" data-i18n="lg_conf_senha">Confirme a senha</label>
+      <input type="password" id="convite-senha2" data-i18n-ph="lg_ph_repita" placeholder="Repita a senha" autocomplete="new-password"/>
     </div>
     <button class="btn-primary" id="btn-convite" onclick="doAceitarConvite()">
-      <span>Entrar</span>
+      <span data-i18n="lg_entrar">Entrar</span>
       <div class="spinner"></div>
     </button>
   </div>
 </div></div>
 
 <div class="footer">
-  Mantenedor &copy; 2026 &bull; <a href="#">Termos</a> &bull; <a href="#">Privacidade</a>
+  Mantenedor &copy; 2026 &bull; <a href="#" data-i18n="lg_termos">Termos</a> &bull; <a href="#" data-i18n="lg_privacidade">Privacidade</a>
 </div>
 
+<script src="_lang.js"></script>
 <script>
 var SB_URL  = "https://mtmcrpigiwsxfwxkqdkz.supabase.co";
 var SB_KEY  = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im10bWNycGlnaXdzeGZ3eGtxZGt6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODAzNTYxNTYsImV4cCI6MjA5NTkzMjE1Nn0.U3_-Fh35p-l3ZYSApbmn-7KRLlF1voZWS5Pbm0_LQ7A";
@@ -182,7 +185,7 @@ var AUTH    = SB_URL + "/auth/v1";
   var params=new URLSearchParams(window.location.search);
   if(params.get("erro")==="sem_tenant"){
     window.addEventListener("DOMContentLoaded",function(){
-      showMsg("Sua sessão expirou ou ficou sem empresa associada. Faça login novamente.","error");
+      showMsg(t("lg_msg_sessao"),"error");
     });
   }
 })();
@@ -231,11 +234,11 @@ if(CONVITE_TOKEN){
 }
 
 function doAceitarConvite(){
-  if(!CONVITE_DATA){ showMsg("Convite ainda não carregado.","error"); return; }
+  if(!CONVITE_DATA){ showMsg(t("lg_msg_convite_nc"),"error"); return; }
   var senha  = document.getElementById("convite-senha").value;
   var senha2 = document.getElementById("convite-senha2").value;
-  if(senha.length<6){ showMsg("Senha deve ter ao menos 6 caracteres.","error"); return; }
-  if(senha!==senha2){ showMsg("As senhas não coincidem.","error"); return; }
+  if(senha.length<6){ showMsg(t("lg_msg_senha_curta"),"error"); return; }
+  if(senha!==senha2){ showMsg(t("lg_msg_senha_dif"),"error"); return; }
 
   setLoading("btn-convite", true); hideMsg();
 
@@ -251,14 +254,14 @@ function doAceitarConvite(){
     // Supabase responde 200 com um "usuário-fantasma" (identities:[]) quando o
     // e-mail já tem conta — por segurança, não revela isso via erro explícito.
     if(d.user && Array.isArray(d.user.identities) && d.user.identities.length===0){
-      showMsg("Este e-mail já tem uma conta cadastrada. Tente fazer login normalmente com a senha que você já usa, ou peça pro coordenador apagar o usuário duplicado no Supabase antes de gerar um novo convite.","error");
+      showMsg(t("lg_msg_email_existe"),"error");
       setLoading("btn-convite", false); return;
     }
     var userId = d.user ? d.user.id : d.id;
     var token  = d.access_token || (d.session && d.session.access_token);
     if(!token){
       // E-mail confirmação pode estar ativa e não retornar sessão direto — orienta o usuário
-      showMsg("Conta criada. Confirme seu e-mail e depois faça login normalmente.","success");
+      showMsg(t("lg_msg_confirme"),"success");
       setLoading("btn-convite", false); return;
     }
 
@@ -277,7 +280,7 @@ function doAceitarConvite(){
       var rows = res.body;
       var linha = Array.isArray(rows) ? rows[0] : rows;
       if(!linha || !linha.tenant_id){
-        showMsg("Não foi possível vincular o convite. Tente novamente.","error");
+        showMsg(t("lg_msg_vinc_falha"),"error");
         setLoading("btn-convite", false); return;
       }
       localStorage.setItem("mx_session", JSON.stringify({
@@ -287,14 +290,14 @@ function doAceitarConvite(){
         tenant_id: linha.tenant_id, perfil: linha.perfil,
         nome: linha.nome, plano: linha.plano || "free", tenantNome: linha.tenant_nome || ""
       }));
-      showMsg("Conta criada! Redirecionando...","success");
+      showMsg(t("lg_msg_criada"),"success");
       setTimeout(function(){ window.location.href="dashboard.html"; }, 1000);
     }).catch(function(){
-      showMsg("Erro ao vincular o convite. Sua conta foi criada — tente fazer login normalmente.","error");
+      showMsg(t("lg_msg_vinc_erro"),"error");
       setLoading("btn-convite", false);
     });
   }).catch(function(){
-    showMsg("Erro de conexão. Tente novamente.","error");
+    showMsg(t("lg_msg_conexao"),"error");
     setLoading("btn-convite", false);
   });
 }
@@ -325,7 +328,7 @@ function setLoading(btnId, on){
 function doLogin(){
   var email=document.getElementById("login-email").value.trim();
   var senha=document.getElementById("login-senha").value;
-  if(!email||!senha){showMsg("Preencha e-mail e senha.","error");return;}
+  if(!email||!senha){showMsg(t("lg_msg_preencha"),"error");return;}
   setLoading("btn-login",true); hideMsg();
   fetch(AUTH+"/token?grant_type=password",{
     method:"POST",
@@ -333,7 +336,7 @@ function doLogin(){
     body:JSON.stringify({email:email,password:senha})
   }).then(function(r){return r.json();}).then(function(d){
     if(d.error||d.error_code){
-      showMsg("E-mail ou senha incorretos.","error");
+      showMsg(t("lg_msg_incorretos"),"error");
       setLoading("btn-login",false);return;
     }
     // Save session
@@ -346,7 +349,7 @@ function doLogin(){
     // Load tenant info
     loadTenantInfo(d.access_token,d.user.id);
   }).catch(function(){
-    showMsg("Erro de conexão. Tente novamente.","error");
+    showMsg(t("lg_msg_conexao"),"error");
     setLoading("btn-login",false);
   });
 }
@@ -356,7 +359,7 @@ function loadTenantInfo(token, userId){
     headers:{"apikey":SB_KEY,"Authorization":"Bearer "+token}
   }).then(function(r){return r.json();}).then(function(rows){
     if(!rows||!rows.length){
-      showMsg("Conta não encontrada. Crie uma conta.","error");
+      showMsg(t("lg_msg_sem_conta"),"error");
       setLoading("btn-login",false);return;
     }
     var ut=rows[0];
@@ -375,7 +378,7 @@ function loadTenantInfo(token, userId){
       window.location.href="dashboard.html";
     });
   }).catch(function(){
-    showMsg("Erro ao carregar dados. Tente novamente.","error");
+    showMsg(t("lg_msg_carregar"),"error");
     setLoading("btn-login",false);
   });
 }
@@ -386,8 +389,8 @@ function doSignup(){
   var empresa = document.getElementById("signup-empresa").value.trim();
   var email   = document.getElementById("signup-email").value.trim();
   var senha   = document.getElementById("signup-senha").value;
-  if(!nome||!empresa||!email||!senha){showMsg("Preencha todos os campos.","error");return;}
-  if(senha.length<6){showMsg("Senha deve ter ao menos 6 caracteres.","error");return;}
+  if(!nome||!empresa||!email||!senha){showMsg(t("lg_msg_todos"),"error");return;}
+  if(senha.length<6){showMsg(t("lg_msg_senha_curta"),"error");return;}
   setLoading("btn-signup",true); hideMsg();
 
   // 1. Create auth user
@@ -445,13 +448,13 @@ function doSignup(){
             tenant_id: tenant.id, perfil:"Coordenador",
             nome: nome, plano:"free", tenantNome:empresa
           }));
-          showMsg("Conta criada! Redirecionando...","success");
+          showMsg(t("lg_msg_criada"),"success");
           setTimeout(function(){window.location.href="dashboard.html";},1200);
         });
       });
     });
   }).catch(function(e){
-    showMsg("Erro de conexão. Tente novamente.","error");
+    showMsg(t("lg_msg_conexao"),"error");
     setLoading("btn-signup",false);
   });
 }

@@ -153,7 +153,7 @@ function sbUpsert(table,data){
   var tid=getTenantId();
   if(!tid){
     console.error("[SB] upsert "+table+" abortado: sem tenant_id na sessão");
-    mxToast("Não foi possível salvar: sessão sem empresa associada. Faça login novamente.","error");
+    mxToast(typeof t==="function"?t("msg_sem_empresa"):"Não foi possível salvar: sessão sem empresa associada. Faça login novamente.","error");
     return Promise.reject(new Error("tenant_id ausente na sessão"));
   }
   rows=rows.map(function(r){return Object.assign({},r,{tenant_id:tid});});
@@ -344,7 +344,7 @@ function saveMinhaEmpresa(obj){
       return r.json().catch(function(){return{message:r.statusText};}).then(function(err){
         var msg=(err&&err.message)||("Erro "+r.status);
         console.error("[SB] update tenants falhou ("+r.status+")",err);
-        mxToast("Erro ao salvar dados da empresa: "+msg,"error");
+        mxToast((typeof t==="function"?t("msg_erro_empresa"):"Erro ao salvar dados da empresa: ")+msg,"error");
         throw new Error(msg);
       });
     }

@@ -29,13 +29,13 @@
 .ad-banner ins{display:block;}
 </style>
 </head>
-<body>
+<body data-i18n-doctitle="title_os_corretiva">
 <div id="app">
   <div id="main">
     <div id="topbar">
       <div id="topbar-left">
         <a class="topbar-logo" href="index.html">&#9881;</a>
-        <div><div id="tt">OS Corretiva</div><div id="ta"></div></div>
+        <div><div id="tt" data-i18n="title_os_corretiva">OS Corretiva</div><div id="ta"></div></div>
       </div>
       <div style="display:flex;align-items:center;gap:8px">
       </div>
@@ -50,8 +50,8 @@
   <a class="bn-item active" href="ordens.html"><span class="bn-icon">&#9874;</span><span class="bn-label" data-i18n="nav_os">OS</span></a>
   <a class="bn-item" href="ativos.html"><span class="bn-icon">&#11041;</span><span class="bn-label" data-i18n="nav_ativos_short">Ativos</span></a>
   <a class="bn-item" href="cadastros.html"><span class="bn-icon">&#9998;</span><span class="bn-label" data-i18n="nav_cadastros">Cadastros</span></a>
-  <a class="bn-item" href="calendario.html"><span class="bn-icon">&#128197;</span><span class="bn-label">Cal.</span></a>
-  <a class="bn-item" href="relatorios.html"><span class="bn-icon">&#128202;</span><span class="bn-label">Rel.</span></a>
+  <a class="bn-item" href="calendario.html"><span class="bn-icon">&#128197;</span><span class="bn-label" data-i18n="nav_cal_short">Cal.</span></a>
+  <a class="bn-item" href="relatorios.html"><span class="bn-icon">&#128202;</span><span class="bn-label" data-i18n="nav_rel_short">Rel.</span></a>
 </nav>
 
 
@@ -345,9 +345,7 @@ initApp(render);
 </script>
 <script>
 window.addEventListener("langchange", function(){
-  document.querySelectorAll("[data-i18n]").forEach(function(el){
-    el.textContent = t(el.getAttribute("data-i18n"));
-  });
+  LANG.applyStatic();
   render();
 });
 </script>

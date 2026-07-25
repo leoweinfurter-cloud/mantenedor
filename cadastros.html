@@ -84,7 +84,7 @@
 .ad-banner ins{display:block;}
 </style>
 </head>
-<body>
+<body data-i18n-doctitle="title_cadastros">
 <div id="app">
   <div id="sidebar">
     <a class="sl" href="dashboard.html"><div class="li">&#9881;</div><span class="sl-text">Mantenedor</span></a>
@@ -93,8 +93,8 @@
       <a class="ni" href="ordens.html"><span class="nx">&#9874;</span><span class="nl" data-i18n="nav_ordens">Ordens de Servico</span></a>
       <a class="ni" href="ativos.html"><span class="nx">&#11041;</span><span class="nl" data-i18n="nav_ativos">Gestao de Ativos</span></a>
       <a class="ni active" href="cadastros.html"><span class="nx">&#9998;</span><span class="nl" data-i18n="nav_cadastros">Cadastros</span></a>
-      <a class="ni" href="calendario.html"><span class="nx">&#128197;</span><span class="nl">Calendario</span></a>
-      <a class="ni" href="relatorios.html"><span class="nx">&#128202;</span><span class="nl">Relatorios</span></a>
+      <a class="ni" href="calendario.html"><span class="nx">&#128197;</span><span class="nl" data-i18n="nav_calendario">Calendario</span></a>
+      <a class="ni" href="relatorios.html"><span class="nx">&#128202;</span><span class="nl" data-i18n="nav_relatorios">Relatorios</span></a>
     </nav>
   </div>
   <div id="main">
@@ -103,7 +103,7 @@
         <span class="topbar-logo">&#9881;</span>
         <div><div id="tt" data-i18n="cad_titulo">Cadastros</div></div>
       </div>
-      <button id="logout-btn" onclick="if(confirm('Sair do Mantenedor?'))authLogout()" title="Sair" aria-label="Sair" style="background:transparent;border:1px solid var(--border,#1e3a5f);border-radius:8px;padding:6px 12px;cursor:pointer;font-size:12px;font-weight:700;letter-spacing:.03em;color:inherit;flex-shrink:0;transition:all .2s">Sair</button>
+      <button id="logout-btn" onclick="if(confirm(t('msg_sair')))authLogout()" data-i18n-title="btn_sair" title="Sair" aria-label="Sair" style="background:transparent;border:1px solid var(--border,#1e3a5f);border-radius:8px;padding:6px 12px;cursor:pointer;font-size:12px;font-weight:700;letter-spacing:.03em;color:inherit;flex-shrink:0;transition:all .2s" data-i18n="btn_sair">Sair</button>
     </div>
     
   <div class="ad-banner" id="ad-top"><!-- Anuncio Mantenedor Free --></div>
@@ -112,23 +112,23 @@
 </div>
 
 <nav id="bottom-nav">
-  <a class="bn-item" href="dashboard.html"><span class="bn-icon">&#9672;</span><span class="bn-label">Dashboard</span></a>
+  <a class="bn-item" href="dashboard.html"><span class="bn-icon">&#9672;</span><span class="bn-label" data-i18n="nav_dashboard">Dashboard</span></a>
   <a class="bn-item" href="ordens.html"><span class="bn-icon">&#9874;</span><span class="bn-label" data-i18n="nav_os">OS</span></a>
   <a class="bn-item" href="ativos.html"><span class="bn-icon">&#11041;</span><span class="bn-label" data-i18n="nav_ativos_short">Ativos</span></a>
   <a class="bn-item active" href="cadastros.html"><span class="bn-icon">&#9998;</span><span class="bn-label" data-i18n="nav_cadastros">Cadastros</span></a>
-  <a class="bn-item" href="calendario.html"><span class="bn-icon">&#128197;</span><span class="bn-label">Cal.</span></a>
-  <a class="bn-item" href="relatorios.html"><span class="bn-icon">&#128202;</span><span class="bn-label">Rel.</span></a>
+  <a class="bn-item" href="calendario.html"><span class="bn-icon">&#128197;</span><span class="bn-label" data-i18n="nav_cal_short">Cal.</span></a>
+  <a class="bn-item" href="relatorios.html"><span class="bn-icon">&#128202;</span><span class="bn-label" data-i18n="nav_rel_short">Rel.</span></a>
 </nav>
 
 <!-- ── MODAL USUARIO ── -->
 <div class="modal" id="modal-user"><div class="mc" onclick="event.stopPropagation()">
-  <div class="mt2" id="user-modal-title">Novo Usuario</div>
+  <div class="mt2" id="user-modal-title" data-i18n="cad_novo_user_tit">Novo Usuario</div>
   <input type="hidden" id="u-id"/>
   <div class="fg"><label class="lbl" data-i18n="cad_f_nome">Nome completo *</label><input id="u-nome" placeholder="Ex: Joao da Silva"/></div>
   <div class="fg"><label class="lbl" data-i18n="cad_f_email">E-mail *</label><input type="email" id="u-email" placeholder="joao@empresa.com"/></div>
   <div class="fg"><label class="lbl" data-i18n="cad_f_telefone">Telefone</label><input id="u-tel" placeholder="(41) 99999-0000"/></div>
   <div class="fg" id="user-invite-hint" style="display:none">
-    <label class="lbl">Acesso ao sistema</label>
+    <label class="lbl" data-i18n="cad_acesso">Acesso ao sistema</label>
     <div id="user-invite-status" style="font-size:12px;color:#64748b;padding:8px 10px;background:#0d1929;border:1px solid var(--border,#1e3a5f);border-radius:8px"></div>
   </div>
   <div class="fg">
@@ -165,21 +165,21 @@
 
 <!-- ── MODAL CONVITE (link gerado) ── -->
 <div class="modal" id="modal-convite"><div class="mc" onclick="event.stopPropagation()">
-  <div class="mt2">Convite gerado</div>
+  <div class="mt2" data-i18n="cad_convite_ger">Convite gerado</div>
   <p style="font-size:13px;color:#94a3b8;margin-bottom:12px">Envie este link para a pessoa. Ele expira em 7 dias e permite criar a própria senha e entrar direto na sua empresa, já com o perfil definido.</p>
   <div class="fg">
     <input id="convite-link" readonly style="font-size:12px" onclick="this.select()"/>
   </div>
   <div class="mf">
-    <button class="btn bx" onclick="closeModal('modal-convite')">Fechar</button>
-    <button class="btn bp" onclick="copiarConviteAtual()">Copiar link</button>
+    <button class="btn bx" onclick="closeModal('modal-convite')" data-i18n="cad_fechar">Fechar</button>
+    <button class="btn bp" onclick="copiarConviteAtual()" data-i18n="cad_copiar_link">Copiar link</button>
   </div>
 </div></div>
 
 <!-- ── MODAL CATEGORIA ── -->
 
 <div class="modal" id="modal-cat"><div class="mc" onclick="event.stopPropagation()">
-  <div class="mt2" id="cat-modal-title">Nova Categoria</div>
+  <div class="mt2" id="cat-modal-title" data-i18n="cad_nova_cat_tit">Nova Categoria</div>
   <input type="hidden" id="c-id"/>
   <div class="fg"><label class="lbl" data-i18n="cad_f_cat_nome">Nome *</label><input id="c-nome" placeholder="Ex: Robotica" oninput="updatePreview()"/></div>
   <div class="fg"><label class="lbl" data-i18n="cad_f_cat_desc">Descricao</label><input id="c-desc" placeholder="Descricao breve..." oninput="updatePreview()"/></div>
@@ -274,9 +274,9 @@ function renderUsuarios(){
 
   var summary = '<div style="display:flex;gap:20px;flex-wrap:wrap;margin-bottom:16px">'
     +'<div style="text-align:center"><div style="font-size:22px;font-weight:800;color:#4ade80">'+ativos+'</div><div style="font-size:11px;color:#64748b">Ativos</div></div>'
-    +'<div style="text-align:center"><div style="font-size:22px;font-weight:800;color:#475569">'+inativos+'</div><div style="font-size:11px;color:#64748b">Inativos</div></div>'
-    +'<div style="text-align:center"><div style="font-size:22px;font-weight:800;color:#7c3aed">'+coords+'</div><div style="font-size:11px;color:#64748b">Coord.</div></div>'
-    +'<div style="text-align:center"><div style="font-size:22px;font-weight:800;color:#2563eb">'+tecs+'</div><div style="font-size:11px;color:#64748b">Tecnicos</div></div>'
+    +'<div style="text-align:center"><div style="font-size:22px;font-weight:800;color:#475569">'+inativos+'</div><div style="font-size:11px;color:#64748b">'+t("cad_inativos")+'</div></div>'
+    +'<div style="text-align:center"><div style="font-size:22px;font-weight:800;color:#7c3aed">'+coords+'</div><div style="font-size:11px;color:#64748b">'+t("cad_coords")+'</div></div>'
+    +'<div style="text-align:center"><div style="font-size:22px;font-weight:800;color:#2563eb">'+tecs+'</div><div style="font-size:11px;color:#64748b">'+t("cad_tecnicos")+'</div></div>'
     +'</div>';
 
   var PERFIL_COR = {Coordenador:"#7c3aed",Tecnico:"#2563eb",Visualizador:"#475569"};
@@ -292,12 +292,12 @@ function renderUsuarios(){
       +'<div class="user-email">'+esc(u.email)+'</div>'
       +'<div class="user-meta">'
       +(u.telefone?esc(u.telefone)+' &bull; ':"")+esc(u.perfil)
-      +(pendente?' &bull; <span style="color:#fbbf24">Convite pendente</span>':'')
+      +(pendente?' &bull; <span style="color:#fbbf24">'+t("cad_convite_pend")+'</span>':'')
       +(u.ativo?'':' &bull; <span style="color:#f87171">Inativo</span>')
       +'</div></div>'
       +'<div class="user-btns">'
-      +(pendente?'<button class="btn bp bsm" onclick="copiarLinkConvite('+u.id+')" style="font-size:11px">Copiar link</button>':'')
-      +'<button class="btn bx bsm" onclick="editUser('+u.id+')" style="font-size:11px">Editar</button>'
+      +(pendente?'<button class="btn bp bsm" onclick="copiarLinkConvite('+u.id+')" style="font-size:11px">'+t("cad_copiar_link")+'</button>':'')
+      +'<button class="btn bx bsm" onclick="editUser('+u.id+')" style="font-size:11px">'+t("btn_editar")+'</button>'
       +'<button class="btn bsm" onclick="toggleUser('+u.id+')" style="font-size:11px;'
       +(u.ativo
         ?'background:#7f1d1d30;color:#f87171;border:1px solid #f8717140">Inativar'
@@ -307,7 +307,7 @@ function renderUsuarios(){
   }).join("");
 
   return renderCadTabs("usuarios")
-    +'<div class="fr">'+summary+'<button class="btn bp" onclick="openNewUser()">+ Novo Usuario</button></div>'
+    +'<div class="fr">'+summary+'<button class="btn bp" onclick="openNewUser()">'+t("cad_novo_user")+'</button></div>'
     +cards;
 }
 
@@ -316,7 +316,7 @@ var selectedPerfil = "Coordenador";
 var selectedAtivo  = true;
 
 function openNewUser(){
-  document.getElementById("user-modal-title").textContent = "Novo Usuario";
+  document.getElementById("user-modal-title").textContent = t("cad_novo_user_tit");
   document.getElementById("u-id").value    = "";
   document.getElementById("u-nome").value  = "";
   document.getElementById("u-email").value = "";
@@ -467,18 +467,18 @@ function renderCategorias(){
       +'<div class="cat-icon-box" style="background:'+cat.cor+'20;border:1px solid '+cat.cor+'40">'+cat.icone+'</div>'
       +'<div class="cat-info">'
       +'<div class="cat-nome">'+esc(cat.nome)+'</div>'
-      +'<div class="cat-desc">'+esc(cat.desc||"Sem descricao")+'</div>'
-      +'<div style="font-size:11px;color:#475569;margin-top:3px">'+count+' ativo(s)</div>'
+      +'<div class="cat-desc">'+esc(cat.desc||t("cad_sem_desc"))+'</div>'
+      +'<div style="font-size:11px;color:#475569;margin-top:3px">'+count+t("cad_ativos_label")+'</div>'
       +'</div>'
       +'<div class="cat-btns">'
-      +'<button class="btn bx bsm" onclick="editCat('+cat.id+')" style="font-size:11px">Editar</button>'
-      +(count===0?'<button class="btn bsm" onclick="delCat('+cat.id+')" style="font-size:11px;background:#7f1d1d30;color:#f87171;border:1px solid #f8717140">Excluir</button>':"")
+      +'<button class="btn bx bsm" onclick="editCat('+cat.id+')" style="font-size:11px">'+t("btn_editar")+'</button>'
+      +(count===0?'<button class="btn bsm" onclick="delCat('+cat.id+')" style="font-size:11px;background:#7f1d1d30;color:#f87171;border:1px solid #f8717140">'+t("cad_excluir")+'</button>':"")
       +'</div></div>';
   }).join("");
 
   return renderCadTabs("categorias")
-    +'<div class="fr"><div style="font-size:13px;color:#64748b">'+categorias.length+' categorias cadastradas</div>'
-    +'<button class="btn bp" onclick="openNewCat()">+ Nova Categoria</button></div>'
+    +'<div class="fr"><div style="font-size:13px;color:#64748b">'+categorias.length+t("cad_cats_cad")+'</div>'
+    +'<button class="btn bp" onclick="openNewCat()">'+t("cad_nova_cat")+'</button></div>'
     +cards;
 }
 
@@ -607,10 +607,10 @@ function renderEmpresas(){
         +'<div class="unid-left">'
         +'<div class="unid-nome">&#127970; '+esc(u.nome)+'</div>'
         +(u.endereco?'<div class="unid-end">'+esc(u.endereco)+'</div>':'')
-        +(u.responsavel?'<div class="unid-end">Resp: '+esc(u.responsavel)+'</div>':'')
+        +(u.responsavel?'<div class="unid-end">'+t("cad_resp_lbl")+esc(u.responsavel)+'</div>':'')
         +'</div>'
         +'<div class="unid-btns">'
-        +'<button class="btn bx bsm" onclick="editUnid('+e.id+','+u.id+')" style="font-size:11px">Editar</button>'
+        +'<button class="btn bx bsm" onclick="editUnid('+e.id+','+u.id+')" style="font-size:11px">'+t("btn_editar")+'</button>'
         +'<button class="btn bsm" onclick="delUnid('+e.id+','+u.id+')" style="font-size:11px;background:#7f1d1d30;color:#f87171;border:1px solid #f8717140">&#10005;</button>'
         +'</div></div>';
     }).join("");
@@ -620,20 +620,20 @@ function renderEmpresas(){
       +'<div class="emp-info">'
       +'<div class="emp-nome">'+esc(e.nome)+'</div>'
       +'<div class="emp-meta">'+(e.cnpj?esc(e.cnpj)+' &bull; ':'')+((e.unidades||[]).length)+' unidade(s)</div>'
-      +(e.contato?'<div class="emp-meta">Contato: '+esc(e.contato)+'</div>':'')
+      +(e.contato?'<div class="emp-meta">'+t("cad_contato_lbl")+esc(e.contato)+'</div>':'')
       +'</div>'
       +'<div class="emp-btns">'
-      +'<button class="btn bx bsm" onclick="editEmp('+e.id+')" style="font-size:11px">Editar</button>'
+      +'<button class="btn bx bsm" onclick="editEmp('+e.id+')" style="font-size:11px">'+t("btn_editar")+'</button>'
       +'<button class="btn bsm" onclick="delEmp('+e.id+')" style="font-size:11px;background:#7f1d1d30;color:#f87171;border:1px solid #f8717140">&#10005;</button>'
       +'</div></div>'
       +'<div class="unid-list">'+unids+'</div>'
-      +'<button class="add-unid-btn" onclick="openNewUnid('+e.id+')">+ Adicionar Unidade</button>'
+      +'<button class="add-unid-btn" onclick="openNewUnid('+e.id+')">'+t("cad_add_unid")+'</button>'
       +'</div>';
-  }).join("")||'<div style="color:#64748b;text-align:center;padding:30px;font-size:14px">Nenhuma empresa cadastrada</div>';
+  }).join("")||'<div style="color:#64748b;text-align:center;padding:30px;font-size:14px">'+t("cad_nenhuma_emp")+'</div>';
 
   return renderCadTabs("empresas")
-    +'<div class="fr"><div style="font-size:13px;color:#64748b">'+empresas.length+' empresa(s)</div>'
-    +'<button class="btn bp" onclick="openNewEmp()">+ Nova Empresa</button></div>'
+    +'<div class="fr"><div style="font-size:13px;color:#64748b">'+empresas.length+t("cad_emps_cad")+'</div>'
+    +'<button class="btn bp" onclick="openNewEmp()">'+t("cad_nova_emp")+'</button></div>'
     +cards;
 }
 
@@ -643,14 +643,14 @@ function renderMinhaEmpresa(){
   return renderCadTabs("minha-empresa")
     +'<div class="mempresa-card">'
     +'<div class="mempresa-hint">Estes sao os dados da sua propria empresa (quem executa a manutencao). Diferente da aba "Empresas", que cadastra os clientes/terceirizadas atendidos. As informacoes abaixo aparecem como emissor no timbre dos Relatorios.</div>'
-    +'<div class="fg"><label class="lbl">Razao Social / Nome *</label><input id="me-nome" value="'+esc(m.nome)+'" placeholder="Ex: Mantenedor Servicos de Manutencao Ltda"/></div>'
+    +'<div class="fg"><label class="lbl">'+t("cad_razao_social")+'</label><input id="me-nome" value="'+esc(m.nome)+'" placeholder="Ex: Mantenedor Servicos de Manutencao Ltda"/></div>'
     +'<div class="g2">'
     +'<div class="fg"><label class="lbl">CNPJ</label><input id="me-cnpj" value="'+esc(m.cnpj)+'" placeholder="00.000.000/0000-00"/></div>'
     +'<div class="fg"><label class="lbl">Telefone</label><input id="me-tel" value="'+esc(m.telefone)+'" placeholder="(41) 3333-0000"/></div>'
     +'</div>'
     +'<div class="fg"><label class="lbl">Endereco</label><input id="me-end" value="'+esc(m.endereco)+'" placeholder="Rua, numero, cidade"/></div>'
-    +'<div class="fg"><label class="lbl">Contato / Responsavel tecnico</label><input id="me-cont" value="'+esc(m.contato)+'" placeholder="Nome do responsavel tecnico"/></div>'
-    +'<div class="mf" style="justify-content:flex-start"><button class="btn bp" onclick="salvarMinhaEmpresa()">Salvar dados da empresa</button></div>'
+    +'<div class="fg"><label class="lbl">'+t("cad_contato_resp")+'</label><input id="me-cont" value="'+esc(m.contato)+'" placeholder="Nome do responsavel tecnico"/></div>'
+    +'<div class="mf" style="justify-content:flex-start"><button class="btn bp" onclick="salvarMinhaEmpresa()">'+t("cad_salvar_emp")+'</button></div>'
     +'</div>';
 }
 function salvarMinhaEmpresa(){
@@ -754,7 +754,7 @@ initApp(render);
 
 <!-- ── MODAL EMPRESA ── -->
 <div class="modal" id="modal-emp"><div class="mc" onclick="event.stopPropagation()">
-  <div class="mt2" id="emp-modal-title">Nova Empresa</div>
+  <div class="mt2" id="emp-modal-title" data-i18n="cad_nova_emp_tit">Nova Empresa</div>
   <input type="hidden" id="e-id"/>
   <div class="fg"><label class="lbl" data-i18n="cad_f_emp_nome">Razao Social / Nome *</label><input id="e-nome" placeholder="Ex: Atlas Industria S.A."/></div>
   <div class="g2">
@@ -771,7 +771,7 @@ initApp(render);
 
 <!-- ── MODAL UNIDADE ── -->
 <div class="modal" id="modal-unid"><div class="mc" onclick="event.stopPropagation()">
-  <div class="mt2" id="unid-modal-title">Nova Unidade</div>
+  <div class="mt2" id="unid-modal-title" data-i18n="cad_nova_unid">Nova Unidade</div>
   <input type="hidden" id="un-id"/>
   <input type="hidden" id="un-emp-id"/>
   <div class="fg"><label class="lbl" data-i18n="cad_f_unid_nome">Nome da Unidade *</label><input id="un-nome" placeholder="Ex: Planta Curitiba"/></div>
@@ -785,9 +785,7 @@ initApp(render);
 
 <script>
 window.addEventListener("langchange", function(){
-  document.querySelectorAll("[data-i18n]").forEach(function(el){
-    el.textContent = t(el.getAttribute("data-i18n"));
-  });
+  LANG.applyStatic();
   render();
 });
 </script>
