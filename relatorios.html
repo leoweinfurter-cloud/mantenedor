@@ -64,9 +64,9 @@
 /* ── FORMAL LETTERHEAD HEADER (screen + print) ── */
 .rel-letterhead{background:var(--card-bg,#0d1929);border:1px solid var(--border,#1e3a5f);border-radius:14px;padding:18px 20px;margin-bottom:16px}
 .rel-lh-top{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;border-bottom:2px solid var(--border,#1e3a5f);padding-bottom:12px;margin-bottom:12px}
-.rel-lh-brand{font-size:17px;font-weight:800;letter-spacing:.02em}
-.rel-lh-brand span{color:#3b82f6}
+.rel-lh-brand{font-size:17px;font-weight:800;letter-spacing:.02em;color:#3b82f6}
 .rel-lh-titulo{font-size:12px;color:#64748b;margin-top:2px}
+.rel-lh-emissor{font-size:11px;color:#64748b;margin-top:8px;line-height:1.5}
 .rel-lh-meta{text-align:right;font-size:11px;color:#64748b;line-height:1.5}
 .rel-lh-cliente{display:grid;grid-template-columns:1fr 1fr;gap:4px 16px;font-size:12px;color:#94a3b8}
 .rel-lh-cliente b{color:inherit;font-weight:700}
@@ -151,8 +151,11 @@ var empresas    = [];
 var osLookupMsg = "";    // mensagem de erro da busca por numero de OS
 
 // ── RENDER ────────────────────────────────────────────────────────────
+var minhaEmpresa = {nome:"",cnpj:"",telefone:"",endereco:"",contato:""};
+
 function render(){
   empresas = loadEmpresas();
+  minhaEmpresa = loadMinhaEmpresa();
   var html = renderFiltros() + renderTipoSelector() + renderLetterhead() + renderRelatorio();
   document.getElementById("ct").innerHTML = html;
 }
@@ -186,11 +189,22 @@ function renderLetterhead(){
   if(filtDtFim)   filtrosAtivos.push("Ate: "+filtDtFim);
   var filtrosHtml = filtrosAtivos.length ? '<div class="rel-lh-filtros no-print">Filtros aplicados: '+filtrosAtivos.map(esc).join(" &bull; ")+'</div>' : "";
 
+  var emissorLinha = [];
+  if(minhaEmpresa.cnpj)     emissorLinha.push("CNPJ "+minhaEmpresa.cnpj);
+  if(minhaEmpresa.telefone) emissorLinha.push(minhaEmpresa.telefone);
+  if(minhaEmpresa.endereco) emissorLinha.push(minhaEmpresa.endereco);
+  var emissorHtml = '<div class="rel-lh-emissor">'
+    +esc(minhaEmpresa.nome||"Mantenedor")
+    +(emissorLinha.length?' &bull; '+esc(emissorLinha.join(" &bull; ")):"")
+    +(minhaEmpresa.contato?'<br>Responsavel tecnico: '+esc(minhaEmpresa.contato):"")
+    +'</div>';
+
   return '<div class="rel-letterhead">'
     +'<div class="rel-lh-top">'
-    +'<div><div class="rel-lh-brand">Maintenance<span>X</span></div><div class="rel-lh-titulo">'+tituloRel+'</div></div>'
+    +'<div><div class="rel-lh-brand">Mantenedor</div><div class="rel-lh-titulo">'+tituloRel+'</div></div>'
     +'<div class="rel-lh-meta">Gerado em<br>'+dataGer+'</div>'
     +'</div>'
+    +emissorHtml
     +clienteHtml
     +filtrosHtml
     +renderOsLookup()
@@ -497,6 +511,7 @@ function setRelTipo(t){ relTipo=t; filtStatus=""; filtTipo=""; osLookupMsg=""; r
 function limparFiltros(){ filtAtivoId=""; filtStatus=""; filtTipo=""; filtDtIni=""; filtDtFim=""; filtEmpresa=""; filtUnidade=""; osLookupMsg=""; render(); }
 
 initApp(render);
+fetchMinhaEmpresa().then(function(d){ minhaEmpresa=d; render(); }).catch(function(){/* fica com o cache local */});
 </script>
 <script>
 window.addEventListener("langchange",function(){render();});

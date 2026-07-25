@@ -75,6 +75,10 @@
 .add-unid-btn{display:flex;align-items:center;justify-content:center;gap:6px;padding:8px 12px;border-radius:8px;border:1px dashed var(--border,#1e3a5f);background:transparent;cursor:pointer;font-size:12px;font-weight:600;font-family:inherit;width:100%;margin-top:8px;transition:all .15s;color:#64748b}
 .add-unid-btn:hover{border-color:rgba(59,130,246,.5);color:#60a5fa}
 
+/* ── MINHA EMPRESA (prestador de servico) ── */
+.mempresa-card{background:var(--card-bg,#0d1929);border:1px solid var(--border,#1e3a5f);border-radius:14px;padding:18px}
+.mempresa-hint{font-size:12px;color:#64748b;margin-bottom:14px;line-height:1.5}
+
 /* ── AD BANNER ── */
 .ad-banner{display:none;background:var(--inner-bg,#060b12);border:1px solid var(--border,#1e3a5f);border-radius:10px;padding:10px;margin:0 0 12px;text-align:center;font-size:11px;color:#64748b;}
 .ad-banner ins{display:block;}
@@ -217,6 +221,7 @@ authRequireCoordenador(); // Cadastros é restrito a Coordenador
 var usuarios = [];
 var categorias = [];
 var cadTab = "usuarios";
+var minhaEmpresa = {nome:"",cnpj:"",telefone:"",endereco:"",contato:""};
 
 // ── MODAL ────────────────────────────────────────────────────────────────────
 function closeModal(id){ document.getElementById(id).classList.remove("open"); }
@@ -226,10 +231,18 @@ document.querySelectorAll(".modal").forEach(function(m){
 });
 
 // ── TABS ─────────────────────────────────────────────────────────────────────
+function renderCadTabs(active){
+  var defs=[["usuarios","Usuarios",usuarios.length],["categorias","Categorias",categorias.length],["empresas","Empresas",empresas.length],["minha-empresa","Minha Empresa",null]];
+  return '<div class="cad-tabs">'
+    +defs.map(function(d){
+      return '<div class="cad-tab'+(d[0]===active?" active":"")+'" onclick="setTab(\''+d[0]+'\')">'+d[1]+(d[2]!==null?' ('+d[2]+')':'')+'</div>';
+    }).join("")
+    +'</div>';
+}
 function setTab(t){
   cadTab = t;
   document.querySelectorAll(".cad-tab").forEach(function(el,i){
-    el.classList.toggle("active",["usuarios","categorias","empresas"][i]===t);
+    el.classList.toggle("active",["usuarios","categorias","empresas","minha-empresa"][i]===t);
   });
   render();
 }
@@ -240,8 +253,16 @@ function render(){
   usuarios   = loadUsuarios();
   categorias = loadCategorias();
   empresas   = loadEmpresas();
+  minhaEmpresa = loadMinhaEmpresa();
   document.getElementById("ct").innerHTML = cadTab==="usuarios" ? renderUsuarios()
-    : cadTab==="categorias" ? renderCategorias() : renderEmpresas();
+    : cadTab==="categorias" ? renderCategorias()
+    : cadTab==="empresas" ? renderEmpresas() : renderMinhaEmpresa();
+  if(cadTab==="minha-empresa"){
+    fetchMinhaEmpresa().then(function(d){
+      minhaEmpresa=d;
+      if(cadTab==="minha-empresa") document.getElementById("ct").innerHTML = renderMinhaEmpresa();
+    });
+  }
 }
 
 // ── USUARIOS ─────────────────────────────────────────────────────────────────
@@ -285,11 +306,7 @@ function renderUsuarios(){
       +'</div></div>';
   }).join("");
 
-  return '<div class="cad-tabs">'
-    +'<div class="cad-tab active" onclick="setTab(\'usuarios\')">Usuarios ('+usuarios.length+')</div>'
-    +'<div class="cad-tab" onclick="setTab(\'categorias\')">Categorias ('+categorias.length+')</div>'
-    +'<div class="cad-tab" onclick="setTab(\'empresas\')">Empresas ('+empresas.length+')</div>'
-    +'</div>'
+  return renderCadTabs("usuarios")
     +'<div class="fr">'+summary+'<button class="btn bp" onclick="openNewUser()">+ Novo Usuario</button></div>'
     +cards;
 }
@@ -459,11 +476,7 @@ function renderCategorias(){
       +'</div></div>';
   }).join("");
 
-  return '<div class="cad-tabs">'
-    +'<div class="cad-tab" onclick="setTab(\'usuarios\')">Usuarios ('+usuarios.length+')</div>'
-    +'<div class="cad-tab active" onclick="setTab(\'categorias\')">Categorias ('+categorias.length+')</div>'
-    +'<div class="cad-tab" onclick="setTab(\'empresas\')">Empresas ('+empresas.length+')</div>'
-    +'</div>'
+  return renderCadTabs("categorias")
     +'<div class="fr"><div style="font-size:13px;color:#64748b">'+categorias.length+' categorias cadastradas</div>'
     +'<button class="btn bp" onclick="openNewCat()">+ Nova Categoria</button></div>'
     +cards;
@@ -618,14 +631,40 @@ function renderEmpresas(){
       +'</div>';
   }).join("")||'<div style="color:#64748b;text-align:center;padding:30px;font-size:14px">Nenhuma empresa cadastrada</div>';
 
-  return '<div class="cad-tabs">'
-    +'<div class="cad-tab" onclick="setTab(\'usuarios\')">Usuarios ('+usuarios.length+')</div>'
-    +'<div class="cad-tab" onclick="setTab(\'categorias\')">Categorias ('+categorias.length+')</div>'
-    +'<div class="cad-tab active" onclick="setTab(\'empresas\')">Empresas ('+empresas.length+')</div>'
-    +'</div>'
+  return renderCadTabs("empresas")
     +'<div class="fr"><div style="font-size:13px;color:#64748b">'+empresas.length+' empresa(s)</div>'
     +'<button class="btn bp" onclick="openNewEmp()">+ Nova Empresa</button></div>'
     +cards;
+}
+
+// ── MINHA EMPRESA — a prestadora de servico (aparece nos relatorios) ─────────
+function renderMinhaEmpresa(){
+  var m = minhaEmpresa||{};
+  return renderCadTabs("minha-empresa")
+    +'<div class="mempresa-card">'
+    +'<div class="mempresa-hint">Estes sao os dados da sua propria empresa (quem executa a manutencao). Diferente da aba "Empresas", que cadastra os clientes/terceirizadas atendidos. As informacoes abaixo aparecem como emissor no timbre dos Relatorios.</div>'
+    +'<div class="fg"><label class="lbl">Razao Social / Nome *</label><input id="me-nome" value="'+esc(m.nome)+'" placeholder="Ex: Mantenedor Servicos de Manutencao Ltda"/></div>'
+    +'<div class="g2">'
+    +'<div class="fg"><label class="lbl">CNPJ</label><input id="me-cnpj" value="'+esc(m.cnpj)+'" placeholder="00.000.000/0000-00"/></div>'
+    +'<div class="fg"><label class="lbl">Telefone</label><input id="me-tel" value="'+esc(m.telefone)+'" placeholder="(41) 3333-0000"/></div>'
+    +'</div>'
+    +'<div class="fg"><label class="lbl">Endereco</label><input id="me-end" value="'+esc(m.endereco)+'" placeholder="Rua, numero, cidade"/></div>'
+    +'<div class="fg"><label class="lbl">Contato / Responsavel tecnico</label><input id="me-cont" value="'+esc(m.contato)+'" placeholder="Nome do responsavel tecnico"/></div>'
+    +'<div class="mf" style="justify-content:flex-start"><button class="btn bp" onclick="salvarMinhaEmpresa()">Salvar dados da empresa</button></div>'
+    +'</div>';
+}
+function salvarMinhaEmpresa(){
+  var nome=document.getElementById("me-nome").value.trim();
+  if(!nome){alert("Informe a razao social / nome da empresa.");return;}
+  var obj={
+    nome:nome,
+    cnpj:document.getElementById("me-cnpj").value.trim(),
+    telefone:document.getElementById("me-tel").value.trim(),
+    endereco:document.getElementById("me-end").value.trim(),
+    contato:document.getElementById("me-cont").value.trim()
+  };
+  minhaEmpresa=obj;
+  saveMinhaEmpresa(obj).catch(function(){/* mxToast ja avisou o erro */});
 }
 
 // ── CRUD EMPRESAS ────────────────────────────────────────────────────────────

@@ -1,5 +1,5 @@
 // ═══════════════════════════════════════════════════════════════════════
-//  MaintenX _shared.js — Supabase Auth + Multi-Tenant
+//  Mantenedor _shared.js — Supabase Auth + Multi-Tenant
 // ═══════════════════════════════════════════════════════════════════════
 
 var SB_URL  = "https://mtmcrpigiwsxfwxkqdkz.supabase.co";
@@ -308,6 +308,57 @@ function loadData(){
 function loadUsuarios(){var d=localStorage.getItem("mx_usuarios");return d?JSON.parse(d):[];}
 function loadCategorias(){var d=localStorage.getItem("mx_categorias");return d?JSON.parse(d):[];}
 function loadEmpresas(){var d=localStorage.getItem("mx_empresas");return d?JSON.parse(d):[];}
+
+// ── MINHA EMPRESA (empresa mantenedora / tenant) ───────────────────────
+// Diferente de "empresas" (a carteira de clientes/terceirizadas atendidos),
+// isto e o proprio prestador de servico — usado como emissor no timbre dos
+// relatorios. Guardado nas colunas extras da tabela "tenants" (mesma linha
+// criada no signup), nunca via sbUpsert generico (que injetaria uma coluna
+// tenant_id inexistente nessa tabela).
+function loadMinhaEmpresa(){
+  var d=localStorage.getItem("mx_minha_empresa");
+  if(d) return JSON.parse(d);
+  var sess=getSession();
+  return {nome:(sess&&sess.tenantNome)||"",cnpj:"",telefone:"",endereco:"",contato:""};
+}
+function fetchMinhaEmpresa(){
+  var tid=getTenantId();
+  if(!tid) return Promise.resolve(loadMinhaEmpresa());
+  return sbGet("tenants","select=id,nome,cnpj,telefone,endereco,contato&id=eq."+tid).then(function(rows){
+    var t=(rows&&rows[0])||{};
+    var obj={nome:t.nome||"",cnpj:t.cnpj||"",telefone:t.telefone||"",endereco:t.endereco||"",contato:t.contato||""};
+    localStorage.setItem("mx_minha_empresa",JSON.stringify(obj));
+    return obj;
+  });
+}
+function saveMinhaEmpresa(obj){
+  localStorage.setItem("mx_minha_empresa",JSON.stringify(obj));
+  var tid=getTenantId();
+  if(!tid) return Promise.reject(new Error("tenant_id ausente na sessão"));
+  return sbFetch("tenants?id=eq."+tid,{
+    method:"PATCH",
+    headers:{"Prefer":"return=minimal"},
+    body:JSON.stringify({nome:obj.nome||"",cnpj:obj.cnpj||"",telefone:obj.telefone||"",endereco:obj.endereco||"",contato:obj.contato||""})
+  }).then(function(r){
+    if(!r.ok){
+      return r.json().catch(function(){return{message:r.statusText};}).then(function(err){
+        var msg=(err&&err.message)||("Erro "+r.status);
+        console.error("[SB] update tenants falhou ("+r.status+")",err);
+        mxToast("Erro ao salvar dados da empresa: "+msg,"error");
+        throw new Error(msg);
+      });
+    }
+    // Mantem o nome exibido na sessao (topbar/relatorios) sincronizado
+    var sess=getSession();
+    if(sess){sess.tenantNome=obj.nome||sess.tenantNome;localStorage.setItem("mx_session",JSON.stringify(sess));}
+    mxToast("Dados da empresa atualizados.","success");
+    return r;
+  }).catch(function(e){
+    console.warn("[SB] update tenants",e);
+    if(!/tenant_id ausente/.test(e.message||"")) mxToast("Falha de conexão ao salvar dados da empresa.","error");
+    throw e;
+  });
+}
 
 // Popula um <select> de tecnico com os usuarios REALMENTE cadastrados (tela
 // Cadastros > Usuarios), em vez da lista fixa de nomes de teste (Joao Silva,
