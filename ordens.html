@@ -62,25 +62,25 @@
 
 <!-- Modal Nova OS Corretiva -->
 <div class="modal" id="modal-os-cor"><div class="mc" onclick="event.stopPropagation()">
-  <div class="mt2">Nova OS Corretiva</div>
-  <div class="fg"><label class="lbl">Titulo *</label><input id="oc-titulo" placeholder="Descricao resumida do servico"/></div>
+  <div class="mt2" data-i18n="title_os_corretiva">Nova OS Corretiva</div>
+  <div class="fg"><label class="lbl" data-i18n="ord_f_titulo">Titulo *</label><input id="oc-titulo" data-i18n-ph="os_ph_desc_res" placeholder="Descricao resumida do servico"/></div>
   <div class="g2">
-    <div class="fg"><label class="lbl">Ativo *</label><select id="oc-ativo"><option value="">Selecione...</option></select></div>
-    <div class="fg"><label class="lbl">Prioridade</label><select id="oc-prio"><option>Critica</option><option>Alta</option><option selected>Normal</option><option>Baixa</option></select></div>
+    <div class="fg"><label class="lbl" data-i18n="ord_f_ativo">Ativo *</label><select id="oc-ativo"><option value="" data-i18n="btn_selecione">Selecione...</option></select></div>
+    <div class="fg"><label class="lbl" data-i18n="ord_f_prio">Prioridade</label><select id="oc-prio"><option value="Critica" data-i18n="ord_prio_crit">Critica</option><option value="Alta" data-i18n="ord_prio_alta">Alta</option><option value="Normal" selected data-i18n="ord_prio_normal">Normal</option><option value="Baixa" data-i18n="ord_prio_baixa">Baixa</option></select></div>
   </div>
   <div class="g2">
-    <div class="fg"><label class="lbl">Tecnico Responsavel</label><select id="oc-tec"><option value="">Selecione...</option></select></div>
-    <div class="fg"><label class="lbl">Prazo</label><input type="date" id="oc-prazo"/></div>
+    <div class="fg"><label class="lbl" data-i18n="ord_f_tecnico">Tecnico Responsavel</label><select id="oc-tec"><option value="" data-i18n="btn_selecione">Selecione...</option></select></div>
+    <div class="fg"><label class="lbl" data-i18n="ord_f_prazo">Prazo</label><input type="date" id="oc-prazo"/></div>
   </div>
-  <div class="fg"><label class="lbl">Descricao / Sintoma</label><textarea id="oc-desc" placeholder="Descreva o problema ou servico a executar..."></textarea></div>
-  <div class="mf"><button class="btn bx" onclick="closeModal('modal-os-cor')">Cancelar</button><button class="btn bp" onclick="saveOSCorretiva()">Criar OS</button></div>
+  <div class="fg"><label class="lbl" data-i18n="ord_f_descricao">Descricao / Sintoma</label><textarea id="oc-desc" data-i18n-ph="os_ph_desc_prob" placeholder="Descreva o problema ou servico a executar..."></textarea></div>
+  <div class="mf"><button class="btn bx" onclick="closeModal('modal-os-cor')" data-i18n="btn_cancelar">Cancelar</button><button class="btn bp" onclick="saveOSCorretiva()" data-i18n="btn_criar_os">Criar OS</button></div>
 </div></div>
 
 <!-- Modal Nova OS Preventiva/Preditiva manual (sem vinculo a plano) -->
 <div class="modal" id="modal-os-prog"><div class="mc" onclick="event.stopPropagation()">
-  <div class="mt2">Nova OS Preventiva / Preditiva</div>
+  <div class="mt2" data-i18n="title_os_programada">Nova OS Preventiva / Preditiva</div>
   <div class="fg">
-    <label class="lbl">Tipo de Manutencao</label>
+    <label class="lbl" data-i18n="ord_tipo_label">Tipo de Manutencao</label>
     <div class="os-type-selector">
       <div class="os-type-btn selected" onclick="setTipoProgramada('Preventiva',this)">
         <div class="os-type-icon">&#128994;</div>
@@ -93,22 +93,22 @@
     </div>
     <input type="hidden" id="op-tipo" value="Preventiva"/>
   </div>
-  <div class="fg"><label class="lbl">Titulo *</label><input id="op-titulo" placeholder="Descricao resumida do servico"/></div>
+  <div class="fg"><label class="lbl" data-i18n="ord_f_titulo">Titulo *</label><input id="op-titulo" data-i18n-ph="os_ph_desc_res" placeholder="Descricao resumida do servico"/></div>
   <div class="g2">
-    <div class="fg"><label class="lbl">Ativo *</label><select id="op-ativo"><option value="">Selecione...</option></select></div>
-    <div class="fg"><label class="lbl">Prioridade</label><select id="op-prio"><option>Critica</option><option>Alta</option><option selected>Normal</option><option>Baixa</option></select></div>
+    <div class="fg"><label class="lbl" data-i18n="ord_f_ativo">Ativo *</label><select id="op-ativo"><option value="" data-i18n="btn_selecione">Selecione...</option></select></div>
+    <div class="fg"><label class="lbl" data-i18n="ord_f_prio">Prioridade</label><select id="op-prio"><option value="Critica" data-i18n="ord_prio_crit">Critica</option><option value="Alta" data-i18n="ord_prio_alta">Alta</option><option value="Normal" selected data-i18n="ord_prio_normal">Normal</option><option value="Baixa" data-i18n="ord_prio_baixa">Baixa</option></select></div>
   </div>
   <div class="g2">
-    <div class="fg"><label class="lbl">Tecnico Responsavel</label><select id="op-tec"><option value="">Selecione...</option></select></div>
-    <div class="fg"><label class="lbl">Prazo</label><input type="date" id="op-prazo"/></div>
+    <div class="fg"><label class="lbl" data-i18n="ord_f_tecnico">Tecnico Responsavel</label><select id="op-tec"><option value="" data-i18n="btn_selecione">Selecione...</option></select></div>
+    <div class="fg"><label class="lbl" data-i18n="ord_f_prazo">Prazo</label><input type="date" id="op-prazo"/></div>
   </div>
   <div class="g2">
-    <div class="fg"><label class="lbl">Periodo (dias)</label><input type="number" id="op-periodo" placeholder="Ex: 30" min="1"/></div>
-    <div class="fg"><label class="lbl">Proxima OS em (dias)</label><input type="number" id="op-proxima" placeholder="Ex: 30" min="1"/></div>
+    <div class="fg"><label class="lbl" data-i18n="ord_f_periodo">Periodo (dias)</label><input type="number" id="op-periodo" data-i18n-ph="os_ph_30" placeholder="Ex: 30" min="1"/></div>
+    <div class="fg"><label class="lbl" data-i18n="ord_f_proxima">Proxima OS em (dias)</label><input type="number" id="op-proxima" data-i18n-ph="os_ph_30" placeholder="Ex: 30" min="1"/></div>
   </div>
-  <div class="fg"><label class="lbl">Descricao / Sintoma</label><textarea id="op-desc" placeholder="Descreva o servico a executar..."></textarea></div>
-  <div style="font-size:11px;color:#64748b;margin-bottom:8px">Para gerar OS automaticamente a partir de um plano de manutencao cadastrado no ativo, use o botao "Gerar OS Programadas".</div>
-  <div class="mf"><button class="btn bx" onclick="closeModal('modal-os-prog')">Cancelar</button><button class="btn bp" onclick="saveOSProgramada()">Criar OS</button></div>
+  <div class="fg"><label class="lbl" data-i18n="ord_f_descricao">Descricao / Sintoma</label><textarea id="op-desc" data-i18n-ph="os_ph_desc_serv" placeholder="Descreva o servico a executar..."></textarea></div>
+  <div style="font-size:11px;color:#64748b;margin-bottom:8px">Para gerar OS automaticamente a partir de um plano de manutencao cadastrado no ativo, use o botao t("os_gerar_prog").</div>
+  <div class="mf"><button class="btn bx" onclick="closeModal('modal-os-prog')" data-i18n="btn_cancelar">Cancelar</button><button class="btn bp" onclick="saveOSProgramada()" data-i18n="btn_criar_os">Criar OS</button></div>
 </div></div>
 
 <script src="_lang.js"></script>
@@ -116,7 +116,7 @@
 <script>
 // ═══════════════════════════════════════════════════════════════════════
 // ordens.html — HUB: resumo geral, lista unificada e criacao de O.S.
-// Ao clicar em "Executar", a OS ja e movida para "Em Andamento" e o
+// Ao clicar em t("os_executar"), a OS ja e movida para "Em Andamento" e o
 // usuario cai direto no arquivo de execucao correspondente:
 //   ordens-corretiva.html   → OS Corretiva
 //   ordens-programada.html  → OS Preventiva / Preditiva (vinculada a plano)
@@ -155,15 +155,15 @@ document.querySelectorAll(".modal").forEach(function(m){m.addEventListener("clic
 
 // ── NOVA OS CORRETIVA ─────────────────────────────────────────────────
 function openNewOSCorretiva(){
-  document.getElementById("oc-ativo").innerHTML='<option value="">Selecione...</option>'+ativos.map(function(a){return'<option value="'+a.id+'">'+esc(a.nome)+'</option>';}).join("");
+  document.getElementById("oc-ativo").innerHTML='<option value="" data-i18n="btn_selecione">Selecione...</option>'+ativos.map(function(a){return'<option value="'+a.id+'">'+esc(a.nome)+'</option>';}).join("");
   populaSelectTecnicos("oc-tec");
   openModal("modal-os-cor");
 }
 function saveOSCorretiva(){
   var tit=document.getElementById("oc-titulo").value.trim(),v=document.getElementById("oc-ativo").value;
-  if(!tit||!v){alert("Preencha titulo e ativo.");return;}
+  if(!tit||!v){alert(t("os_preencha_tit"));return;}
   var ativoId=parseInt(v),ativoObj=ativos.find(function(a){return a.id===ativoId;});
-  if(!ativoObj){alert("Ativo invalido.");return;}
+  if(!ativoObj){alert(t("os_ativo_invalido"));return;}
   var numeroOS=nextNumeroOS("Corretiva",ordens);
   var nova={id:nextId(),numero_os:numeroOS,titulo:tit,ativo:ativoObj.nome,ativo_id:ativoId,tipo:"Corretiva",prioridade:document.getElementById("oc-prio").value,tecnico:document.getElementById("oc-tec").value,prazo:document.getElementById("oc-prazo").value,descricao:document.getElementById("oc-desc").value,status:"Aberta",abertura:new Date().toISOString().split("T")[0],origem:"manual",execLog:[]};
   ordens.unshift(nova);saveOrdens(ordens);
@@ -178,7 +178,7 @@ function setTipoProgramada(val,el){
   el.classList.add("selected");
 }
 function openNewOSProgramada(){
-  document.getElementById("op-ativo").innerHTML='<option value="">Selecione...</option>'+ativos.map(function(a){return'<option value="'+a.id+'">'+esc(a.nome)+'</option>';}).join("");
+  document.getElementById("op-ativo").innerHTML='<option value="" data-i18n="btn_selecione">Selecione...</option>'+ativos.map(function(a){return'<option value="'+a.id+'">'+esc(a.nome)+'</option>';}).join("");
   populaSelectTecnicos("op-tec");
   document.querySelectorAll("#modal-os-prog .os-type-btn").forEach(function(b,i){b.classList.toggle("selected",i==0);});
   document.getElementById("op-tipo").value="Preventiva";
@@ -186,9 +186,9 @@ function openNewOSProgramada(){
 }
 function saveOSProgramada(){
   var tit=document.getElementById("op-titulo").value.trim(),v=document.getElementById("op-ativo").value;
-  if(!tit||!v){alert("Preencha titulo e ativo.");return;}
+  if(!tit||!v){alert(t("os_preencha_tit"));return;}
   var ativoId=parseInt(v),ativoObj=ativos.find(function(a){return a.id===ativoId;});
-  if(!ativoObj){alert("Ativo invalido.");return;}
+  if(!ativoObj){alert(t("os_ativo_invalido"));return;}
   var tipo=document.getElementById("op-tipo").value;
   var numeroOS=nextNumeroOS(tipo,ordens);
   var nova={id:nextId(),numero_os:numeroOS,titulo:tit,ativo:ativoObj.nome,ativo_id:ativoId,tipo:tipo,prioridade:document.getElementById("op-prio").value,tecnico:document.getElementById("op-tec").value,prazo:document.getElementById("op-prazo").value,descricao:document.getElementById("op-desc").value,status:"Aberta",abertura:new Date().toISOString().split("T")[0],origem:"manual",periodo:document.getElementById("op-periodo").value,proxima:document.getElementById("op-proxima").value,execLog:[]};
@@ -307,7 +307,7 @@ function renderList(){
   if(os){
     window.location.href=ordensDetailUrl(os);
   } else {
-    console.warn("OS nao encontrada para id:", calOS, "ordens ids:", ordens.map(function(o){return o.id;}));
+    console.warn(t("os_nao_encontrada"), calOS, "ordens ids:", ordens.map(function(o){return o.id;}));
   }
 })();
 

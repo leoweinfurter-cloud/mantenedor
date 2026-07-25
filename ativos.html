@@ -54,166 +54,166 @@
 
 <!-- Modal Novo Ativo -->
 <div class="modal" id="modal-ativo"><div class="mc" onclick="event.stopPropagation()">
-  <div class="mt2">Cadastrar Ativo</div>
-  <div class="fg"><label class="lbl" data-i18n="at_f_nome">Nome *</label><input id="at-nome" placeholder="Nome do equipamento"/></div>
-  <div class="fg"><label class="lbl" data-i18n="at_f_cat">Categoria</label><select id="at-cat"><option value="">Selecione...</option></select></div>
-  <div class="fg"><label class="lbl" data-i18n="at_f_empresa">Empresa</label><select id="at-emp" onchange="onEmpChange()"><option value="">Selecione a empresa...</option></select></div>
-  <div class="fg"><label class="lbl" data-i18n="at_f_unidade">Unidade</label><select id="at-unid" onchange="onUnidChange()" disabled><option value="">Selecione a unidade...</option></select></div>
-  <div class="fg"><label class="lbl" data-i18n="at_f_local">Localizacao</label><input id="at-loc" placeholder="Ex: Galpao A, Linha 1"/></div>
+  <div class="mt2" data-i18n="at_cad_ativo">Cadastrar Ativo</div>
+  <div class="fg"><label class="lbl" data-i18n="at_f_nome">Nome *</label><input id="at-nome" data-i18n-ph="at_ph_nome" placeholder="Nome do equipamento"/></div>
+  <div class="fg"><label class="lbl" data-i18n="at_f_cat">Categoria</label><select id="at-cat"><option value="" data-i18n="btn_selecione">Selecione...</option></select></div>
+  <div class="fg"><label class="lbl" data-i18n="at_f_empresa">Empresa</label><select id="at-emp" onchange="onEmpChange()"><option value="" data-i18n="at_sel_empresa">Selecione a empresa...</option></select></div>
+  <div class="fg"><label class="lbl" data-i18n="at_f_unidade">Unidade</label><select id="at-unid" onchange="onUnidChange()" disabled><option value="" data-i18n="at_sel_unidade">Selecione a unidade...</option></select></div>
+  <div class="fg"><label class="lbl" data-i18n="at_f_local">Localizacao</label><input id="at-loc" data-i18n-ph="at_ph_local" placeholder="Ex: Galpao A, Linha 1"/></div>
   <div class="g2">
     <div class="fg"><label class="lbl" data-i18n="at_f_fab">Fabricante</label><input id="at-fab"/></div>
     <div class="fg"><label class="lbl" data-i18n="at_f_modelo">Modelo</label><input id="at-mod"/></div>
   </div>
   <div class="g2">
     <div class="fg"><label class="lbl" data-i18n="at_f_serie">Serie</label><input id="at-serie"/></div>
-    <div class="fg"><label class="lbl" data-i18n="at_f_ano">Ano</label><input id="at-ano" placeholder="Ex: 2020"/></div>
+    <div class="fg"><label class="lbl" data-i18n="at_f_ano">Ano</label><input id="at-ano" data-i18n-ph="at_ph_ano" placeholder="Ex: 2020"/></div>
   </div>
   <div class="g2">
-    <div class="fg"><label class="lbl" data-i18n="at_f_tag">Tag</label><input id="at-tag" placeholder="Ex: COMP-002"/></div>
-    <div class="fg"><label class="lbl" data-i18n="at_f_pat">Patrimonio</label><input id="at-pat" placeholder="Ex: PAT-0001"/></div>
+    <div class="fg"><label class="lbl" data-i18n="at_f_tag">Tag</label><input id="at-tag" data-i18n-ph="at_ph_tag" placeholder="Ex: COMP-002"/></div>
+    <div class="fg"><label class="lbl" data-i18n="at_f_pat">Patrimonio</label><input id="at-pat" data-i18n-ph="at_ph_pat" placeholder="Ex: PAT-0001"/></div>
   </div>
   <div class="mf"><button class="btn bx" onclick="closeModal('modal-ativo')"><span data-i18n="btn_cancelar">Cancelar</span></button><button class="btn bp" onclick="saveAtivo()"><span data-i18n="btn_cadastrar">Cadastrar</span></button></div>
 </div></div>
 
 <!-- Modal Registrar Manutencao -->
 <div class="modal" id="modal-hist"><div class="mc" onclick="event.stopPropagation()">
-  <div class="mt2">Registrar Manutencao</div>
-  <div class="fg"><label class="lbl">Descricao *</label><input id="h-desc" placeholder="O que foi feito?"/></div>
+  <div class="mt2" data-i18n="at_reg_manut">Registrar Manutencao</div>
+  <div class="fg"><label class="lbl" data-i18n="h_f_desc">Descricao *</label><input id="h-desc" data-i18n-ph="h_ph_desc" placeholder="O que foi feito?"/></div>
   <div class="g2">
-    <div class="fg"><label class="lbl">Data</label><input type="date" id="h-data"/></div>
-    <div class="fg"><label class="lbl">Tipo</label><select id="h-tipo"><option>Corretiva</option><option>Preventiva</option><option>Preditiva</option><option>Inspecao</option></select></div>
+    <div class="fg"><label class="lbl" data-i18n="h_f_data">Data</label><input type="date" id="h-data"/></div>
+    <div class="fg"><label class="lbl" data-i18n="h_f_tipo">Tipo</label><select id="h-tipo"><option value="Corretiva" data-i18n="ord_tipo_corr">Corretiva</option><option value="Preventiva" data-i18n="ord_tipo_prev">Preventiva</option><option value="Preditiva" data-i18n="ord_tipo_pred">Preditiva</option><option value="Inspecao" data-i18n="h_tipo_insp">Inspecao</option></select></div>
   </div>
   <div class="g2">
-    <div class="fg"><label class="lbl">Tecnico</label><select id="h-tec"><option value="">Selecione...</option></select></div>
-    <div class="fg"><label class="lbl">Horas</label><input type="number" id="h-horas" min="0" step="0.5" placeholder="0"/></div>
+    <div class="fg"><label class="lbl" data-i18n="h_f_tecnico">Tecnico</label><select id="h-tec"><option value="" data-i18n="btn_selecione">Selecione...</option></select></div>
+    <div class="fg"><label class="lbl" data-i18n="h_f_horas">Horas</label><input type="number" id="h-horas" min="0" step="0.5" placeholder="0"/></div>
   </div>
   <div class="g2">
-    <div class="fg"><label class="lbl">Custo (R$)</label><input type="number" id="h-custo" min="0" placeholder="0"/></div>
-    <div class="fg"><label class="lbl">Proximo (dias)</label><input type="number" id="h-prox" min="0" placeholder="90"/></div>
+    <div class="fg"><label class="lbl" data-i18n="h_f_custo">Custo (R$)</label><input type="number" id="h-custo" min="0" placeholder="0"/></div>
+    <div class="fg"><label class="lbl" data-i18n="h_f_prox">Proximo (dias)</label><input type="number" id="h-prox" min="0" placeholder="90"/></div>
   </div>
-  <div class="fg"><label class="lbl">Observacoes</label><textarea id="h-obs"></textarea></div>
-  <div class="mf"><button class="btn bx" onclick="closeModal('modal-hist')">Cancelar</button><button class="btn bp" onclick="saveHist()">Salvar</button></div>
+  <div class="fg"><label class="lbl" data-i18n="h_f_obs">Observacoes</label><textarea id="h-obs"></textarea></div>
+  <div class="mf"><button class="btn bx" onclick="closeModal('modal-hist')" data-i18n="btn_cancelar">Cancelar</button><button class="btn bp" onclick="saveHist()" data-i18n="btn_salvar">Salvar</button></div>
 </div></div>
 
 <!-- Modal Novo Plano Preventivo -->
 <div class="modal" id="modal-plano"><div class="mc" onclick="event.stopPropagation()">
-  <div class="mt2" id="pl-modal-title">Novo Plano</div>
+  <div class="mt2" id="pl-modal-title" data-i18n="pl_novo_titulo">Novo Plano</div>
   <input type="hidden" id="pl-id"/>
-  <div class="fg"><label class="lbl">Nome *</label><input id="pl-nome" placeholder="Ex: Lubrificacao mensal"/></div>
+  <div class="fg"><label class="lbl" data-i18n="pl_f_nome">Nome *</label><input id="pl-nome" data-i18n-ph="pl_ph_nome" placeholder="Ex: Lubrificacao mensal"/></div>
   <input type="hidden" id="pl-tipo" value="Preventiva"/>
 
   <div class="g2">
-    <div class="fg"><label class="lbl">Frequencia</label><select id="pl-freq"><option>Semanal</option><option>Quinzenal</option><option selected>Mensal</option><option>Bimestral</option><option>Trimestral</option><option>Semestral</option><option>Anual</option></select></div>
-    <div class="fg"><label class="lbl">Proxima Execucao</label><input type="date" id="pl-prox"/></div>
+    <div class="fg"><label class="lbl" data-i18n="pl_f_freq">Frequencia</label><select id="pl-freq"><option value="Semanal" data-i18n-freq="Semanal">Semanal</option><option value="Quinzenal" data-i18n-freq="Quinzenal">Quinzenal</option><option value="Mensal" selected data-i18n-freq="Mensal">Mensal</option><option value="Bimestral" data-i18n-freq="Bimestral">Bimestral</option><option value="Trimestral" data-i18n-freq="Trimestral">Trimestral</option><option value="Semestral" data-i18n-freq="Semestral">Semestral</option><option value="Anual" data-i18n-freq="Anual">Anual</option></select></div>
+    <div class="fg"><label class="lbl" data-i18n="pl_f_prox">Proxima Execucao</label><input type="date" id="pl-prox"/></div>
   </div>
-  <div class="fg"><label class="lbl">Responsavel</label><select id="pl-resp"><option value="">Selecione...</option></select></div>
+  <div class="fg"><label class="lbl" data-i18n="pl_f_resp">Responsavel</label><select id="pl-resp"><option value="" data-i18n="btn_selecione">Selecione...</option></select></div>
   <div class="fg">
-    <label class="lbl">Acoes / Medicoes do Plano</label>
+    <label class="lbl" data-i18n="pl_acoes">Acoes / Medicoes do Plano</label>
     <div id="pl-acoes-list" style="margin-top:8px"></div>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px">
-      <button class="btn bx" onclick="addPlAcao('acao')" style="font-size:12px">+ Acao (checklist)</button>
-      <button class="btn bx" onclick="addPlAcao('medicao')" style="font-size:12px">+ Medicao</button>
+      <button class="btn bx" onclick="addPlAcao('acao')" style="font-size:12px" data-i18n="pl_add_acao">+ Acao (checklist)</button>
+      <button class="btn bx" onclick="addPlAcao('medicao')" style="font-size:12px" data-i18n="pl_add_med">+ Medicao</button>
     </div>
   </div>
   <div class="mf">
-    <button class="btn bx" onclick="closeModal('modal-plano')">Cancelar</button>
-    <button class="btn bp" onclick="savePlano()">Salvar Plano</button>
+    <button class="btn bx" onclick="closeModal('modal-plano')" data-i18n="btn_cancelar">Cancelar</button>
+    <button class="btn bp" onclick="savePlano()" data-i18n="pl_salvar">Salvar Plano</button>
   </div>
 </div></div>
 
 <!-- Modal Leitura Preditiva -->
 <div class="modal" id="modal-pred"><div class="mc" onclick="event.stopPropagation()">
-  <div class="mt2">Nova Leitura Preditiva</div>
+  <div class="mt2" data-i18n="pr_nova_titulo">Nova Leitura Preditiva</div>
   <div class="g2">
-    <div class="fg"><label class="lbl">Data</label><input type="date" id="p-data"/></div>
-    <div class="fg"><label class="lbl">Parametro</label><select id="p-param"><option>Vibracao (mm/s)</option><option>Temperatura (C)</option><option>Ruido (dB)</option><option>Pressao (bar)</option><option>Corrente (A)</option><option>Espessura (mm)</option><option>Outro</option></select></div>
+    <div class="fg"><label class="lbl" data-i18n="h_f_data">Data</label><input type="date" id="p-data"/></div>
+    <div class="fg"><label class="lbl" data-i18n="exec_param">Parametro</label><select id="p-param"><option value="Vibracao (mm/s)" data-i18n-param="vib">Vibracao (mm/s)</option><option value="Temperatura (C)" data-i18n-param="temp">Temperatura (C)</option><option value="Ruido (dB)" data-i18n-param="ruido">Ruido (dB)</option><option value="Pressao (bar)" data-i18n-param="pres">Pressao (bar)</option><option value="Corrente (A)" data-i18n-param="corr">Corrente (A)</option><option value="Espessura (mm)" data-i18n-param="esp">Espessura (mm)</option><option value="Outro" data-i18n-param="outro">Outro</option></select></div>
   </div>
   <div class="g2">
-    <div class="fg"><label class="lbl">Valor medido</label><input type="number" id="p-val" step="0.01" placeholder="0.0"/></div>
-    <div class="fg"><label class="lbl">Limite de alerta</label><input type="number" id="p-lim" step="0.01" placeholder="0.0"/></div>
+    <div class="fg"><label class="lbl" data-i18n="at_valor_med">Valor medido</label><input type="number" id="p-val" step="0.01" placeholder="0.0"/></div>
+    <div class="fg"><label class="lbl" data-i18n="pr_lim_alerta">Limite de alerta</label><input type="number" id="p-lim" step="0.01" placeholder="0.0"/></div>
   </div>
-  <div class="fg"><label class="lbl">Observacao</label><input id="p-obs" placeholder="Condicao observada..."/></div>
-  <div class="mf"><button class="btn bx" onclick="closeModal('modal-pred')">Cancelar</button><button class="btn bp" onclick="savePred()">Salvar</button></div>
+  <div class="fg"><label class="lbl" data-i18n="exec_tipo_obs">Observacao</label><input id="p-obs" data-i18n-ph="pr_ph_obs" placeholder="Condicao observada..."/></div>
+  <div class="mf"><button class="btn bx" onclick="closeModal('modal-pred')" data-i18n="btn_cancelar">Cancelar</button><button class="btn bp" onclick="savePred()" data-i18n="btn_salvar">Salvar</button></div>
 </div></div>
 
 <!-- Modal Analise de Falha -->
 <div class="modal" id="modal-analise"><div class="mc mc-lg" onclick="event.stopPropagation()">
-  <div class="mt2">Analise de Falha &mdash; <span id="anal-info" style="font-size:13px;font-weight:400;color:#475569;font-style:italic"></span></div>
+  <div class="mt2"><span data-i18n="an_titulo">Analise de Falha</span> &mdash; <span id="anal-info" style="font-size:13px;font-weight:400;color:#475569;font-style:italic"></span></div>
   <div class="anal-tabs">
-    <div class="anal-tab active" onclick="setAnalTab('5porques')">5 Porques</div>
-    <div class="anal-tab" onclick="setAnalTab('ishikawa')">Ishikawa (6M)</div>
-    <div class="anal-tab" onclick="setAnalTab('fmea')">FMEA</div>
-    <div class="anal-tab" onclick="setAnalTab('rca')">RCA</div>
-    <div class="anal-tab" onclick="setAnalTab('fta')">Arvore de Falhas</div>
-    <div class="anal-tab" onclick="setAnalTab('pdca')">PDCA</div>
+    <div class="anal-tab active" onclick="setAnalTab('5porques')" data-i18n-anal="5porques">5 Porques</div>
+    <div class="anal-tab" onclick="setAnalTab('ishikawa')" data-i18n-anal="ishikawa">Ishikawa (6M)</div>
+    <div class="anal-tab" onclick="setAnalTab('fmea')" data-i18n-anal="fmea">FMEA</div>
+    <div class="anal-tab" onclick="setAnalTab('rca')" data-i18n-anal="rca">RCA</div>
+    <div class="anal-tab" onclick="setAnalTab('fta')" data-i18n-anal="fta">Arvore de Falhas</div>
+    <div class="anal-tab" onclick="setAnalTab('pdca')" data-i18n-anal="pdca">PDCA</div>
   </div>
   <div class="anal-section show" id="anal-5porques">
-    <p style="font-size:12px;color:#475569;margin-bottom:14px">Questione "por que?" sucessivamente ate chegar a causa raiz.</p>
-    <div class="fg"><label class="lbl">Problema observado</label><input id="pq-prob" placeholder="Descreva a falha observada..."/></div>
+    <p style="font-size:12px;color:#475569;margin-bottom:14px" data-i18n="an_5pq_hint">Questione "por que?" sucessivamente ate chegar a causa raiz.</p>
+    <div class="fg"><label class="lbl" data-i18n="an_problema">Problema observado</label><input id="pq-prob" data-i18n-ph="an_ph_problema" placeholder="Descreva a falha observada..."/></div>
     <div id="pq-rows"></div>
-    <div class="fg"><label class="lbl" style="color:#4ade80">Causa Raiz</label><input id="pq-causa" placeholder="Resposta final — causa fundamental..." style="border-color:#4ade8040"/></div>
-    <div class="fg"><label class="lbl">Acao Corretiva</label><textarea id="pq-acao"></textarea></div>
+    <div class="fg"><label class="lbl" style="color:#4ade80" data-i18n="an_causa_raiz_l">Causa Raiz</label><input id="pq-causa" data-i18n-ph="an_ph_causa_pq" placeholder="Resposta final — causa fundamental..." style="border-color:#4ade8040"/></div>
+    <div class="fg"><label class="lbl" data-i18n="an_acao_corr_l">Acao Corretiva</label><textarea id="pq-acao"></textarea></div>
   </div>
   <div class="anal-section" id="anal-ishikawa">
-    <p style="font-size:12px;color:#475569;margin-bottom:14px">Diagrama Espinha de Peixe: identifique causas nos 6M.</p>
-    <div class="fg"><label class="lbl">Efeito / Falha Central</label><input id="ish-ef" placeholder="Ex: Parada nao planejada do equipamento"/></div>
+    <p style="font-size:12px;color:#475569;margin-bottom:14px" data-i18n="an_ish_hint">Diagrama Espinha de Peixe: identifique causas nos 6M.</p>
+    <div class="fg"><label class="lbl" data-i18n="an_ish_efeito">Efeito / Falha Central</label><input id="ish-ef" data-i18n-ph="an_ish_ph_ef" placeholder="Ex: Parada nao planejada do equipamento"/></div>
     <div class="fish-grid">
-      <div class="fish-cat"><div class="fish-cat-title">Mao de Obra</div><textarea id="ish-m1" placeholder="Erro operacional, treinamento..." style="height:56px"></textarea></div>
-      <div class="fish-cat"><div class="fish-cat-title">Maquina</div><textarea id="ish-m2" placeholder="Desgaste, falta de manutencao..." style="height:56px"></textarea></div>
-      <div class="fish-cat"><div class="fish-cat-title">Metodo</div><textarea id="ish-m3" placeholder="Procedimento, padrao..." style="height:56px"></textarea></div>
-      <div class="fish-cat"><div class="fish-cat-title">Material</div><textarea id="ish-m4" placeholder="Qualidade, especificacao..." style="height:56px"></textarea></div>
-      <div class="fish-cat"><div class="fish-cat-title">Meio Ambiente</div><textarea id="ish-m5" placeholder="Temperatura, umidade..." style="height:56px"></textarea></div>
-      <div class="fish-cat"><div class="fish-cat-title">Medicao</div><textarea id="ish-m6" placeholder="Instrumento, monitoramento..." style="height:56px"></textarea></div>
+      <div class="fish-cat"><div class="fish-cat-title" data-i18n="an_6m_mo">Mao de Obra</div><textarea id="ish-m1" data-i18n-ph="an_6m_ph_mo" placeholder="Erro operacional, treinamento..." style="height:56px"></textarea></div>
+      <div class="fish-cat"><div class="fish-cat-title" data-i18n="an_6m_maq">Maquina</div><textarea id="ish-m2" data-i18n-ph="an_6m_ph_maq" placeholder="Desgaste, falta de manutencao..." style="height:56px"></textarea></div>
+      <div class="fish-cat"><div class="fish-cat-title" data-i18n="an_6m_met">Metodo</div><textarea id="ish-m3" data-i18n-ph="an_6m_ph_met" placeholder="Procedimento, padrao..." style="height:56px"></textarea></div>
+      <div class="fish-cat"><div class="fish-cat-title" data-i18n="an_6m_mat">Material</div><textarea id="ish-m4" data-i18n-ph="an_6m_ph_mat" placeholder="Qualidade, especificacao..." style="height:56px"></textarea></div>
+      <div class="fish-cat"><div class="fish-cat-title" data-i18n="an_6m_amb">Meio Ambiente</div><textarea id="ish-m5" data-i18n-ph="an_6m_ph_amb" placeholder="Temperatura, umidade..." style="height:56px"></textarea></div>
+      <div class="fish-cat"><div class="fish-cat-title" data-i18n="an_6m_med">Medicao</div><textarea id="ish-m6" data-i18n-ph="an_6m_ph_med" placeholder="Instrumento, monitoramento..." style="height:56px"></textarea></div>
     </div>
-    <div class="fg"><label class="lbl" style="color:#4ade80">Causa Raiz Predominante</label><input id="ish-causa" placeholder="Qual dos 6M foi a causa principal?"/></div>
-    <div class="fg"><label class="lbl">Acao Corretiva</label><textarea id="ish-acao"></textarea></div>
+    <div class="fg"><label class="lbl" style="color:#4ade80" data-i18n="an_ish_causa">Causa Raiz Predominante</label><input id="ish-causa" data-i18n-ph="an_ish_ph_causa" placeholder="Qual dos 6M foi a causa principal?"/></div>
+    <div class="fg"><label class="lbl" data-i18n="an_acao_corr_l">Acao Corretiva</label><textarea id="ish-acao"></textarea></div>
   </div>
   <div class="anal-section" id="anal-fmea">
-    <p style="font-size:12px;color:#475569;margin-bottom:14px">RPN = Severidade × Ocorrencia × Deteccao. Acima de 100 exige acao imediata.</p>
+    <p style="font-size:12px;color:#475569;margin-bottom:14px" data-i18n="an_fmea_hint">RPN = Severidade × Ocorrencia × Deteccao. Acima de 100 exige acao imediata.</p>
     <div class="g2">
-      <div class="fg"><label class="lbl">Modo de Falha</label><input id="fm-modo" placeholder="Ex: Ruptura de rolamento"/></div>
-      <div class="fg"><label class="lbl">Efeito</label><input id="fm-ef" placeholder="Ex: Parada do equipamento"/></div>
+      <div class="fg"><label class="lbl" data-i18n="an_fmea_modo">Modo de Falha</label><input id="fm-modo" data-i18n-ph="an_fmea_ph_modo" placeholder="Ex: Ruptura de rolamento"/></div>
+      <div class="fg"><label class="lbl" data-i18n="an_fmea_efeito">Efeito</label><input id="fm-ef" data-i18n-ph="an_fmea_ph_ef" placeholder="Ex: Parada do equipamento"/></div>
     </div>
-    <div class="fg"><label class="lbl">Causa</label><input id="fm-causa" placeholder="Ex: Lubrificacao insuficiente"/></div>
-    <div class="fg"><label class="lbl">Controle Atual</label><input id="fm-ctrl" placeholder="Ex: Inspecao visual mensal"/></div>
+    <div class="fg"><label class="lbl" data-i18n="an_fmea_causa">Causa</label><input id="fm-causa" data-i18n-ph="an_fmea_ph_causa" placeholder="Ex: Lubrificacao insuficiente"/></div>
+    <div class="fg"><label class="lbl" data-i18n="an_fmea_ctrl">Controle Atual</label><input id="fm-ctrl" data-i18n-ph="an_fmea_ph_ctrl" placeholder="Ex: Inspecao visual mensal"/></div>
     <div class="g3">
-      <div class="fg"><label class="lbl">Severidade (S) 1-10</label><input type="range" id="fm-s" min="1" max="10" value="5" oninput="updRPN()"/><div style="display:flex;justify-content:space-between;font-size:10px;color:#475569;margin-top:2px"><span>Sem efeito</span><span id="fm-sv" style="color:#60a5fa;font-weight:700">5</span><span>Catastrofico</span></div></div>
-      <div class="fg"><label class="lbl">Ocorrencia (O) 1-10</label><input type="range" id="fm-o" min="1" max="10" value="5" oninput="updRPN()"/><div style="display:flex;justify-content:space-between;font-size:10px;color:#475569;margin-top:2px"><span>Improvavel</span><span id="fm-ov" style="color:#60a5fa;font-weight:700">5</span><span>Certo</span></div></div>
-      <div class="fg"><label class="lbl">Deteccao (D) 1-10</label><input type="range" id="fm-d" min="1" max="10" value="5" oninput="updRPN()"/><div style="display:flex;justify-content:space-between;font-size:10px;color:#475569;margin-top:2px"><span>Detectavel</span><span id="fm-dv" style="color:#60a5fa;font-weight:700">5</span><span>Indetectavel</span></div></div>
+      <div class="fg"><label class="lbl" data-i18n="an_fmea_sev">Severidade (S) 1-10</label><input type="range" id="fm-s" min="1" max="10" value="5" oninput="updRPN()"/><div style="display:flex;justify-content:space-between;font-size:10px;color:#475569;margin-top:2px"><span data-i18n="an_fmea_sem_ef">Sem efeito</span><span id="fm-sv" style="color:#60a5fa;font-weight:700">5</span><span data-i18n="an_fmea_catast">Catastrofico</span></div></div>
+      <div class="fg"><label class="lbl" data-i18n="an_fmea_ocor">Ocorrencia (O) 1-10</label><input type="range" id="fm-o" min="1" max="10" value="5" oninput="updRPN()"/><div style="display:flex;justify-content:space-between;font-size:10px;color:#475569;margin-top:2px"><span data-i18n="an_fmea_improv">Improvavel</span><span id="fm-ov" style="color:#60a5fa;font-weight:700">5</span><span data-i18n="an_fmea_certo">Certo</span></div></div>
+      <div class="fg"><label class="lbl" data-i18n="an_fmea_det">Deteccao (D) 1-10</label><input type="range" id="fm-d" min="1" max="10" value="5" oninput="updRPN()"/><div style="display:flex;justify-content:space-between;font-size:10px;color:#475569;margin-top:2px"><span data-i18n="an_fmea_detect">Detectavel</span><span id="fm-dv" style="color:#60a5fa;font-weight:700">5</span><span data-i18n="an_fmea_indet">Indetectavel</span></div></div>
     </div>
-    <div class="rpn-box"><div class="rpn-val" id="fm-rpn">125</div><div style="font-size:11px;color:#bfdbfe;margin-top:4px">RPN = S × O × D</div><div id="fm-rpn-cls" style="font-size:12px;font-weight:700;margin-top:6px"></div></div>
-    <div class="fg"><label class="lbl">Acao Recomendada</label><textarea id="fm-acao"></textarea></div>
-    <div class="fg"><label class="lbl">Responsavel / Prazo</label><input id="fm-resp" placeholder="Ex: Joao Silva — ate 30/06/2026"/></div>
+    <div class="rpn-box"><div class="rpn-val" id="fm-rpn">125</div><div style="font-size:11px;color:#bfdbfe;margin-top:4px" data-i18n="an_fmea_rpn">RPN = S × O × D</div><div id="fm-rpn-cls" style="font-size:12px;font-weight:700;margin-top:6px"></div></div>
+    <div class="fg"><label class="lbl" data-i18n="an_fmea_acao_rec">Acao Recomendada</label><textarea id="fm-acao"></textarea></div>
+    <div class="fg"><label class="lbl" data-i18n="an_fmea_resp">Responsavel / Prazo</label><input id="fm-resp" data-i18n-ph="an_fmea_ph_resp" placeholder="Ex: Joao Silva — ate 30/06/2026"/></div>
   </div>
   <div class="anal-section" id="anal-rca">
-    <p style="font-size:12px;color:#475569;margin-bottom:14px">Root Cause Analysis: cadeia de eventos que levou a falha.</p>
-    <div class="fg"><label class="lbl">Declaracao do Problema</label><textarea id="rca-prob" placeholder="O que falhou, quando, como e com que frequencia..."></textarea></div>
-    <div class="fg"><label class="lbl">Linha do Tempo</label><textarea id="rca-time" placeholder="14h00 — operador notou ruido&#10;15h00 — parada de emergencia..."></textarea></div>
-    <div class="fg"><label class="lbl">Fatores Contribuintes</label><textarea id="rca-fat" placeholder="Fatores humanos, tecnicos, organizacionais..."></textarea></div>
-    <div class="fg"><label class="lbl" style="color:#f87171">Causa Raiz</label><textarea id="rca-causa" style="border-color:#f8717140" placeholder="A causa fundamental..."></textarea></div>
-    <div class="fg"><label class="lbl" style="color:#4ade80">Acoes Corretivas</label><textarea id="rca-acao" style="border-color:#4ade8040"></textarea></div>
-    <div class="fg"><label class="lbl">Verificacao da Eficacia</label><input id="rca-verif" placeholder="Como e quando verificar?"/></div>
+    <p style="font-size:12px;color:#475569;margin-bottom:14px" data-i18n="an_rca_hint">Root Cause Analysis: cadeia de eventos que levou a falha.</p>
+    <div class="fg"><label class="lbl" data-i18n="an_rca_decl">Declaracao do Problema</label><textarea id="rca-prob" data-i18n-ph="an_rca_ph_decl" placeholder="O que falhou, quando, como e com que frequencia..."></textarea></div>
+    <div class="fg"><label class="lbl" data-i18n="an_rca_time">Linha do Tempo</label><textarea id="rca-time" data-i18n-ph="an_rca_ph_time" placeholder="14h00 — operador notou ruido&#10;15h00 — parada de emergencia..."></textarea></div>
+    <div class="fg"><label class="lbl" data-i18n="an_rca_fat">Fatores Contribuintes</label><textarea id="rca-fat" data-i18n-ph="an_rca_ph_fat" placeholder="Fatores humanos, tecnicos, organizacionais..."></textarea></div>
+    <div class="fg"><label class="lbl" style="color:#f87171" data-i18n="an_causa_raiz_l">Causa Raiz</label><textarea id="rca-causa" style="border-color:#f8717140" data-i18n-ph="an_rca_ph_causa" placeholder="A causa fundamental..."></textarea></div>
+    <div class="fg"><label class="lbl" style="color:#4ade80" data-i18n="an_rca_acoes">Acoes Corretivas</label><textarea id="rca-acao" style="border-color:#4ade8040"></textarea></div>
+    <div class="fg"><label class="lbl" data-i18n="an_rca_verif">Verificacao da Eficacia</label><input id="rca-verif" data-i18n-ph="an_rca_ph_verif" placeholder="Como e quando verificar?"/></div>
   </div>
   <div class="anal-section" id="anal-fta">
-    <p style="font-size:12px;color:#475569;margin-bottom:14px">Arvore de Falhas: partindo do evento topo, identifique causas por portas logicas.</p>
-    <div class="fg"><label class="lbl">Evento Topo</label><input id="fta-topo" placeholder="Ex: Parada nao planejada"/></div>
-    <div class="fg"><label class="lbl">Causas Diretas</label><div id="fta-il"></div><button class="btn bx bsm" onclick="addFtaRow('i')" type="button" style="margin-top:4px">+ Adicionar</button></div>
-    <div class="fg"><label class="lbl">Causas Basicas (raiz)</label><div id="fta-bl"></div><button class="btn bx bsm" onclick="addFtaRow('b')" type="button" style="margin-top:4px">+ Adicionar</button></div>
-    <div class="fg"><label class="lbl">Porta Logica</label><select id="fta-porta"><option value="AND">AND — todas as causas juntas</option><option value="OR" selected>OR — qualquer causa e suficiente</option></select></div>
-    <div class="fg"><label class="lbl" style="color:#4ade80">Acao Preventiva</label><textarea id="fta-acao" style="border-color:#4ade8040"></textarea></div>
+    <p style="font-size:12px;color:#475569;margin-bottom:14px" data-i18n="an_fta_hint">Arvore de Falhas: partindo do evento topo, identifique causas por portas logicas.</p>
+    <div class="fg"><label class="lbl" data-i18n="an_fta_topo">Evento Topo</label><input id="fta-topo" data-i18n-ph="an_fta_ph_topo" placeholder="Ex: Parada nao planejada"/></div>
+    <div class="fg"><label class="lbl" data-i18n="an_fta_diretas">Causas Diretas</label><div id="fta-il"></div><button class="btn bx bsm" onclick="addFtaRow('i')" type="button" style="margin-top:4px" data-i18n="an_fta_add">+ Adicionar</button></div>
+    <div class="fg"><label class="lbl" data-i18n="an_fta_basicas">Causas Basicas (raiz)</label><div id="fta-bl"></div><button class="btn bx bsm" onclick="addFtaRow('b')" type="button" style="margin-top:4px" data-i18n="an_fta_add">+ Adicionar</button></div>
+    <div class="fg"><label class="lbl" data-i18n="an_fta_porta">Porta Logica</label><select id="fta-porta"><option value="AND" data-i18n="an_fta_and">AND — todas as causas juntas</option><option value="OR" selected data-i18n="an_fta_or">OR — qualquer causa e suficiente</option></select></div>
+    <div class="fg"><label class="lbl" style="color:#4ade80" data-i18n="an_fta_acao">Acao Preventiva</label><textarea id="fta-acao" style="border-color:#4ade8040"></textarea></div>
   </div>
   <div class="anal-section" id="anal-pdca">
-    <p style="font-size:12px;color:#475569;margin-bottom:14px">Ciclo PDCA para resolucao e melhoria continua.</p>
+    <p style="font-size:12px;color:#475569;margin-bottom:14px" data-i18n="an_pdca_hint">Ciclo PDCA para resolucao e melhoria continua.</p>
     <div class="pdca-grid">
-      <div class="pdca-box" style="border:1px solid #3b82f640"><div class="pdca-box-title" style="color:#60a5fa">P — Planejar</div><textarea id="pdca-p" placeholder="Qual o problema? Meta? O que fazer?" style="height:80px"></textarea></div>
-      <div class="pdca-box" style="border:1px solid #4ade8040"><div class="pdca-box-title" style="color:#4ade80">D — Executar</div><textarea id="pdca-d" placeholder="Quem? Quando? Como?" style="height:80px"></textarea></div>
-      <div class="pdca-box" style="border:1px solid #fbbf2440"><div class="pdca-box-title" style="color:#fbbf24">C — Verificar</div><textarea id="pdca-c" placeholder="Como medir o resultado?" style="height:80px"></textarea></div>
-      <div class="pdca-box" style="border:1px solid #a78bfa40"><div class="pdca-box-title" style="color:#a78bfa">A — Agir</div><textarea id="pdca-a" placeholder="O que padronizar? Ajustar?" style="height:80px"></textarea></div>
+      <div class="pdca-box" style="border:1px solid #3b82f640"><div class="pdca-box-title" style="color:#60a5fa" data-i18n="an_pdca_p">P — Planejar</div><textarea id="pdca-p" data-i18n-ph="an_pdca_ph_p" placeholder="Qual o problema? Meta? O que fazer?" style="height:80px"></textarea></div>
+      <div class="pdca-box" style="border:1px solid #4ade8040"><div class="pdca-box-title" style="color:#4ade80" data-i18n="an_pdca_d">D — Executar</div><textarea id="pdca-d" data-i18n-ph="an_pdca_ph_d" placeholder="Quem? Quando? Como?" style="height:80px"></textarea></div>
+      <div class="pdca-box" style="border:1px solid #fbbf2440"><div class="pdca-box-title" style="color:#fbbf24" data-i18n="an_pdca_c">C — Verificar</div><textarea id="pdca-c" data-i18n-ph="an_pdca_ph_c" placeholder="Como medir o resultado?" style="height:80px"></textarea></div>
+      <div class="pdca-box" style="border:1px solid #a78bfa40"><div class="pdca-box-title" style="color:#a78bfa" data-i18n="an_pdca_a">A — Agir</div><textarea id="pdca-a" data-i18n-ph="an_pdca_ph_a" placeholder="O que padronizar? Ajustar?" style="height:80px"></textarea></div>
     </div>
   </div>
   <div class="mf">
-    <button class="btn bx" onclick="closeModal('modal-analise')">Cancelar</button>
-    <button class="btn bp" onclick="saveAnalise()">Salvar Analise</button>
+    <button class="btn bx" onclick="closeModal('modal-analise')" data-i18n="btn_cancelar">Cancelar</button>
+    <button class="btn bp" onclick="saveAnalise()" data-i18n="an_salvar">Salvar Analise</button>
   </div>
 </div></div>
 
@@ -251,7 +251,7 @@ function populateCatSelect(){
   var sel=document.getElementById("at-cat");
   if(!sel)return;
   var cats=loadCatData();
-  sel.innerHTML='<option value="">Selecione...</option>'
+  sel.innerHTML='<option value="" data-i18n="btn_selecione">Selecione...</option>'
     +cats.map(function(cat){
       return'<option value="'+esc(cat.nome)+'">'+esc(cat.nome)+'</option>';
     }).join("");
@@ -262,9 +262,9 @@ function populateEmpSelect(){
   if(!sel)return;
   var emps=loadEmpresasData();
   if(emps.length===0){
-    sel.innerHTML='<option value="">Nenhuma empresa cadastrada</option>';
+    sel.innerHTML='<option value="">'+t("cad_nenhuma_emp")+'</option>';
   } else {
-    sel.innerHTML='<option value="">Selecione a empresa...</option>'
+    sel.innerHTML='<option value="" data-i18n="at_sel_empresa">Selecione a empresa...</option>'
       +emps.map(function(e){return'<option value="'+esc(e.nome)+'">'+esc(e.nome)+'</option>';}).join("");
   }
 }
@@ -272,12 +272,12 @@ function populateEmpSelect(){
 function onEmpChange(){
   var empNome=document.getElementById("at-emp").value;
   var unidSel=document.getElementById("at-unid");
-  unidSel.innerHTML='<option value="">Selecione a unidade...</option>';
+  unidSel.innerHTML='<option value="" data-i18n="at_sel_unidade">Selecione a unidade...</option>';
   if(!empNome){unidSel.disabled=true;return;}
   var emps=loadEmpresasData();
   var emp=emps.find(function(e){return e.nome===empNome;});
   if(emp&&emp.unidades&&emp.unidades.length>0){
-    unidSel.innerHTML='<option value="">Selecione a unidade...</option>'
+    unidSel.innerHTML='<option value="" data-i18n="at_sel_unidade">Selecione a unidade...</option>'
       +(emp.unidades.map(function(u){return'<option value="'+esc(u.nome)+'">'+esc(u.nome)+'</option>';}).join(""));
     unidSel.disabled=false;
   } else {
@@ -314,8 +314,8 @@ document.querySelectorAll(".modal").forEach(function(m){m.addEventListener("clic
 
 // ── SAVES ──────────────────────────────────────────────────────────────────
 function saveAtivo(){
-  if(!isCoordenador()){mxToast("Apenas Coordenadores podem cadastrar ativos.","error");return;}
-  var n=document.getElementById("at-nome").value.trim();if(!n){alert("Informe o nome.");return;}
+  if(!isCoordenador()){mxToast(t("msg_so_coord_ativos"),"error");return;}
+  var n=document.getElementById("at-nome").value.trim();if(!n){alert(t("msg_informe_nome"));return;}
   var id=nextId();
   ativos.unshift({id:id,nome:n,categoria:gv("at-cat"),empresa:gv("at-emp"),unidade:gv("at-unid"),localizacao:gv("at-loc"),fabricante:gv("at-fab"),modelo:gv("at-mod"),serie:gv("at-serie"),ano:gv("at-ano"),tag:gv("at-tag"),patrimonio:gv("at-pat"),status:t('at_status_op'),ultima_manutencao:"--",proxima_manutencao:"--"});
   fichas[id]={historico:[],preditiva:[],planos:[],docs:[],indicadores:["mtbf","mttr","disp","manuplan"]};
@@ -325,7 +325,7 @@ function saveAtivo(){
 }
 
 function saveHist(){
-  var d=document.getElementById("h-desc").value.trim();if(!d){alert("Informe a descricao.");return;}
+  var d=document.getElementById("h-desc").value.trim();if(!d){alert(t("msg_informe_desc"));return;}
   var f=fichas[selAtivo.id];
   f.historico.unshift({id:nextId(),desc:d,data:gv("h-data")||new Date().toISOString().split("T")[0],tipo:gv("h-tipo"),tecnico:gv("h-tec"),horas:parseFloat(gv("h-horas"))||0,custo:parseFloat(gv("h-custo"))||0,obs:gv("h-obs")});
   saveFichas(fichas);
@@ -344,14 +344,14 @@ function openNewPlano(){
   _plEditId = null;
   _plAcoes = [];
   _plTipo = "Preventiva";
-  document.getElementById("pl-modal-title").textContent = "Novo Plano";
+  document.getElementById("pl-modal-title").textContent = t("pl_novo_titulo");
   document.getElementById("pl-id").value = "";
   document.getElementById("pl-nome").value = "";
   document.getElementById("pl-prox").value = "";
   // Populate responsavel dropdown from usuarios
   var respSel = document.getElementById("pl-resp");
   var usuarios = loadUsuarios();
-  respSel.innerHTML = '<option value="">Selecione...</option>'
+  respSel.innerHTML = '<option value="" data-i18n="btn_selecione">Selecione...</option>'
     + usuarios.filter(function(u){return u.ativo;}).map(function(u){
         return '<option value="'+u.nome+'">'+u.nome+'</option>';
       }).join("");
@@ -366,14 +366,14 @@ function editPlano(planoId){
   _plEditId = planoId;
   _plAcoes = (p.acoes||[]).map(function(a){ return Object.assign({},a); });
   _plTipo = p.tipo || "Preventiva";
-  document.getElementById("pl-modal-title").textContent = "Editar Plano";
+  document.getElementById("pl-modal-title").textContent = t("pl_editar_titulo");
   document.getElementById("pl-id").value = planoId;
   document.getElementById("pl-nome").value = p.nome;
   document.getElementById("pl-prox").value = p.proxima_execucao !== "--" ? p.proxima_execucao : "";
   // Populate responsavel
   var respSel = document.getElementById("pl-resp");
   var usuarios = loadUsuarios();
-  respSel.innerHTML = '<option value="">Selecione...</option>'
+  respSel.innerHTML = '<option value="" data-i18n="btn_selecione">Selecione...</option>'
     + usuarios.filter(function(u){return u.ativo;}).map(function(u){
         return '<option value="'+u.nome+'"'+(u.nome===p.responsavel?' selected':'')+'>'+u.nome+'</option>';
       }).join("");
@@ -405,13 +405,13 @@ function renderPlAcoes(){
     return '<div class="pl-acao-row">'
       +'<button class="btn" onclick="delPlAcao('+a.id+')" style="float:right;background:transparent;border:none;color:#f87171;cursor:pointer;font-size:14px;padding:0">✕</button>'
       +'<span class="pl-acao-type '+a.tipo+'">'+(ismed?"Medicao":"Acao")+'</span>'
-      +'<div class="fg" style="margin:0 0 6px"><input placeholder="'+(ismed?"Descricao da medicao *":"Descricao da acao *")+'" value="'+esc(a.desc)+'" oninput="updPlAcao('+a.id+',\'desc\',this.value)" style="margin-top:4px"/></div>'
+      +'<div class="fg" style="margin:0 0 6px"><input placeholder="'+(ismed?t("pl_ac_desc_med"):t("pl_ac_desc_acao"))+'" value="'+esc(a.desc)+'" oninput="updPlAcao('+a.id+',\'desc\',this.value)" style="margin-top:4px"/></div>'
       +(ismed
         ? '<div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:6px">'
           +'<div class="fg" style="margin:0"><input placeholder="Parametro" value="'+esc(a.param)+'" oninput="updPlAcao('+a.id+',\'param\',this.value)"/></div>'
           +'<div class="fg" style="margin:0"><input placeholder="Unidade" value="'+esc(a.unidade)+'" oninput="updPlAcao('+a.id+',\'unidade\',this.value)"/></div>'
-          +'<div class="fg" style="margin:0"><input type="number" placeholder="Limite min" value="'+(a.limite_min||'')+'" oninput="updPlAcao('+a.id+',\'limite_min\',parseFloat(this.value)||0)"/></div>'
-          +'<div class="fg" style="margin:0"><input type="number" placeholder="Limite max" value="'+(a.limite_max||'')+'" oninput="updPlAcao('+a.id+',\'limite_max\',parseFloat(this.value)||0)"/></div>'
+          +'<div class="fg" style="margin:0"><input type="number" placeholder=t("pl_ac_lim_min") value="'+(a.limite_min||'')+'" oninput="updPlAcao('+a.id+',\'limite_min\',parseFloat(this.value)||0)"/></div>'
+          +'<div class="fg" style="margin:0"><input type="number" placeholder=t("pl_ac_lim_max") value="'+(a.limite_max||'')+'" oninput="updPlAcao('+a.id+',\'limite_max\',parseFloat(this.value)||0)"/></div>'
           +'</div>'
         : '')
       +'<label style="font-size:11px;color:#64748b;display:flex;align-items:center;gap:6px;margin-top:6px">'
@@ -430,9 +430,9 @@ function updPlAcao(id, key, val){
 }
 
 function savePlano(){
-  if(!isCoordenador()){mxToast("Apenas Coordenadores podem gerenciar planos.","error");return;}
+  if(!isCoordenador()){mxToast(t("msg_so_coord_planos"),"error");return;}
   var n=document.getElementById("pl-nome").value.trim();
-  if(!n){alert("Informe o nome.");return;}
+  if(!n){alert(t("msg_informe_nome"));return;}
   var f=fichas[selAtivo.id];
   if(!f.planos) f.planos=[];
   var prox = gv("pl-prox") || calcProxima(new Date().toISOString().slice(0,10), gv("pl-freq"));
@@ -461,7 +461,7 @@ function savePlano(){
 }
 
 function savePred(){
-  var v=parseFloat(gv("p-val"));if(isNaN(v)){alert("Informe o valor.");return;}
+  var v=parseFloat(gv("p-val"));if(isNaN(v)){alert(t("msg_informe_valor"));return;}
   var f=fichas[selAtivo.id];
   f.preditiva.push({id:nextId(),data:gv("p-data")||new Date().toISOString().split("T")[0],param:gv("p-param"),valor:v,limite:parseFloat(gv("p-lim"))||0,obs:gv("p-obs")});
   saveFichas(fichas);
@@ -552,7 +552,7 @@ function updRPN(){
   var el=document.getElementById("fm-rpn");if(el)el.textContent=rpn;
   sv("fm-sv",s);sv("fm-ov",o);sv("fm-dv",dv);
   var cls=document.getElementById("fm-rpn-cls");
-  if(cls){if(rpn>=200)cls.innerHTML='<span style="color:#f87171">CRITICO — Acao imediata</span>';else if(rpn>=100)cls.innerHTML='<span style="color:#fb923c">ALTO — Plano necessario</span>';else if(rpn>=50)cls.innerHTML='<span style="color:#fbbf24">MEDIO — Monitorar</span>';else cls.innerHTML='<span style="color:#4ade80">BAIXO — Aceitavel</span>';}
+  if(cls){if(rpn>=200)cls.innerHTML='<span style="color:#f87171">'+t("crit_critico_imed")+'</span>';else if(rpn>=100)cls.innerHTML='<span style="color:#fb923c">'+t("crit_alto_plano")+'</span>';else if(rpn>=50)cls.innerHTML='<span style="color:#fbbf24">'+t("crit_medio_monit")+'</span>';else cls.innerHTML='<span style="color:#4ade80">'+t("crit_baixo_aceit")+'</span>';}
 }
 
 function addFtaRow(tipo,val){
@@ -560,7 +560,7 @@ function addFtaRow(tipo,val){
   var cnt=tipo=="i"?ftaIC++:ftaBC++;
   var el=document.getElementById(listId);if(!el)return;
   var div=document.createElement("div");div.style="display:flex;gap:6px;margin-bottom:6px";
-  div.innerHTML='<input id="'+prefix+cnt+'" placeholder="Descreva o evento..." value="'+(val?val.replace(/"/g,"&quot;"):"")+'"/><button class="btn bd bsm" onclick="this.parentNode.remove()" type="button">x</button>';
+  div.innerHTML='<input id="'+prefix+cnt+'" placeholder=t("an_ph_evento") value="'+(val?val.replace(/"/g,"&quot;"):"")+'"/><button class="btn bd bsm" onclick="this.parentNode.remove()" type="button">x</button>';
   el.appendChild(div);
 }
 
@@ -570,24 +570,24 @@ function buildAnaliseView(an){
   var h='<div class="anal-view"><div class="anal-view-hdr"><span style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:'+col+'">'+ANAL_LABELS[an.tipo]+'</span><span style="font-size:11px;color:#475569">'+an.data+'</span></div>';
   if(an.tipo=="5porques"){
     var ws=[d.why1,d.why2,d.why3,d.why4,d.why5].filter(function(w){return w&&w.trim();});
-    h+='<div style="font-size:12px;color:#94a3b8;margin-bottom:6px"><b style="color:#e2e8f0">Problema:</b> '+esc(d.prob||"--")+'</div>';
+    h+='<div style="font-size:12px;color:#94a3b8;margin-bottom:6px"><b style="color:#e2e8f0">'+t("an_lbl_problema")+'</b> '+esc(d.prob||"--")+'</div>';
     ws.forEach(function(w,i){h+='<div style="font-size:12px;color:#94a3b8;padding-left:'+(i*10)+'px">&#8627; <b style="color:#60a5fa">P'+(i+1)+':</b> '+esc(w)+'</div>';});
-    if(d.causa)h+='<div style="font-size:12px;margin-top:8px;padding:7px 10px;background:#4ade8010;border-radius:6px;border-left:2px solid #4ade80"><b style="color:#4ade80">Causa raiz:</b> '+esc(d.causa)+'</div>';
+    if(d.causa)h+='<div style="font-size:12px;margin-top:8px;padding:7px 10px;background:#4ade8010;border-radius:6px;border-left:2px solid #4ade80"><b style="color:#4ade80">'+t("an_lbl_causa_raiz")+'</b> '+esc(d.causa)+'</div>';
   }else if(an.tipo=="ishikawa"){
-    h+='<div style="font-size:12px;color:#94a3b8;margin-bottom:6px"><b style="color:#e2e8f0">Efeito:</b> '+esc(d.ef||"--")+'</div>';
+    h+='<div style="font-size:12px;color:#94a3b8;margin-bottom:6px"><b style="color:#e2e8f0">'+t("an_lbl_efeito")+'</b> '+esc(d.ef||"--")+'</div>';
     [["m1","Mao de Obra"],["m2","Maquina"],["m3","Metodo"],["m4","Material"],["m5","Meio Amb."],["m6","Medicao"]].filter(function(m){return d[m[0]]&&d[m[0]].trim();}).forEach(function(m){h+='<div style="font-size:11px;color:#94a3b8"><b style="color:#f59e0b">'+m[1]+':</b> '+esc(d[m[0]])+'</div>';});
-    if(d.causa)h+='<div style="font-size:12px;margin-top:8px;padding:7px 10px;background:#4ade8010;border-radius:6px;border-left:2px solid #4ade80"><b style="color:#4ade80">Causa raiz:</b> '+esc(d.causa)+'</div>';
+    if(d.causa)h+='<div style="font-size:12px;margin-top:8px;padding:7px 10px;background:#4ade8010;border-radius:6px;border-left:2px solid #4ade80"><b style="color:#4ade80">'+t("an_lbl_causa_raiz")+'</b> '+esc(d.causa)+'</div>';
   }else if(an.tipo=="fmea"){
     var rc=d.rpn>=200?"#f87171":d.rpn>=100?"#fb923c":d.rpn>=50?"#fbbf24":"#4ade80";
-    h+='<div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:8px;margin-bottom:8px"><div><div style="font-size:12px;color:#94a3b8"><b style="color:#e2e8f0">Modo:</b> '+esc(d.modo||"--")+'</div><div style="font-size:12px;color:#94a3b8"><b style="color:#e2e8f0">Causa:</b> '+esc(d.causa||"--")+'</div></div><div style="text-align:center"><div style="font-size:26px;font-weight:800;color:'+rc+'">'+d.rpn+'</div><div style="font-size:10px;color:#475569">RPN (S'+d.s+' O'+d.o+' D'+d.d+')</div></div></div>';
-    if(d.acao)h+='<div style="font-size:12px;padding:7px 10px;background:#1d4ed820;border-radius:6px;border-left:2px solid #3b82f6"><b style="color:#60a5fa">Acao:</b> '+esc(d.acao)+'</div>';
+    h+='<div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:8px;margin-bottom:8px"><div><div style="font-size:12px;color:#94a3b8"><b style="color:#e2e8f0">'+t("an_lbl_modo")+'</b> '+esc(d.modo||"--")+'</div><div style="font-size:12px;color:#94a3b8"><b style="color:#e2e8f0">'+t("an_lbl_causa")+'</b> '+esc(d.causa||"--")+'</div></div><div style="text-align:center"><div style="font-size:26px;font-weight:800;color:'+rc+'">'+d.rpn+'</div><div style="font-size:10px;color:#475569">RPN (S'+d.s+' O'+d.o+' D'+d.d+')</div></div></div>';
+    if(d.acao)h+='<div style="font-size:12px;padding:7px 10px;background:#1d4ed820;border-radius:6px;border-left:2px solid #3b82f6"><b style="color:#60a5fa">'+t("an_lbl_acao")+'</b> '+esc(d.acao)+'</div>';
   }else if(an.tipo=="rca"){
-    if(d.causa)h+='<div style="font-size:12px;margin-bottom:6px;padding:7px 10px;background:#f8717110;border-radius:6px;border-left:2px solid #f87171"><b style="color:#f87171">Causa raiz:</b> '+esc(d.causa)+'</div>';
-    if(d.acao)h+='<div style="font-size:12px;padding:7px 10px;background:#4ade8010;border-radius:6px;border-left:2px solid #4ade80"><b style="color:#4ade80">Acoes:</b> '+esc(d.acao)+'</div>';
+    if(d.causa)h+='<div style="font-size:12px;margin-bottom:6px;padding:7px 10px;background:#f8717110;border-radius:6px;border-left:2px solid #f87171"><b style="color:#f87171">'+t("an_lbl_causa_raiz")+'</b> '+esc(d.causa)+'</div>';
+    if(d.acao)h+='<div style="font-size:12px;padding:7px 10px;background:#4ade8010;border-radius:6px;border-left:2px solid #4ade80"><b style="color:#4ade80">'+t("an_lbl_acoes")+'</b> '+esc(d.acao)+'</div>';
   }else if(an.tipo=="fta"){
-    h+='<div style="font-size:12px;color:#94a3b8;margin-bottom:6px"><b style="color:#e2e8f0">Evento topo:</b> '+esc(d.topo||"--")+'</div>';
+    h+='<div style="font-size:12px;color:#94a3b8;margin-bottom:6px"><b style="color:#e2e8f0">'+t("an_lbl_evento_topo")+'</b> '+esc(d.topo||"--")+'</div>';
     if(d.basics&&d.basics.length)d.basics.forEach(function(b){h+='<div class="fta-node">'+esc(b)+'</div>';});
-    if(d.acao)h+='<div style="font-size:12px;margin-top:8px;padding:7px 10px;background:#4ade8010;border-radius:6px;border-left:2px solid #4ade80"><b style="color:#4ade80">Acao:</b> '+esc(d.acao)+'</div>';
+    if(d.acao)h+='<div style="font-size:12px;margin-top:8px;padding:7px 10px;background:#4ade8010;border-radius:6px;border-left:2px solid #4ade80"><b style="color:#4ade80">'+t("an_lbl_acao")+'</b> '+esc(d.acao)+'</div>';
   }else if(an.tipo=="pdca"){
     [["P",d.p,"#60a5fa"],["D",d.d,"#4ade80"],["C",d.c,"#fbbf24"],["A",d.a,"#a78bfa"]].filter(function(x){return x[1]&&x[1].trim();}).forEach(function(x){h+='<div style="font-size:11px;color:#94a3b8;margin-bottom:4px"><b style="color:'+x[2]+'">'+x[0]+':</b> '+esc(x[1])+'</div>';});
   }
@@ -598,7 +598,7 @@ function buildAnaliseView(an){
 
 // ── DESATIVAÇÃO ───────────────────────────────────────────────────────
 function abrirDesativarPlano(planoId){
-  if(!isCoordenador()){mxToast("Apenas Coordenadores podem desativar planos.","error");return;}
+  if(!isCoordenador()){mxToast(t("msg_so_coord_desat_pl"),"error");return;}
   if(!confirm("Desativar este plano? Ele não gerará novas OS enquanto inativo.")) return;
   var f = fichas[selAtivo.id];
   var plano = f.planos.find(function(p){return p.id==planoId;});
@@ -640,7 +640,7 @@ function abrirDesativarPlano(planoId){
 }
 
 function abrirDesativarAtivo(){
-  if(!isCoordenador()){mxToast("Apenas Coordenadores podem desativar ativos.","error");return;}
+  if(!isCoordenador()){mxToast(t("msg_so_coord_desat_at"),"error");return;}
   if(!selAtivo) return;
   document.getElementById("desativ-id").value = selAtivo.id;
   document.getElementById("desativ-motivo").value = "";
@@ -649,7 +649,7 @@ function abrirDesativarAtivo(){
 
 function confirmarDesativacao(){
   var motivo = document.getElementById("desativ-motivo").value.trim();
-  if(!motivo){alert("Informe a justificativa para desativar o ativo.");return;}
+  if(!motivo){alert(t("msg_informe_justif"));return;}
   var id   = parseInt(document.getElementById("desativ-id").value);
   var hoje = new Date().toISOString().slice(0,10);
 
@@ -679,15 +679,15 @@ function confirmarDesativacao(){
     saveFichas(fichas);
   }
 
-  if(osAfetadas > 0) alert(osAfetadas+" OS aberta(s) cancelada(s) por desativação do ativo.");
+  if(osAfetadas > 0) alert(osAfetadas+t("msg_os_canceladas"));
   selAtivo = null;
   closeModal("modal-desativar");
   render();
 }
 
 function reativarPlano(planoId){
-  if(!isCoordenador()){mxToast("Apenas Coordenadores podem reativar planos.","error");return;}
-  if(!confirm("Reativar este plano?")) return;
+  if(!isCoordenador()){mxToast(t("msg_so_coord_reat_pl"),"error");return;}
+  if(!confirm(t("msg_reativar_plano"))) return;
   var f = fichas[selAtivo.id];
   f.planos = f.planos.map(function(p){
     return p.id==planoId ? Object.assign({},p,{ativo:true,motivo_desativacao:"",desativado_em:""}) : p;
@@ -697,8 +697,8 @@ function reativarPlano(planoId){
 }
 
 function reativarAtivo(ativoId){
-  if(!isCoordenador()){mxToast("Apenas Coordenadores podem reativar ativos.","error");return;}
-  if(!confirm("Reativar este ativo?")) return;
+  if(!isCoordenador()){mxToast(t("msg_so_coord_reat_at"),"error");return;}
+  if(!confirm(t("msg_reativar_ativo"))) return;
   ativos = ativos.map(function(a){
     return a.id===ativoId ? Object.assign({},a,{status:"Operacional",motivo_desativacao:"",desativado_em:""}) : a;
   });
@@ -708,7 +708,7 @@ function reativarAtivo(ativoId){
 
 function render(){
   try {
-    document.getElementById("tt").textContent=selAtivo?t('at_ficha')+selAtivo.nome:"Gestao de Ativos";
+    document.getElementById("tt").textContent=selAtivo?t('at_ficha')+selAtivo.nome:t("at_titulo");
     document.getElementById("ct").innerHTML=selAtivo?renderFicha():renderList();
   } catch(e) {
     console.error("render error:", e);
@@ -729,7 +729,7 @@ function renderList(){
       +(inactive&&a.motivo_desativacao?'<div class="asset-card-sub" style="font-style:italic">'+esc(a.motivo_desativacao)+'</div>':"")
       +'</div><div class="asset-card-right">'+bdg(a.status,AC)+'<span style="font-size:16px;color:#475569">&#8250;</span></div></div>';
   }
-  var cards=ativosAtivos.length===0?'<div style="color:#64748b;text-align:center;padding:40px;font-size:14px">Nenhum ativo cadastrado</div>':ativosAtivos.map(function(a){return mkCard(a,false);}).join("");
+  var cards=ativosAtivos.length===0?'<div style="color:#64748b;text-align:center;padding:40px;font-size:14px">'+t("at_nenhum")+'</div>':ativosAtivos.map(function(a){return mkCard(a,false);}).join("");
   var cardsD=ativosDesativ.length===0?"":'<div style="margin-top:14px"><div style="font-size:11px;font-weight:800;color:#64748b;text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px">Desativados ('+ativosDesativ.length+')</div>'+ativosDesativ.map(function(a){return mkCard(a,true);}).join("")+'</div>';
   return'<div class="fr"><div></div>'+(isCoordenador()?'<button class="btn bp" onclick="openModal(\'modal-ativo\')">+ Novo Ativo</button>':'')+'</div>'+'<div class="asset-list">'+cards+cardsD+'</div>';
 }
@@ -754,8 +754,8 @@ function renderFicha(){
   return'<div style="display:flex;align-items:center;gap:10px;margin-bottom:16px">'
     +'<button class="btn bx" onclick="selAtivo=null;render()">&#8592; Voltar</button>'
     +(!isCoordenador() ? '' : selAtivo.status!=="Desativado"
-      ?'<button class="btn bsm" onclick="abrirDesativarAtivo()" style="font-size:11px;background:#7f1d1d30;color:#f87171;border:1px solid #f8717140">Desativar</button>'
-      :'<button class="btn bsm" onclick="reativarAtivo('+selAtivo.id+')" style="font-size:11px;background:#14532d30;color:#4ade80;border:1px solid #4ade8040">Reativar</button>')
+      ?'<button class="btn bsm" onclick="abrirDesativarAtivo()" style="font-size:11px;background:#7f1d1d30;color:#f87171;border:1px solid #f8717140">'+t("at_desativar")+'</button>'
+      :'<button class="btn bsm" onclick="reativarAtivo('+selAtivo.id+')" style="font-size:11px;background:#14532d30;color:#4ade80;border:1px solid #4ade8040">'+t("at_reativar")+'</button>')
     +'</div>'
     +'<div class="fh"><div><div class="fn">'+esc(a.nome)+'</div><div class="fs">'+esc(a.categoria)+' &bull; '+esc(a.localizacao)+' &bull; '+esc(a.fabricante)+' '+esc(a.modelo)+'</div></div>'+bdg(a.status,AC)+'</div>'
     +'<div class="tabs">'+tabs+'</div>'+content;
@@ -766,17 +766,17 @@ function tabGeral(a,f){
   var inds=(f.indicadores||["mtbf","mttr","disp"]).slice(0,4);
   var vals=calcInd(a.id,a.nome,f.historico||[],ordens);
   var cards='<div class="ind-grid">'+inds.map(function(id){return indCard(id,vals[id],false);}).join("")+'</div>';
-  var info='<div class="card"><div class="st">Informacoes do Equipamento</div><div class="g3">'+[[t("at_info_empresa"),a.empresa||"--"],[t("at_info_unidade"),a.unidade||"--"],[t("at_info_local"),a.localizacao||"--"],[t("at_info_cat"),a.categoria],[t("at_info_tag"),a.tag||"--"],[t("at_info_pat"),a.patrimonio||"--"],[t("at_info_fabricante"),a.fabricante],[t("at_info_modelo"),a.modelo],[t("at_info_serie"),a.serie],[t("at_info_ano"),a.ano||"--"]].map(function(x){return'<div class="df"><div class="dk">'+x[0]+'</div><div class="dv">'+esc(x[1]||"--")+'</div></div>';}).join("")+'</div></div>';
+  var info='<div class="card"><div class="st">'+t("at_info_equip")+'</div><div class="g3">'+[[t("at_info_empresa"),a.empresa||"--"],[t("at_info_unidade"),a.unidade||"--"],[t("at_info_local"),a.localizacao||"--"],[t("at_info_cat"),a.categoria],[t("at_info_tag"),a.tag||"--"],[t("at_info_pat"),a.patrimonio||"--"],[t("at_info_fabricante"),a.fabricante],[t("at_info_modelo"),a.modelo],[t("at_info_serie"),a.serie],[t("at_info_ano"),a.ano||"--"]].map(function(x){return'<div class="df"><div class="dk">'+x[0]+'</div><div class="dv">'+esc(x[1]||"--")+'</div></div>';}).join("")+'</div></div>';
   var ult=f.historico.length>0?f.historico[0]:null;
   var ultH=ult?'<div class="hi"><div class="ht"><div><div class="hn">'+esc(ult.desc)+'</div><div class="hm">'+esc(ult.data)+' &bull; '+esc(ult.tecnico||"--")+'</div></div>'+bdg(ult.tipo,TC)+'</div>'+(ult.obs?'<div class="hd">'+esc(ult.obs)+'</div>':'')+'</div>':'<div style="color:#475569;font-size:13px;padding:12px;text-align:center">Sem registros de manutencao</div>';
   var kpis={total:f.historico.length,corr:f.historico.filter(function(h){return h.tipo==t('ord_tipo_corr');}).length,horas:f.historico.reduce(function(s,h){return s+(h.horas||0);},0)};
-  var kpiH='<div class="kg3" style="margin-bottom:0"><div class="kc" style="border:1px solid #4ade8025;border-left:3px solid #4ade80"><div class="kv" style="color:#4ade80;font-size:24px">'+kpis.total+'</div><div class="kl">Intervencoes</div></div><div class="kc" style="border:1px solid #f8717125;border-left:3px solid #f87171"><div class="kv" style="color:#f87171;font-size:24px">'+kpis.corr+'</div><div class="kl">Corretivas</div></div><div class="kc" style="border:1px solid #fbbf2425;border-left:3px solid #fbbf24"><div class="kv" style="color:#fbbf24;font-size:24px">'+kpis.horas+'h</div><div class="kl">Horas em Manut.</div></div></div>';
-  return cards+info+'<div class="card"><div class="st" style="margin-bottom:12px">Resumo & Ultima Intervencao</div>'+kpiH+'<div style="margin-top:14px">'+ultH+'</div></div>';
+  var kpiH='<div class="kg3" style="margin-bottom:0"><div class="kc" style="border:1px solid #4ade8025;border-left:3px solid #4ade80"><div class="kv" style="color:#4ade80;font-size:24px">'+kpis.total+'</div><div class="kl">'+t("at_intervencoes")+'</div></div><div class="kc" style="border:1px solid #f8717125;border-left:3px solid #f87171"><div class="kv" style="color:#f87171;font-size:24px">'+kpis.corr+'</div><div class="kl">'+t("at_corretivas")+'</div></div><div class="kc" style="border:1px solid #fbbf2425;border-left:3px solid #fbbf24"><div class="kv" style="color:#fbbf24;font-size:24px">'+kpis.horas+'h</div><div class="kl">'+t("at_horas")+'</div></div></div>';
+  return cards+info+'<div class="card"><div class="st" style="margin-bottom:12px">'+t("at_resumo")+'</div>'+kpiH+'<div style="margin-top:14px">'+ultH+'</div></div>';
 }
 
 function tabInds(a,f){
   var inds=f.indicadores||[];var vals=calcInd(a.id,a.nome,f.historico||[],ordens);
-  var cards=inds.length==0?'<div style="color:#475569;text-align:center;padding:20px;font-size:13px">Nenhum indicador ativado. Selecione abaixo.</div>':'<div class="ind-grid">'+inds.map(function(id){return indCard(id,vals[id],true);}).join("")+'</div>';
+  var cards=inds.length==0?'<div style="color:#475569;text-align:center;padding:20px;font-size:13px">'+t("at_nenhum_ind")+'</div>':'<div class="ind-grid">'+inds.map(function(id){return indCard(id,vals[id],true);}).join("")+'</div>';
   var catalog=IND_CATALOG.map(function(ind){
     var on=inds.indexOf(ind.id)>=0;
     return'<div class="ind-toggle'+(on?" on":"")+'" onclick="toggleInd('+a.id+',\''+ind.id+'\')">'
@@ -786,12 +786,12 @@ function tabInds(a,f){
       +(on?'<div style="margin-top:8px;font-size:14px;font-weight:800;color:'+ind.color+'">'+fmtIndVal(ind.id,vals[ind.id])+' '+ind.unit+'</div>':'')
       +'</div>';
   }).join("");
-  return cards+'<div class="card"><div class="st" style="margin-bottom:4px">Selecionar Indicadores</div><div style="font-size:12px;color:#475569;margin-bottom:16px">Clique para ativar ou desativar cada indicador neste equipamento.</div><div class="ind-catalog">'+catalog+'</div></div>';
+  return cards+'<div class="card"><div class="st" style="margin-bottom:4px">'+t("at_sel_ind")+'</div><div style="font-size:12px;color:#475569;margin-bottom:16px">Clique para ativar ou desativar cada indicador neste equipamento.</div><div class="ind-catalog">'+catalog+'</div></div>';
 }
 function toggleInd(aid,id){var f=fichas[aid];if(!f.indicadores)f.indicadores=[];var arr=f.indicadores;var i=arr.indexOf(id);if(i>=0)arr.splice(i,1);else arr.push(id);saveFichas(fichas);render();}
 
 function tabHist(a,f){
-  if(!f.historico||f.historico.length==0)return'<div class="fr"><div></div><button class="btn bp" onclick="openModal(\'modal-hist\')">+ Registrar Manutencao</button></div><div style="color:#475569;text-align:center;padding:40px;font-size:14px">Nenhuma manutencao registrada ainda.</div>';
+  if(!f.historico||f.historico.length==0)return'<div class="fr"><div></div><button class="btn bp" onclick="openModal(\'modal-hist\')">+ Registrar Manutencao</button></div><div style="color:#475569;text-align:center;padding:40px;font-size:14px">'+t("at_sem_manut")+'</div>';
   var items="";
   for(var i=0;i<f.historico.length;i++){
     var h=f.historico[i];
@@ -801,7 +801,7 @@ function tabHist(a,f){
       if(h.analise){
         var col=ANAL_COLORS[h.analise.tipo]||"#818cf8";
         footer='<div class="corr-has-anal">'
-          +'<span style="font-size:11px;color:#475569">Analise:</span>'
+          +'<span style="font-size:11px;color:#475569">'+t("an_lbl_analise")+'</span>'
           +'<span onclick="openAnalise('+a.id+','+h.id+')" style="display:inline-flex;align-items:center;gap:4px;padding:3px 10px;border-radius:12px;font-size:11px;font-weight:700;background:rgba(129,140,248,.15);color:#818cf8;border:1px solid rgba(129,140,248,.3);cursor:pointer">&#9881; '+ANAL_LABELS[h.analise.tipo]+'</span>'
           +'<span onclick="openAnalise('+a.id+','+h.id+')" style="font-size:11px;color:#475569;cursor:pointer;text-decoration:underline">editar</span>'
           +'</div>';
@@ -832,7 +832,7 @@ function tabPrev(a,f){
   var planosFiltro=planos.filter(function(p){return p.ativo!==false;});
   var planosInativos=planos.filter(function(p){return p.ativo===false;});
   var cards=planosFiltro.length===0&&planosInativos.length===0
-    ?'<div style="color:#64748b;text-align:center;padding:30px;font-size:14px">Nenhum plano cadastrado</div>'
+    ?'<div style="color:#64748b;text-align:center;padding:30px;font-size:14px">'+t("at_nenhum_plano_cad")+'</div>'
     :planosFiltro.map(function(p){
       var tc=TIPO_COR[p.tipo]||"#4ade80";
       var acoes=(p.acoes||[]);
@@ -844,7 +844,7 @@ function tabPrev(a,f){
       var sc=bdg(p.status||"OK",LP2)||'<span style="color:#4ade80;font-size:12px">OK</span>';
       var osVinculada=p.os_gerada_id?ordens.find(function(o){return o.id===p.os_gerada_id;}):null;
       var hasOS=p.os_gerada_id?'<span style="font-size:11px;background:#2563eb20;color:#60a5fa;border:1px solid #2563eb40;padding:2px 8px;border-radius:8px;margin-left:6px">OS '+(osVinculada?esc(osVinculada.numero_os):"#"+p.os_gerada_id)+' em aberto</span>':
-        '<button class="btn bsm" onclick="gerarOSPlano('+a.id+','+p.id+')" style="font-size:11px;background:#14532d30;color:#4ade80;border:1px solid #4ade8040">Gerar OS</button>';
+        '<button class="btn bsm" onclick="gerarOSPlano('+a.id+','+p.id+')" style="font-size:11px;background:#14532d30;color:#4ade80;border:1px solid #4ade8040">'+t("at_gerar_os")+'</button>';
       return'<div class="plan-card">'
         +'<div class="plan-card-header">'
         +'<div style="flex:1">'
@@ -859,7 +859,7 @@ function tabPrev(a,f){
         +'</div>'
         +'<div style="display:flex;flex-direction:column;gap:6px;flex-shrink:0">'
         +(isCoordenador()?'<button class="btn bx bsm" onclick="editPlano('+p.id+')" style="font-size:11px">Editar</button>':'')
-        +(!isCoordenador()?'':p.ativo===false?'<button class="btn bsm" onclick="reativarPlano('+p.id+')" style="font-size:11px;background:#14532d30;color:#4ade80;border:1px solid #4ade8040">Reativar</button>':'<button class="btn bsm" onclick="abrirDesativarPlano('+p.id+')" style="font-size:11px;background:#7f1d1d30;color:#f87171;border:1px solid #f8717140">Desativar</button>')
+        +(!isCoordenador()?'':p.ativo===false?'<button class="btn bsm" onclick="reativarPlano('+p.id+')" style="font-size:11px;background:#14532d30;color:#4ade80;border:1px solid #4ade8040">'+t("at_reativar")+'</button>':'<button class="btn bsm" onclick="abrirDesativarPlano('+p.id+')" style="font-size:11px;background:#7f1d1d30;color:#f87171;border:1px solid #f8717140">'+t("at_desativar")+'</button>')
         +'</div></div>'
         +(acoes.length>0?'<div class="plan-acoes-preview">'+chips+'</div>':"")
         +'<div style="margin-top:10px">'+hasOS+'</div>'
@@ -875,7 +875,7 @@ function tabPrev(a,f){
         +'<div style="font-size:11px;color:#475569;margin-top:3px">Desativado: '+esc(p.desativado_em||'--')+'</div>'
         +(p.motivo_desativacao?'<div style="font-size:11px;color:#475569;font-style:italic">'+esc(p.motivo_desativacao)+'</div>':"")
         +'</div>'
-        +'<button class="btn bsm" onclick="reativarPlano('+p.id+')" style="font-size:11px;background:#14532d30;color:#4ade80;border:1px solid #4ade8040">Reativar</button>'
+        +'<button class="btn bsm" onclick="reativarPlano('+p.id+')" style="font-size:11px;background:#14532d30;color:#4ade80;border:1px solid #4ade8040">'+t("at_reativar")+'</button>'
         +'</div></div>';
     }).join("")+'</div>';
 
@@ -889,8 +889,8 @@ function tabPrev(a,f){
 }
 
 function delPlano(planoId){
-  if(!isCoordenador()){mxToast("Apenas Coordenadores podem excluir planos.","error");return;}
-  if(!confirm("Excluir este plano?")) return;
+  if(!isCoordenador()){mxToast(t("msg_so_coord_excl_pl"),"error");return;}
+  if(!confirm(t("msg_excluir_plano"))) return;
   var f=fichas[selAtivo.id];
   f.planos=f.planos.filter(function(p){return p.id!==planoId;});
   saveFichas(fichas);render();
@@ -905,7 +905,7 @@ function gerarOSPlano(ativoId, planoId){
   // Verifica se ja tem OS aberta
   if(plano.os_gerada_id){
     var existe=D.ordens.find(function(o){return o.id==plano.os_gerada_id&&o.status!=="Concluida"&&o.status!=="Cancelada";});
-    if(existe){alert("Ja existe uma OS em aberto para este plano (OS #"+plano.os_gerada_id+").");return;}
+    if(existe){alert(t("msg_os_ja_aberta")+plano.os_gerada_id+").");return;}
   }
   // Cria OS para este plano especifico
   var hoje=new Date().toISOString().slice(0,10);
@@ -933,17 +933,17 @@ function gerarOSPlano(ativoId, planoId){
 function gerarOSTodos(){
   var novas=gerarOSProgramadas(7);
   ordens=loadData().ordens;fichas=loadData().fichas;
-  if(novas.length===0){alert("Nenhum plano vencido ou com vencimento em 7 dias.");}
-  else{alert(novas.length+" OS gerada(s) com sucesso!");}
+  if(novas.length===0){alert(t("msg_sem_plano_venc"));}
+  else{alert(novas.length+t("msg_os_geradas"));}
   render();
 }
 
 function tabPred(a,f){
-  if(!f.preditiva||f.preditiva.length==0)return'<div class="fr"><div></div><button class="btn bp" onclick="openModal(\'modal-pred\')">+ Nova Leitura</button></div><div style="color:#475569;text-align:center;padding:40px;font-size:14px">Nenhuma leitura preditiva registrada.</div>';
+  if(!f.preditiva||f.preditiva.length==0)return'<div class="fr"><div></div><button class="btn bp" onclick="openModal(\'modal-pred\')">+ Nova Leitura</button></div><div style="color:#475569;text-align:center;padding:40px;font-size:14px">'+t("at_sem_leituras")+'</div>';
   var params=[...new Set(f.preditiva.map(function(p){return p.param;}))];
   var charts=params.map(function(param){
     var data=f.preditiva.filter(function(p){return p.param==param;}).sort(function(a,b){return a.data>b.data?1:-1;});
-    if(data.length<2)return'<div class="cw"><div class="ct2">'+param+'</div><div style="color:#475569;font-size:13px;padding:8px">Adicione mais leituras para gerar o grafico</div></div>';
+    if(data.length<2)return'<div class="cw"><div class="ct2">'+param+'</div><div style="color:#475569;font-size:13px;padding:8px">'+t("at_mais_leituras")+'</div></div>';
     var all=data.map(function(d){return d.valor;}).concat(data.map(function(d){return d.limite;})).filter(function(v){return v>0;});
     var mn=Math.min.apply(null,all)*0.9,mx=Math.max.apply(null,all)*1.1;
     var W=500,H=140,pd=36;
@@ -962,8 +962,8 @@ function tabPred(a,f){
 
 function tabDocs(a,f){
   var docs=f.docs||[];
-  var items=docs.map(function(d){var ext=(d.nome.split(".").pop()||"").toUpperCase();var ic={"PDF":"PDF","DOC":"DOC","DOCX":"DOC","XLS":"XLS","XLSX":"XLS","PNG":"IMG","JPG":"IMG","ZIP":"ZIP"}[ext]||"ARQ";return'<div class="di"><div class="dicon">'+ic+'</div><div style="flex:1"><div style="font-size:13px;font-weight:600;color:#e2e8f0">'+esc(d.nome)+'</div><div style="font-size:11px;color:#475569">'+esc(d.tamanho)+' &bull; '+esc(d.data)+'</div></div>'+(d.url?'<a href="'+d.url+'" download="'+esc(d.nome)+'" class="btn bsm bx" style="text-decoration:none">Baixar</a>':"")+'</div>';}).join("")||'<div style="color:#475569;text-align:center;padding:20px;font-size:14px">Nenhum documento anexado</div>';
-  return'<div class="ua" onclick="document.getElementById(\'fi-'+a.id+'\').click()"><input type="file" id="fi-'+a.id+'" multiple onchange="handleFiles(this,'+a.id+')" style="display:none" accept=".pdf,.doc,.docx,.xls,.xlsx,.png,.jpg,.jpeg,.zip,.txt"><div style="font-size:26px;margin-bottom:8px">&#128206;</div><div style="font-size:14px;font-weight:600;color:#94a3b8">Clique para anexar documentos</div><div style="font-size:12px;color:#475569;margin-top:4px">PDF, Word, Excel, Imagens, ZIP</div></div><div>'+items+'</div>';
+  var items=docs.map(function(d){var ext=(d.nome.split(".").pop()||"").toUpperCase();var ic={"PDF":"PDF","DOC":"DOC","DOCX":"DOC","XLS":"XLS","XLSX":"XLS","PNG":"IMG","JPG":"IMG","ZIP":"ZIP"}[ext]||"ARQ";return'<div class="di"><div class="dicon">'+ic+'</div><div style="flex:1"><div style="font-size:13px;font-weight:600;color:#e2e8f0">'+esc(d.nome)+'</div><div style="font-size:11px;color:#475569">'+esc(d.tamanho)+' &bull; '+esc(d.data)+'</div></div>'+(d.url?'<a href="'+d.url+'" download="'+esc(d.nome)+'" class="btn bsm bx" style="text-decoration:none">'+t("at_baixar")+'</a>':"")+'</div>';}).join("")||'<div style="color:#475569;text-align:center;padding:20px;font-size:14px">'+t("at_sem_docs")+'</div>';
+  return'<div class="ua" onclick="document.getElementById(\'fi-'+a.id+'\').click()"><input type="file" id="fi-'+a.id+'" multiple onchange="handleFiles(this,'+a.id+')" style="display:none" accept=".pdf,.doc,.docx,.xls,.xlsx,.png,.jpg,.jpeg,.zip,.txt"><div style="font-size:26px;margin-bottom:8px">&#128206;</div><div style="font-size:14px;font-weight:600;color:#94a3b8">'+t("at_anexar")+'</div><div style="font-size:12px;color:#475569;margin-top:4px">'+t("at_anexar_sub")+'</div></div><div>'+items+'</div>';
 }
 
 function handleFiles(input,aid){var files=Array.from(input.files);var f=fichas[aid];if(!f.docs)f.docs=[];var done=0;files.forEach(function(file){var r=new FileReader();r.onload=function(e){f.docs.push({id:nextId(),nome:file.name,tamanho:file.size<1048576?Math.round(file.size/1024)+"KB":(file.size/1048576).toFixed(1)+"MB",data:new Date().toISOString().split("T")[0],url:e.target.result});done++;if(done==files.length){saveFichas(fichas);render();}};r.readAsDataURL(file);});input.value="";}
@@ -978,18 +978,18 @@ function tabCrit(a,f){
   var pct=score;
 
   var criterios=[
-    {id:"hse",nome:"HSE — Seguranca / Saude / Meio Ambiente",peso:"x2.5"},
-    {id:"prod",nome:"Producao / Operacao",peso:"x2.0"},
-    {id:"custo",nome:"Custo de Reparo / Substituicao",peso:"x1.0"},
-    {id:"freq",nome:"Frequencia de Falha (MTBF)",peso:"x2.0"},
-    {id:"det",nome:"Detectabilidade da Falha",peso:"x1.5"},
-    {id:"red",nome:"Redundancia / Modo de Falha",peso:"x1.0"}
+    {id:"hse",nome:t("crit_c_hse"),peso:"x2.5"},
+    {id:"prod",nome:t("crit_c_prod"),peso:"x2.0"},
+    {id:"custo",nome:t("crit_c_custo"),peso:"x1.0"},
+    {id:"freq",nome:t("crit_c_freq"),peso:"x2.0"},
+    {id:"det",nome:t("crit_c_det"),peso:"x1.5"},
+    {id:"red",nome:t("crit_c_red"),peso:"x1.0"}
   ];
 
   var html='<div class="card">'
     +'<div class="crit-score-big">'
     +'<div class="crit-score-num" style="color:'+col+'">'+score+'</div>'
-    +'<div style="font-size:12px;color:#64748b;margin-top:4px">Score de Criticidade (0-100)</div>'
+    +'<div style="font-size:12px;color:#64748b;margin-top:4px">'+t("crit_score")+'</div>'
     +'<div class="crit-score-bar"><div class="crit-score-fill" style="width:'+pct+'%;background:'+col+'"></div></div>'
     +'<div class="crit-class-badge" style="background:'+col+'20;color:'+col+';border:1px solid '+col+'40">'+cl+' — '+CRIT_CLASS_NAMES[cl]+'</div>'
     +'</div>'
@@ -1074,18 +1074,18 @@ window.addEventListener("langchange", function(){
 </script>
 <script src="_theme.js"></script>
 <div class="modal" id="modal-desativar"><div class="mc" onclick="event.stopPropagation()">
-  <div class="mt2">Desativar Ativo</div>
+  <div class="mt2" data-i18n="at_desat_titulo">Desativar Ativo</div>
   <input type="hidden" id="desativ-id"/>
   <div style="background:rgba(248,113,113,.08);border:1px solid rgba(248,113,113,.25);border-radius:10px;padding:12px 14px;margin-bottom:16px;font-size:13px;color:#fca5a5">
     &#9888; Esta acao desativa o item. Ele ficara visivel como inativo mas nao gerara novas OS.
   </div>
   <div class="fg">
-    <label class="lbl">Justificativa *</label>
-    <textarea id="desativ-motivo" placeholder="Ex: Equipamento obsoleto, aguardando substituicao..." rows="3" style="width:100%;background:var(--inner-bg,#060b12);border:1px solid var(--border,#1e3a5f);border-radius:8px;padding:11px 13px;color:var(--text,#f1f5f9);font-family:inherit;font-size:14px;resize:vertical"></textarea>
+    <label class="lbl" data-i18n="at_justificativa">Justificativa *</label>
+    <textarea id="desativ-motivo" placeholder=t("at_ph_motivo") rows="3" style="width:100%;background:var(--inner-bg,#060b12);border:1px solid var(--border,#1e3a5f);border-radius:8px;padding:11px 13px;color:var(--text,#f1f5f9);font-family:inherit;font-size:14px;resize:vertical"></textarea>
   </div>
   <div class="mf">
     <button class="btn bx" onclick="closeModal('modal-desativar')">Cancelar</button>
-    <button class="btn" onclick="confirmarDesativacao()" style="background:rgba(248,113,113,.15);color:#f87171;border:1px solid rgba(248,113,113,.4)">Desativar</button>
+    <button class="btn" onclick="confirmarDesativacao()" style="background:rgba(248,113,113,.15);color:#f87171;border:1px solid rgba(248,113,113,.4)">'+t("at_desativar")+'</button>
   </div>
 </div></div>
 </body>

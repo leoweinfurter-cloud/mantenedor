@@ -291,7 +291,14 @@ var CRIT_RECS={
 };
 
 // ── UTILS ─────────────────────────────────────────────────────────────
-function bdg(t,m){var c=m[t]||"#9ca3af";return'<span class="badge" style="background:'+c+'18;color:'+c+';border:1px solid '+c+'35">'+t+'</span>';}
+// Traduz um valor de enum do banco para o rotulo do idioma atual.
+// O valor gravado permanece sempre em portugues; so a exibicao muda.
+function mxLabel(v){
+  if(typeof t!=="function") return v;
+  var d=t("enum_labels");
+  return (d && typeof d[v]==="string") ? d[v] : v;
+}
+function bdg(t,m){var c=m[t]||"#9ca3af";return'<span class="badge" style="background:'+c+'18;color:'+c+';border:1px solid '+c+'35">'+mxLabel(t)+'</span>';}
 function esc(s){return String(s||"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");}
 function gv(id){var e=document.getElementById(id);return e?e.value:"";}
 

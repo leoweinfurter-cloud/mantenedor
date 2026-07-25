@@ -122,16 +122,16 @@ function saveExec(){
   var tipo=currentExecTipo;
   var entry={id:nextId(),tipo:tipo,data:document.getElementById("exec-data").value,tecnico:document.getElementById("exec-tec").value,horas:parseFloat(document.getElementById("exec-horas").value)||0};
   if(tipo=="observacao"){
-    var d=document.getElementById("exec-desc").value.trim();if(!d){alert("Informe a descricao.");return;}
+    var d=document.getElementById("exec-desc").value.trim();if(!d){alert(t("os_informe_desc"));return;}
     entry.desc=d;
   } else if(tipo=="medicao"){
-    var val=parseFloat(document.getElementById("exec-valor").value);if(isNaN(val)){alert("Informe o valor medido.");return;}
+    var val=parseFloat(document.getElementById("exec-valor").value);if(isNaN(val)){alert(t("os_informe_val_med"));return;}
     entry.param=document.getElementById("exec-param").value;entry.valor=val;entry.limite=parseFloat(document.getElementById("exec-limite").value)||0;entry.cond=document.getElementById("exec-cond").value;entry.obs=document.getElementById("exec-med-obs").value;
   } else if(tipo=="peca"){
-    var d2=document.getElementById("exec-peca-desc").value.trim();if(!d2){alert("Informe a peca.");return;}
+    var d2=document.getElementById("exec-peca-desc").value.trim();if(!d2){alert(t("os_informe_peca"));return;}
     entry.desc=d2;entry.qty=parseInt(document.getElementById("exec-qty").value)||1;entry.custo=parseFloat(document.getElementById("exec-custo").value)||0;entry.obs=document.getElementById("exec-peca-obs").value;
   } else if(tipo=="foto"){
-    if(!fotoBase64){alert("Selecione uma imagem.");return;}
+    if(!fotoBase64){alert(t("os_sel_imagem"));return;}
     entry.desc=document.getElementById("exec-foto-desc").value;entry.foto=fotoBase64;
   }
   os.execLog.unshift(entry);
@@ -153,7 +153,7 @@ function updOS(id,status){
 // ou dado incompleto) a OS ainda e concluida normalmente, mas avisamos que
 // o historico nao pode ser gravado por falta de vinculo com o ativo.
 function concluirOSCorretiva(id){
-  if(!confirm("Confirmar conclusao desta OS?")) return;
+  if(!confirm(t("os_confirmar_concl"))) return;
   var os=ordens.find(function(o){return o.id==id;});
   if(!os) return;
   var fichas=loadData().fichas;
@@ -175,9 +175,9 @@ function render(){
 
   var sel=currentSel();
   // A OS chega aqui "Aberta" apenas se o usuario navegou direto pra ca
-  // (ex: clicando no corpo do card no hub, sem passar pelo botao "Executar").
+  // (ex: clicando no corpo do card no hub, sem passar pelo botao t("os_executar")).
   // Como esta pagina e so de execucao, ao abrir ja consideramos que a
-  // execucao comecou — sem exigir um clique extra em "Iniciar Execucao".
+  // execucao comecou — sem exigir um clique extra em t("os_iniciar_exec").
   if(sel&&sel.status=="Aberta"&&(isCoordenador()||sel.tecnico===meuNomeAtivo()||!sel.tecnico)){
     // OS sem responsavel definido: quem inicia a execucao "pega" a OS pra si.
     var assume = !sel.tecnico && !isCoordenador() ? meuNomeAtivo() : sel.tecnico;
@@ -304,7 +304,7 @@ function renderExecForm(){
     +'<div class="fg"><label class="lbl">Horas gastas nesta atividade</label><input type="number" id="exec-horas" step="0.25" min="0" placeholder="0.0"/></div>'
 
     +'<div id="exec-obs-fields">'
-    +'<div class="fg"><label class="lbl">Descricao *</label><textarea id="exec-desc" placeholder="O que foi observado, feito ou encontrado..."></textarea></div>'
+    +'<div class="fg"><label class="lbl">Descricao *</label><textarea id="exec-desc" data-i18n-ph="os_ph_obs" placeholder="O que foi observado, feito ou encontrado..."></textarea></div>'
     +'</div>'
 
     +'<div id="exec-med-fields" style="display:none">'
@@ -314,20 +314,20 @@ function renderExecForm(){
     +'<div class="fg"><label class="lbl">Limite / Referencia</label><input type="number" id="exec-limite" step="0.01" placeholder="0.0"/></div>'
     +'</div>'
     +'<div class="fg"><label class="lbl">Condicao</label><select id="exec-cond"><option>Normal</option><option>Atencao</option><option>Critico</option><option>Fora de especificacao</option></select></div>'
-    +'<div class="fg"><label class="lbl">Observacao adicional</label><input id="exec-med-obs" placeholder="Contexto ou detalhe..."/></div>'
+    +'<div class="fg"><label class="lbl">Observacao adicional</label><input id="exec-med-obs" data-i18n-ph="os_ph_contexto" placeholder="Contexto ou detalhe..."/></div>'
     +'</div>'
 
     +'<div id="exec-peca-fields" style="display:none">'
-    +'<div class="fg"><label class="lbl">Descricao da Peca / Material *</label><input id="exec-peca-desc" placeholder="Ex: Rolamento SKF 6205"/></div>'
+    +'<div class="fg"><label class="lbl">Descricao da Peca / Material *</label><input id="exec-peca-desc" data-i18n-ph="os_ph_peca" placeholder="Ex: Rolamento SKF 6205"/></div>'
     +'<div class="g2">'
     +'<div class="fg"><label class="lbl">Quantidade</label><input type="number" id="exec-qty" value="1" min="1"/></div>'
     +'<div class="fg"><label class="lbl">Custo unitario (R$)</label><input type="number" id="exec-custo" min="0" placeholder="0.00"/></div>'
     +'</div>'
-    +'<div class="fg"><label class="lbl">Observacao</label><input id="exec-peca-obs" placeholder="Codigo, fornecedor..."/></div>'
+    +'<div class="fg"><label class="lbl">Observacao</label><input id="exec-peca-obs" data-i18n-ph="os_ph_cod_forn" placeholder="Codigo, fornecedor..."/></div>'
     +'</div>'
 
     +'<div id="exec-foto-fields" style="display:none">'
-    +'<div class="fg"><label class="lbl">Descricao da foto</label><input id="exec-foto-desc" placeholder="O que a foto mostra..."/></div>'
+    +'<div class="fg"><label class="lbl">Descricao da foto</label><input id="exec-foto-desc" data-i18n-ph="os_ph_foto" placeholder="O que a foto mostra..."/></div>'
     +'<div class="ua" onclick="document.getElementById(\'exec-foto-input\').click()" style="padding:20px">'
     +'<input type="file" id="exec-foto-input" accept="image/*" style="display:none" onchange="previewFoto(this)"/>'
     +'<div id="exec-foto-preview" style="font-size:22px;margin-bottom:6px">&#128247;</div>'
