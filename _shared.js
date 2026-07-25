@@ -471,11 +471,32 @@ function saveEmpresas(d){
 }
 
 // ── PLAN UTILS ────────────────────────────────────────────────────────
-function calcProxima(ultima,freq){var d=FREQ_DIAS[freq]||30,dt=ultima?new Date(ultima):new Date();dt.setDate(dt.getDate()+d);return dt.toISOString().slice(0,10);}
+// ── DATAS EM HORÁRIO LOCAL ──────────────────────────────────────────
+// new Date("2026-07-25") é interpretado pelo JS como MEIA-NOITE UTC.
+// No Brasil (UTC-3) isso vira 21h do dia ANTERIOR: um plano que vence
+// hoje aparecia como "Atrasado" e datas gravadas via
+// new Date().toISOString().slice(0,10) depois das 21h locais caíam no
+// dia SEGUINTE. Estes helpers tratam tudo em horário local.
+function mxParseDate(s){
+  if(s instanceof Date) return new Date(s.getTime());
+  var m=/^(\d{4})-(\d{2})-(\d{2})/.exec(String(s||""));
+  if(m) return new Date(+m[1],+m[2]-1,+m[3]); // meia-noite LOCAL
+  var d=new Date(s);
+  return isNaN(d.getTime())?null:d;
+}
+function mxFmtDate(d){
+  function p2(n){return n<10?"0"+n:""+n;}
+  return d.getFullYear()+"-"+p2(d.getMonth()+1)+"-"+p2(d.getDate());
+}
+function mxHoje(){return mxFmtDate(new Date());}
+
+function calcProxima(ultima,freq){var d=FREQ_DIAS[freq]||30,dt=(ultima&&mxParseDate(ultima))||new Date();dt.setDate(dt.getDate()+d);return mxFmtDate(dt);}
 function calcPlanStatus(p){
   if(!p||p==="--")return"OK";
   var hoje=new Date();hoje.setHours(0,0,0,0);
-  var prox=new Date(p);prox.setHours(0,0,0,0);
+  var prox=mxParseDate(p);
+  if(!prox)return"OK";
+  prox.setHours(0,0,0,0);
   var d=Math.round((prox-hoje)/86400000);
   if(d<0)return"Atrasado";if(d===0)return"Vence Hoje";if(d<=7)return"Vence em Breve";return"OK";
 }
@@ -493,7 +514,7 @@ function gerarOSProgramadas(tol){
       if(p.ativo===false) return false;
       if(p.os_gerada_id){var ex=ordens.find(function(o){return o.id==p.os_gerada_id&&o.status!=="Concluida"&&o.status!=="Cancelada";});if(ex)return false;}
       if(!p.proxima_execucao||p.proxima_execucao==="--")return false;
-      var prox=new Date(p.proxima_execucao);prox.setHours(0,0,0,0);
+      var prox=mxParseDate(p.proxima_execucao);if(!prox)return false;prox.setHours(0,0,0,0);
       return Math.round((prox-hoje)/86400000)<=tol;
     });
     if(!dev.length)return;
@@ -503,7 +524,7 @@ function gerarOSProgramadas(tol){
     var tipoOS=tp&&td?"Mista":td?"Preditiva":"Preventiva";
     var osId=nextId();
     var numeroOS=nextNumeroOS(tipoOS,ordens.concat(novas));
-    novas.push({id:osId,numero_os:numeroOS,titulo:ativo.nome+" — "+tipoOS+" ("+dev.length+" plano(s))",ativo:ativo.nome,ativo_id:ativo.id,tipo:tipoOS,prioridade:"Normal",status:"Aberta",tecnico:dev[0].responsavel||"",abertura:hoje.toISOString().slice(0,10),prazo:dev[0].proxima_execucao||"",descricao:"OS dos planos: "+dev.map(function(p){return p.nome;}).join(", "),origem:"plano",planos_ids:dev.map(function(p){return p.id;}),planos_exec:dev.map(function(p){return{plano_id:p.id,plano_nome:p.nome,tipo:p.tipo||"Preventiva",acoes:(p.acoes||[]).map(function(a){return Object.assign({},a,{concluida:false,valor_exec:null,obs_exec:""});})};})  ,execLog:[]});
+    novas.push({id:osId,numero_os:numeroOS,titulo:ativo.nome+" — "+tipoOS+" ("+dev.length+" plano(s))",ativo:ativo.nome,ativo_id:ativo.id,tipo:tipoOS,prioridade:"Normal",status:"Aberta",tecnico:dev[0].responsavel||"",abertura:mxFmtDate(hoje),prazo:dev[0].proxima_execucao||"",descricao:"OS dos planos: "+dev.map(function(p){return p.nome;}).join(", "),origem:"plano",planos_ids:dev.map(function(p){return p.id;}),planos_exec:dev.map(function(p){return{plano_id:p.id,plano_nome:p.nome,tipo:p.tipo||"Preventiva",acoes:(p.acoes||[]).map(function(a){return Object.assign({},a,{concluida:false,valor_exec:null,obs_exec:""});})};})  ,execLog:[]});
     f.planos=f.planos.map(function(p){return dev.find(function(d){return d.id===p.id;})?Object.assign({},p,{os_gerada_id:osId}):p;});
   });
   if(novas.length){ordens=novas.concat(ordens);saveOrdens(ordens);saveFichas(fichas);}
@@ -517,7 +538,7 @@ function gerarOSProgramadas(tol){
 // vinculada ao ativo, com prioridade Alta e descricao listando os desvios.
 function concluirOSProgramada(os,fichasObj){
   if(!os||os.origem!=="plano")return fichasObj;
-  var hoje=new Date().toISOString().slice(0,10);
+  var hoje=mxHoje();
   var f=fichasObj[os.ativo_id];
   if(!f)return fichasObj;
   var desvios=[]; // medicoes fora do padrao detectadas nesta conclusao
@@ -566,7 +587,7 @@ function concluirOSProgramada(os,fichasObj){
 // isoladamente e reaproveitada (ex: futura integracao com sensores/IoT).
 function abrirCorretivaPorDesvio(osOrigem,desvios){
   if(!desvios||!desvios.length)return null;
-  var hoje=new Date().toISOString().slice(0,10);
+  var hoje=mxHoje();
   var ativoObj=ativos.find(function(a){return a.id===osOrigem.ativo_id;});
   var numeroOS=nextNumeroOS("Corretiva",ordens);
   var descDesvios=desvios.map(function(d){
@@ -603,7 +624,7 @@ function registrarHistoricoOS(os,fichasObj){
   if(!os.ativo_id)return null; // sem vinculo com nenhum ativo especifico — nao ha onde gravar
   var f=fichasObj[os.ativo_id];
   if(!f)return null;
-  var hoje=new Date().toISOString().slice(0,10);
+  var hoje=mxHoje();
   var horas=(os.execLog||[]).reduce(function(s,e){return s+(e.horas||0);},0);
   var custo=(os.execLog||[]).reduce(function(s,e){return s+(e.tipo==="peca"&&e.custo?e.qty*e.custo:0);},0);
   var nReg=(os.execLog||[]).length;
@@ -639,7 +660,7 @@ function calcInd(ativoId,ativoNome,hist,ordArr){
   var plan=hist.filter(function(h){return h.tipo==="Preventiva"||h.tipo==="Preditiva";});
   var nC=corr.length,nT=hist.length,hC=corr.reduce(function(s,h){return s+(h.horas||0);},0);
   var per=8760;
-  if(hist.length>=1){var ds=hist.map(function(h){return new Date(h.data).getTime();}).sort(function(a,b){return a-b;});per=Math.max((Date.now()-ds[0])/3600000,720);}
+  if(hist.length>=1){var ds=hist.map(function(h){var d=mxParseDate(h.data);return d?d.getTime():Date.now();}).sort(function(a,b){return a-b;});per=Math.max((Date.now()-ds[0])/3600000,720);}
   var mtbf=nC>0?Math.round((per-hC)/nC):null;
   var mttr=nC>0?Math.round(hC/nC*10)/10:null;
   var disp=(mtbf&&mttr)?Math.round(mtbf/(mtbf+mttr)*1000)/10:null;

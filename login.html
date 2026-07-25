@@ -405,7 +405,17 @@ function doSignup(){
     }
 
     var userId = d.user ? d.user.id : d.id;
-    var token  = d.access_token || (d.session && d.session.access_token) || SB_KEY;
+    var token  = d.access_token || (d.session && d.session.access_token);
+    if(!token){
+      // Confirmação de e-mail ativa: o signup não devolve sessão. Antes o
+      // código caía para a ANON KEY — que, com as policies RLS corretas,
+      // não pode criar tenant (e não deveria mesmo). Enquanto o projeto
+      // usar signup direto no client, mantenha "Confirm email" DESLIGADO
+      // no Supabase (Auth > Providers > Email); a alternativa robusta é
+      // mover a criação de tenant para uma RPC SECURITY DEFINER.
+      showMsg(t("lg_msg_confirme"),"success");
+      setLoading("btn-signup",false); return;
+    }
 
     // 2. Create tenant
     fetch(REST+"/tenants",{
