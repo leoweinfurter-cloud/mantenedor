@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<meta name="theme-color" content="#1d4ed8"/>
+<link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png"/>
+<title>Política de Privacidade — Mantenedor</title>
+<style>
+  *{box-sizing:border-box}
+  body{background:#060b12;color:#e2e8f0;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
+    min-height:100vh;margin:0;line-height:1.65}
+  .wrap{max-width:760px;margin:0 auto;padding:40px 22px 80px}
+  header{display:flex;align-items:center;gap:12px;margin-bottom:8px}
+  .logo-icon{width:40px;height:40px;background:linear-gradient(135deg,#1d4ed8,#7c3aed);
+    border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:20px;flex:none}
+  .logo-text{font-size:19px;font-weight:800}
+  .logo-text span{background:linear-gradient(135deg,#60a5fa,#c4b5fd);-webkit-background-clip:text;
+    background-clip:text;color:transparent}
+  .updated{color:#64748b;font-size:13px;margin:4px 0 32px}
+  h1{font-size:26px;margin:28px 0 6px}
+  h2{font-size:17px;margin:34px 0 10px;color:#c4d3f5}
+  p,li{color:#b7c2d0;font-size:14.5px}
+  ul{padding-left:20px}
+  li{margin:6px 0}
+  a{color:#93c5fd}
+  .card{background:#0b1420;border:1px solid #1e3a5f;border-radius:12px;padding:16px 18px;margin:16px 0}
+  .fill{background:rgba(251,191,36,.12);border:1px dashed #f59e0b;color:#fbbf24;padding:1px 6px;
+    border-radius:5px;font-size:13.5px;font-weight:600}
+  table{width:100%;border-collapse:collapse;margin:12px 0;font-size:13.5px}
+  th,td{text-align:left;padding:8px 10px;border-bottom:1px solid #1e293b;color:#b7c2d0}
+  th{color:#8fa3c4;font-weight:700}
+  footer{margin-top:48px;color:#475569;font-size:12.5px}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header>
+    <div class="logo-icon">⚙</div>
+    <div class="logo-text">Manten<span>edor</span></div>
+  </header>
+
+  <h1>Política de Privacidade</h1>
+  <p class="updated">Última atualização: 30 de julho de 2026</p>
+
+  <p>Esta Política de Privacidade descreve como o <strong>Mantenedor</strong> ("nós", "aplicativo") coleta,
+  usa, armazena e protege os dados pessoais de seus usuários, em conformidade com a
+  <strong>Lei Geral de Proteção de Dados Pessoais (LGPD — Lei nº 13.709/2018)</strong>.</p>
+
+  <h2>1. Quem é o responsável pelos dados (controlador)</h2>
+  <div class="card">
+    <p style="margin:0">
+      <span class="fill">Leonardo Tizatto Weinfurter</span>, pessoa física, CPF
+      <span class="fill">095.205.239-36</span>, com atuação em
+      <span class="fill">Canoinhas, Santa Catarina, Brasil</span>.<br/>
+      Contato: <a href="mailto:leoweinfurter@gmail.com">c.methodous@gmail.com</a>
+    </p>
+  </div>
+
+  <h2>2. Quais dados coletamos</h2>
+  <table>
+    <tr><th>Categoria</th><th>Exemplos</th><th>Finalidade</th></tr>
+    <tr><td>Dados de cadastro</td><td>Nome, e-mail, cargo/perfil, empresa (tenant)</td><td>Criar e autenticar sua conta</td></tr>
+    <tr><td>Dados operacionais</td><td>Ordens de serviço, ativos, planos de manutenção, técnicos responsáveis</td><td>Funcionamento do sistema (CMMS)</td></tr>
+    <tr><td>Dados técnicos</td><td>Endereço IP, tipo de dispositivo, logs de acesso</td><td>Segurança e diagnóstico de falhas</td></tr>
+    <tr><td>Dados de anúncios (plano gratuito)</td><td>Cookies, ID de publicidade</td><td>Exibição de anúncios via Google AdSense</td></tr>
+  </table>
+  <p>Não coletamos dados sensíveis (saúde, biometria, origem racial, opinião política etc.) nem
+  dados de crianças — o Mantenedor é destinado a uso profissional/empresarial (B2B).</p>
+
+  <h2>3. Base legal (LGPD, art. 7º)</h2>
+  <ul>
+    <li><strong>Execução de contrato:</strong> dados de cadastro e operacionais, necessários para prestar o serviço contratado pela empresa (tenant).</li>
+    <li><strong>Legítimo interesse:</strong> logs técnicos, para segurança e prevenção de fraudes.</li>
+    <li><strong>Consentimento:</strong> cookies de publicidade no plano gratuito.</li>
+  </ul>
+
+  <h2>4. Com quem compartilhamos dados</h2>
+  <p>Utilizamos os seguintes fornecedores (operadores de dados) para operar o Mantenedor:</p>
+  <table>
+    <tr><th>Fornecedor</th><th>Finalidade</th></tr>
+    <tr><td>Supabase Inc.</td><td>Banco de dados e autenticação de usuários</td></tr>
+    <tr><td>GitHub Pages (Microsoft/GitHub)</td><td>Hospedagem do aplicativo</td></tr>
+    <tr><td>Google AdSense</td><td>Exibição de anúncios no plano gratuito</td></tr>
+  </table>
+  <p>Esses fornecedores podem processar dados em servidores fora do Brasil. Nesses casos,
+  exigimos que adotem salvaguardas compatíveis com a LGPD (ex.: cláusulas contratuais padrão).
+  Não vendemos dados pessoais a terceiros.</p>
+
+  <h2>5. Multi-tenant: dados entre empresas</h2>
+  <p>O Mantenedor é uma plataforma multi-tenant: os dados de cada empresa cliente são
+  isolados logicamente (via controle de acesso a nível de banco de dados) e não são
+  visíveis para outras empresas usuárias da plataforma.</p>
+
+  <h2>6. Seus direitos (LGPD, art. 18)</h2>
+  <p>Você pode solicitar, a qualquer momento, mediante contato com
+  <a href="mailto:leoweinfurter@gmail.com">leoweinfurter@gmail.com</a>:</p>
+  <ul>
+    <li>Confirmação da existência de tratamento e acesso aos seus dados</li>
+    <li>Correção de dados incompletos, inexatos ou desatualizados</li>
+    <li>Anonimização, bloqueio ou eliminação de dados desnecessários</li>
+    <li>Portabilidade dos dados a outro fornecedor</li>
+    <li>Eliminação dos dados tratados com base no consentimento</li>
+    <li>Revogação do consentimento (ex.: desativar anúncios personalizados)</li>
+  </ul>
+  <p>Se você é colaborador de uma empresa cliente, algumas solicitações (ex.: exclusão de
+  registros operacionais) podem depender de autorização do administrador (Coordenador) da
+  sua empresa dentro do sistema.</p>
+
+  <h2>7. Retenção e exclusão</h2>
+  <p>Mantemos os dados enquanto a conta/empresa estiver ativa na plataforma. Após o
+  encerramento da assinatura, os dados são retidos por até
+  <span class="fill">[PREENCHER: prazo, ex.: 90 dias]</span> para fins de backup e
+  cumprimento de obrigação legal, sendo então eliminados ou anonimizados.</p>
+
+  <h2>8. Segurança</h2>
+  <p>Adotamos controles técnicos como autenticação por token, políticas de acesso a nível
+  de linha no banco de dados (Row Level Security) e conexões criptografadas (HTTPS) em
+  todas as comunicações entre o aplicativo e nossos servidores.</p>
+
+  <h2>9. Cookies e publicidade</h2>
+  <p>No plano gratuito, exibimos anúncios via Google AdSense, que pode usar cookies e
+  identificadores de publicidade para personalizar anúncios. Você pode gerenciar suas
+  preferências de anúncios em
+  <a href="https://adssettings.google.com" target="_blank" rel="noopener">adssettings.google.com</a>.
+  Usuários do plano pago não são expostos a anúncios.</p>
+
+  <h2>10. Alterações nesta política</h2>
+  <p>Podemos atualizar esta política periodicamente. Alterações relevantes serão comunicadas
+  por e-mail ou aviso dentro do aplicativo, com a data de atualização revisada no topo desta página.</p>
+
+  <h2>11. Contato</h2>
+  <p>Dúvidas sobre esta política ou sobre o tratamento dos seus dados podem ser enviadas para
+  <a href="mailto:c.methodous@gmail.com">c.methodous@gmail.com</a>.</p>
+
+  <footer>Mantenedor — Gestão de Manutenção. Documento em conformidade com a LGPD (Lei nº 13.709/2018).</footer>
+</div>
+</body>
+</html>
