@@ -2052,6 +2052,10 @@ function applyStatic(root){
     var d = get("at_anal_tipos"), k = el.getAttribute("data-i18n-anal");
     if(d && typeof d[k] === "string") el.textContent = d[k];
   });
+  r.querySelectorAll("[data-i18n-perfil]").forEach(function(el){
+    var d = get("cad_perfis"), k = el.getAttribute("data-i18n-perfil");
+    if(d && typeof d[k] === "string") el.textContent = d[k];
+  });
   // <title> da aba do navegador
   var tk = document.body && document.body.getAttribute("data-i18n-doctitle");
   if(tk) document.title = "Mantenedor — " + get(tk);

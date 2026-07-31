@@ -141,15 +141,15 @@
     <div class="perfil-opts">
       <div class="perfil-opt selected" id="perfil-Coordenador" onclick="setPerfil('Coordenador',this)">
         <div class="perfil-opt-icon">&#128101;</div>
-        <div class="perfil-opt-label" data-i18n="cad_f_perfil" data-i18n-perfil="Coordenador">Coordenador</div>
+        <div class="perfil-opt-label" data-i18n-perfil="Coordenador">Coordenador</div>
       </div>
       <div class="perfil-opt" id="perfil-Tecnico" onclick="setPerfil('Tecnico',this)">
         <div class="perfil-opt-icon">&#128295;</div>
-        <div class="perfil-opt-label">Tecnico</div>
+        <div class="perfil-opt-label" data-i18n-perfil="Tecnico">Tecnico</div>
       </div>
       <div class="perfil-opt" id="perfil-Visualizador" onclick="setPerfil('Visualizador',this)">
         <div class="perfil-opt-icon">&#128065;</div>
-        <div class="perfil-opt-label">Visualizador</div>
+        <div class="perfil-opt-label" data-i18n-perfil="Visualizador">Visualizador</div>
       </div>
     </div>
     <input type="hidden" id="u-perfil" value="Coordenador"/>
@@ -296,7 +296,7 @@ function renderUsuarios(){
       +'<div class="user-nome">'+esc(u.nome)+'</div>'
       +'<div class="user-email">'+esc(u.email)+'</div>'
       +'<div class="user-meta">'
-      +(u.telefone?esc(u.telefone)+' &bull; ':"")+esc(u.perfil)
+      +(u.telefone?esc(u.telefone)+' &bull; ':"")+esc((t("cad_perfis")||{})[u.perfil]||u.perfil)
       +(pendente?' &bull; <span style="color:#fbbf24">'+t("cad_convite_pend")+'</span>':'')
       +(u.ativo?'':' &bull; <span style="color:#f87171">Inativo</span>')
       +'</div></div>'
