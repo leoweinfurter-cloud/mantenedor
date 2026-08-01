@@ -89,6 +89,58 @@ function setExecTipo(val,el){
   document.getElementById("exec-med-fields").style.display=val=="medicao"?"block":"none";
   document.getElementById("exec-peca-fields").style.display=val=="peca"?"block":"none";
   document.getElementById("exec-foto-fields").style.display=val=="foto"?"block":"none";
+  if(val=="medicao")popularDatalistsMedicaoExec();
+}
+
+// Autocomplete das leituras de medicao registradas "avulsamente" durante a
+// execucao de uma OS — mesmo mecanismo usado em ativos.html ("+ Nova
+// Leitura"): a DESCRICAO da medicao e quem identifica o ponto medido
+// (duas coisas diferentes podem ter o mesmo Parametro/Unidade sem serem a
+// mesma medicao), com Parametro/Unidade/Limites auto-preenchidos ao
+// repetir uma descricao ja usada antes, pra manter consistencia entre as
+// leituras feitas aqui e as feitas direto na ficha do ativo.
+function todasDescricoesPreditivaOS(fichas){
+  var nomes={};
+  Object.keys(fichas||{}).forEach(function(aid){
+    (fichas[aid].preditiva||[]).forEach(function(p){var d=(p.desc&&p.desc.trim())?p.desc:(p.param||"");if(d)nomes[d]=true;});
+  });
+  return Object.keys(nomes).sort();
+}
+function todosParamsPreditivaOS(fichas){
+  var nomes={};
+  Object.keys(fichas||{}).forEach(function(aid){
+    (fichas[aid].preditiva||[]).forEach(function(p){if(p.param)nomes[p.param]=true;});
+  });
+  return Object.keys(nomes).sort();
+}
+function ultimaLeituraPorDescricaoOS(fichas,desc){
+  var achou=null;
+  Object.keys(fichas||{}).forEach(function(aid){
+    (fichas[aid].preditiva||[]).forEach(function(p){
+      var d=(p.desc&&p.desc.trim())?p.desc:(p.param||"");
+      if(d===desc&&(!achou||p.data>achou.data))achou=p;
+    });
+  });
+  return achou;
+}
+function popularDatalistsMedicaoExec(){
+  var fichas=loadData().fichas;
+  var dl=document.getElementById("exec-desc-med-list");
+  if(dl)dl.innerHTML=todasDescricoesPreditivaOS(fichas).map(function(n){return'<option value="'+esc(n)+'"></option>';}).join("");
+  var dlp=document.getElementById("exec-param-list");
+  if(dlp)dlp.innerHTML=todosParamsPreditivaOS(fichas).map(function(n){return'<option value="'+esc(n)+'"></option>';}).join("");
+}
+function onExecDescMedChange(){
+  var desc=document.getElementById("exec-desc-med").value.trim();
+  if(!desc)return;
+  var ref=ultimaLeituraPorDescricaoOS(loadData().fichas,desc);
+  if(!ref)return;
+  var pEl=document.getElementById("exec-param"),uEl=document.getElementById("exec-unid"),
+      minEl=document.getElementById("exec-lim-min"),maxEl=document.getElementById("exec-lim-max");
+  if(pEl&&!pEl.value)pEl.value=ref.param||"";
+  if(uEl&&!uEl.value)uEl.value=ref.unidade||"";
+  if(minEl&&!minEl.value&&parseFloat(ref.limite_min))minEl.value=ref.limite_min;
+  if(maxEl&&!maxEl.value){var mx=(ref.limite_max!=null&&ref.limite_max!=="")?parseFloat(ref.limite_max):parseFloat(ref.limite);if(mx)maxEl.value=mx;}
 }
 
 function previewFoto(input){
@@ -134,7 +186,22 @@ function saveExec(){
     entry.desc=d;
   } else if(tipo=="medicao"){
     var val=parseFloat(document.getElementById("exec-valor").value);if(isNaN(val)){alert(t("os_informe_val_med"));return;}
-    entry.param=document.getElementById("exec-param").value;entry.valor=val;entry.limite=parseFloat(document.getElementById("exec-limite").value)||0;entry.cond=document.getElementById("exec-cond").value;entry.obs=document.getElementById("exec-med-obs").value;
+    var descMed=document.getElementById("exec-desc-med").value.trim();if(!descMed){alert(t("msg_informe_desc"));return;}
+    var limMin=parseFloat(document.getElementById("exec-lim-min").value)||0;
+    var limMax=parseFloat(document.getElementById("exec-lim-max").value)||0;
+    entry.desc=descMed;entry.param=document.getElementById("exec-param").value;entry.unidade=document.getElementById("exec-unid").value;
+    entry.valor=val;entry.limite=limMax;entry.limite_min=limMin;entry.limite_max=limMax;
+    entry.cond=document.getElementById("exec-cond").value;entry.obs=document.getElementById("exec-med-obs").value;
+    // Alem de registrar no log da OS, alimenta o historico de tendencia
+    // do ativo (fichas[...].preditiva) — a mesma leitura fica visivel no
+    // grafico da aba Preditiva em ativos.html, agrupada pela Descricao.
+    if(os.ativo_id){
+      var fichasMed=loadData().fichas;
+      if(!fichasMed[os.ativo_id])fichasMed[os.ativo_id]={historico:[],preditiva:[],planos:[],docs:[],indicadores:[]};
+      if(!fichasMed[os.ativo_id].preditiva)fichasMed[os.ativo_id].preditiva=[];
+      fichasMed[os.ativo_id].preditiva.push({id:nextId(),data:(entry.data||"").split("T")[0]||new Date().toISOString().split("T")[0],desc:descMed,param:entry.param,unidade:entry.unidade,valor:val,limite_min:limMin,limite_max:limMax,obs:entry.obs});
+      saveFichas(fichasMed);
+    }
   } else if(tipo=="peca"){
     var d2=document.getElementById("exec-peca-desc").value.trim();if(!d2){alert(t("os_informe_peca"));return;}
     entry.desc=d2;entry.qty=parseInt(document.getElementById("exec-qty").value)||1;entry.custo=parseFloat(document.getElementById("exec-custo").value)||0;entry.obs=document.getElementById("exec-peca-obs").value;
@@ -345,9 +412,14 @@ function renderDetail(o){
       if(e.tipo=="observacao"){body='<div class="exec-log-text">'+esc(e.desc)+'</div>';}
       else if(e.tipo=="medicao"){
         var condCol=e.cond=="Normal"?"#4ade80":e.cond=="Atencao"?"#fbbf24":"#f87171";
-        body='<div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">'
-          +'<div><div style="font-size:22px;font-weight:800;color:'+condCol+'">'+e.valor+'</div><div style="font-size:11px;color:#64748b">'+esc(e.param)+'</div></div>'
-          +(e.limite?'<div><div style="font-size:14px;color:#475569">'+e.limite+'</div><div style="font-size:10px;color:#475569">Limite</div></div>':'')
+        var idn=(e.desc&&e.desc.trim())?e.desc:(e.param||"");
+        var sub=[e.param,e.unidade].filter(Boolean).join(" &bull; ");
+        var limMaxV=(e.limite_max!=null&&e.limite_max!=="")?e.limite_max:e.limite;
+        var lims=[];if(e.limite_min>0)lims.push("min "+e.limite_min);if(limMaxV>0)lims.push("max "+limMaxV);
+        body='<div style="font-size:13px;font-weight:700;margin-bottom:4px">'+esc(idn)+'</div>'
+          +'<div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">'
+          +'<div><div style="font-size:22px;font-weight:800;color:'+condCol+'">'+e.valor+'</div><div style="font-size:11px;color:#64748b">'+esc(sub)+'</div></div>'
+          +(lims.length?'<div><div style="font-size:14px;color:#475569">'+esc(lims.join(" / "))+'</div><div style="font-size:10px;color:#475569">Limites</div></div>':'')
           +'<span style="padding:3px 9px;border-radius:12px;font-size:11px;font-weight:700;background:'+condCol+'20;color:'+condCol+'">'+esc(e.cond)+'</span>'
           +'</div>'
           +(e.obs?'<div style="font-size:12px;color:#94a3b8;margin-top:5px">'+esc(e.obs)+'</div>':"");
@@ -434,12 +506,19 @@ function renderExecForm(){
     +'</div>'
 
     +'<div id="exec-med-fields" style="display:none">'
-    +'<div class="fg"><label class="lbl">Parametro medido</label><select id="exec-param"><option>Temperatura (°C)</option><option>Vibracao (mm/s)</option><option>Pressao (bar)</option><option>Corrente (A)</option><option>Tensao (V)</option><option>Ruido (dB)</option><option>Espessura (mm)</option><option>Rotacao (RPM)</option><option>Outro</option></select></div>'
+    +'<div class="fg"><label class="lbl">Descricao da medicao *</label><input id="exec-desc-med" list="exec-desc-med-list" placeholder="Ex: Temperatura do rolamento traseiro..." oninput="onExecDescMedChange()"/><datalist id="exec-desc-med-list"></datalist></div>'
+    +'<div class="g2">'
+    +'<div class="fg"><label class="lbl">Parametro</label><input id="exec-param" list="exec-param-list" placeholder="Ex: Vibracao, Temperatura, Pressao..."/><datalist id="exec-param-list"></datalist></div>'
+    +'<div class="fg"><label class="lbl">Unidade</label><input id="exec-unid" placeholder="Ex: mm/s, C, bar..."/></div>'
+    +'</div>'
     +'<div class="g2">'
     +'<div class="fg"><label class="lbl">Valor medido *</label><input type="number" id="exec-valor" step="0.01" placeholder="0.0"/></div>'
-    +'<div class="fg"><label class="lbl">Limite / Referencia</label><input type="number" id="exec-limite" step="0.01" placeholder="0.0"/></div>'
-    +'</div>'
     +'<div class="fg"><label class="lbl">Condicao</label><select id="exec-cond"><option>Normal</option><option>Atencao</option><option>Critico</option><option>Fora de especificacao</option></select></div>'
+    +'</div>'
+    +'<div class="g2">'
+    +'<div class="fg"><label class="lbl">Limite min</label><input type="number" id="exec-lim-min" step="0.01" placeholder="0.0"/></div>'
+    +'<div class="fg"><label class="lbl">Limite max</label><input type="number" id="exec-lim-max" step="0.01" placeholder="0.0"/></div>'
+    +'</div>'
     +'<div class="fg"><label class="lbl">Observacao adicional</label><input id="exec-med-obs" data-i18n-ph="os_ph_contexto" placeholder="Contexto ou detalhe..."/></div>'
     +'</div>'
 
