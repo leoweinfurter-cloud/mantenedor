@@ -57,9 +57,10 @@
   </div>
 </div>
 
-<!-- Modal Novo Ativo -->
+<!-- Modal Novo/Editar Ativo -->
 <div class="modal" id="modal-ativo"><div class="mc" onclick="event.stopPropagation()">
-  <div class="mt2" data-i18n="at_cad_ativo">Cadastrar Ativo</div>
+  <div class="mt2" id="at-modal-title" data-i18n="at_cad_ativo">Cadastrar Ativo</div>
+  <input type="hidden" id="at-id"/>
   <div class="fg"><label class="lbl" data-i18n="at_f_nome">Nome *</label><input id="at-nome" data-i18n-ph="at_ph_nome" placeholder="Nome do equipamento"/></div>
   <div class="fg"><label class="lbl" data-i18n="at_f_cat">Categoria</label><select id="at-cat"><option value="" data-i18n="btn_selecione">Selecione...</option></select></div>
   <div class="fg"><label class="lbl" data-i18n="at_f_empresa">Empresa</label><select id="at-emp" onchange="onEmpChange()"><option value="" data-i18n="at_sel_empresa">Selecione a empresa...</option></select></div>
@@ -77,7 +78,7 @@
     <div class="fg"><label class="lbl" data-i18n="at_f_tag">Tag</label><input id="at-tag" data-i18n-ph="at_ph_tag" placeholder="Ex: COMP-002"/></div>
     <div class="fg"><label class="lbl" data-i18n="at_f_pat">Patrimonio</label><input id="at-pat" data-i18n-ph="at_ph_pat" placeholder="Ex: PAT-0001"/></div>
   </div>
-  <div class="mf"><button class="btn bx" onclick="closeModal('modal-ativo')"><span data-i18n="btn_cancelar">Cancelar</span></button><button class="btn bp" onclick="saveAtivo()"><span data-i18n="btn_cadastrar">Cadastrar</span></button></div>
+  <div class="mf"><button class="btn bx" onclick="closeModal('modal-ativo')"><span data-i18n="btn_cancelar">Cancelar</span></button><button class="btn bp" id="at-save-btn" onclick="saveAtivo()"><span data-i18n="btn_cadastrar">Cadastrar</span></button></div>
 </div></div>
 
 <!-- Modal Registrar Manutencao -->
@@ -305,7 +306,7 @@ function onUnidChange(){
   }
 }
 function openModal(id){
-  if(id==="modal-ativo"){
+  if(id==="modal-ativo" && !_atEditId){
     populateCatSelect();
     populateEmpSelect();
     document.getElementById("at-unid").disabled=true;
@@ -318,13 +319,64 @@ function openModal(id){
 document.querySelectorAll(".modal").forEach(function(m){m.addEventListener("click",function(e){if(e.target===this)this.classList.remove("open");});});
 
 // ── SAVES ──────────────────────────────────────────────────────────────────
+var _atEditId = null;
+
+function openNewAtivo(){
+  _atEditId = null;
+  document.getElementById("at-modal-title").textContent = t("at_cad_ativo");
+  document.getElementById("at-save-btn").querySelector("span").textContent = t("btn_cadastrar");
+  document.getElementById("at-id").value = "";
+  ["at-nome","at-loc","at-fab","at-mod","at-serie","at-ano","at-tag","at-pat"].forEach(function(x){document.getElementById(x).value="";});
+  document.getElementById("at-cat").value = "";
+  document.getElementById("at-emp").value = "";
+  document.getElementById("at-unid").innerHTML = '<option value="" data-i18n="at_sel_unidade">Selecione a unidade...</option>';
+  document.getElementById("at-unid").disabled = true;
+  openModal("modal-ativo");
+}
+
+function editAtivo(id){
+  if(!isCoordenador()){mxToast(t("msg_so_coord_ativos"),"error");return;}
+  var a = ativos.find(function(x){return x.id===id;});
+  if(!a) return;
+  _atEditId = id;
+  document.getElementById("at-modal-title").textContent = t("at_editar_ativo");
+  document.getElementById("at-save-btn").querySelector("span").textContent = t("btn_salvar");
+  document.getElementById("at-id").value = id;
+  document.getElementById("at-nome").value = a.nome || "";
+  populateCatSelect();
+  document.getElementById("at-cat").value = a.categoria || "";
+  populateEmpSelect();
+  document.getElementById("at-emp").value = a.empresa || "";
+  onEmpChange();
+  document.getElementById("at-unid").value = a.unidade || "";
+  document.getElementById("at-loc").value = a.localizacao || "";
+  document.getElementById("at-fab").value = a.fabricante || "";
+  document.getElementById("at-mod").value = a.modelo || "";
+  document.getElementById("at-serie").value = a.serie || "";
+  document.getElementById("at-ano").value = a.ano || "";
+  document.getElementById("at-tag").value = a.tag || "";
+  document.getElementById("at-pat").value = a.patrimonio || "";
+  openModal("modal-ativo");
+}
+
 function saveAtivo(){
   if(!isCoordenador()){mxToast(t("msg_so_coord_ativos"),"error");return;}
   var n=document.getElementById("at-nome").value.trim();if(!n){alert(t("msg_informe_nome"));return;}
-  var id=nextId();
-  ativos.unshift({id:id,nome:n,categoria:gv("at-cat"),empresa:gv("at-emp"),unidade:gv("at-unid"),localizacao:gv("at-loc"),fabricante:gv("at-fab"),modelo:gv("at-mod"),serie:gv("at-serie"),ano:gv("at-ano"),tag:gv("at-tag"),patrimonio:gv("at-pat"),status:t('at_status_op'),ultima_manutencao:"--",proxima_manutencao:"--"});
-  fichas[id]={historico:[],preditiva:[],planos:[],docs:[],indicadores:["mtbf","mttr","disp","manuplan"]};
-  saveAtivos(ativos);saveFichas(fichas);
+  var editId=document.getElementById("at-id").value;
+  var dados={nome:n,categoria:gv("at-cat"),empresa:gv("at-emp"),unidade:gv("at-unid"),localizacao:gv("at-loc"),fabricante:gv("at-fab"),modelo:gv("at-mod"),serie:gv("at-serie"),ano:gv("at-ano"),tag:gv("at-tag"),patrimonio:gv("at-pat")};
+  if(editId){
+    var eid=parseInt(editId);
+    ativos=ativos.map(function(a){return a.id===eid?Object.assign({},a,dados):a;});
+    if(selAtivo&&selAtivo.id===eid) selAtivo=ativos.find(function(a){return a.id===eid;});
+  } else {
+    var id=nextId();
+    dados.id=id;dados.status=t('at_status_op');dados.ultima_manutencao="--";dados.proxima_manutencao="--";
+    ativos.unshift(dados);
+    fichas[id]={historico:[],preditiva:[],planos:[],docs:[],indicadores:["mtbf","mttr","disp","manuplan"]};
+    saveFichas(fichas);
+  }
+  saveAtivos(ativos);
+  _atEditId=null;
   ["at-nome","at-loc","at-fab","at-mod","at-serie","at-ano","at-tag","at-pat"].forEach(function(x){document.getElementById(x).value="";});document.getElementById("at-emp").value="";document.getElementById("at-unid").value="";document.getElementById("at-unid").disabled=true;
   closeModal("modal-ativo");render();
 }
@@ -736,7 +788,7 @@ function renderList(){
   }
   var cards=ativosAtivos.length===0?'<div style="color:#64748b;text-align:center;padding:40px;font-size:14px">'+t("at_nenhum")+'</div>':ativosAtivos.map(function(a){return mkCard(a,false);}).join("");
   var cardsD=ativosDesativ.length===0?"":'<div style="margin-top:14px"><div style="font-size:11px;font-weight:800;color:#64748b;text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px">Desativados ('+ativosDesativ.length+')</div>'+ativosDesativ.map(function(a){return mkCard(a,true);}).join("")+'</div>';
-  return'<div class="fr"><div></div>'+(isCoordenador()?'<button class="btn bp" onclick="openModal(\'modal-ativo\')">+ Novo Ativo</button>':'')+'</div>'+'<div class="asset-list">'+cards+cardsD+'</div>';
+  return'<div class="fr"><div></div>'+(isCoordenador()?'<button class="btn bp" onclick="openNewAtivo()">+ Novo Ativo</button>':'')+'</div>'+'<div class="asset-list">'+cards+cardsD+'</div>';
 }
 
 function selAti(id){selAtivo=ativos.find(function(a){return a.id==id;});fichaTab="geral";if(!fichas[id])fichas[id]={historico:[],preditiva:[],planos:[],docs:[],indicadores:["mtbf","mttr","disp","manuplan"]};render();}
@@ -758,6 +810,7 @@ function renderFicha(){
   else if(fichaTab=="criticidade")content=tabCrit(a,f);
   return'<div style="display:flex;align-items:center;gap:10px;margin-bottom:16px">'
     +'<button class="btn bx" onclick="selAtivo=null;render()">&#8592; Voltar</button>'
+    +(!isCoordenador() ? '' : '<button class="btn bx bsm" onclick="editAtivo('+selAtivo.id+')" style="font-size:11px">'+t("btn_editar")+'</button>')
     +(!isCoordenador() ? '' : selAtivo.status!=="Desativado"
       ?'<button class="btn bsm" onclick="abrirDesativarAtivo()" style="font-size:11px;background:#7f1d1d30;color:#f87171;border:1px solid #f8717140">'+t("at_desativar")+'</button>'
       :'<button class="btn bsm" onclick="reativarAtivo('+selAtivo.id+')" style="font-size:11px;background:#14532d30;color:#4ade80;border:1px solid #4ade8040">'+t("at_reativar")+'</button>')
