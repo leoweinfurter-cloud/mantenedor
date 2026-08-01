@@ -779,9 +779,14 @@ function renderList(){
   function mkCard(a,inactive){
     var f=fichas[a.id];var critBadge="";
     if(f&&f.crit&&f.crit.hse){var sc=calcCritScore(f.crit);var cl=getCritClass(sc);var col=CRIT_CLASS_COLORS[cl];critBadge='<span style="font-size:10px;font-weight:800;color:'+col+';background:'+col+'18;border:1px solid '+col+'35;padding:2px 7px;border-radius:10px;margin-left:6px">'+cl+'</span>';}
+    var codes=[];
+    if(a.tag) codes.push(a.tag);
+    if(a.patrimonio) codes.push(a.patrimonio);
+    var codeChip=codes.length?'<div style="font-family:monospace;font-size:11px;font-weight:700;color:#94a3b8;background:#1e293b;border:1px solid #334155;display:inline-block;padding:2px 7px;border-radius:6px;margin-top:3px">'+esc(codes.join(" &bull; "))+'</div>':'';
     return'<div class="asset-card" onclick="selAti('+a.id+')" style="'+(inactive?"opacity:.4;border-style:dashed":"")+'">'
       +'<div class="asset-card-left">'
       +'<div class="asset-card-name" style="'+(inactive?"text-decoration:line-through":"")+'">'+esc(a.nome)+critBadge+'</div>'
+      +codeChip
       +'<div class="asset-card-sub">'+esc(a.categoria)+(a.empresa?" &bull; "+esc(a.empresa):"")+(a.localizacao?" &bull; "+esc(a.localizacao):"")+'</div>'
       +(inactive&&a.motivo_desativacao?'<div class="asset-card-sub" style="font-style:italic">'+esc(a.motivo_desativacao)+'</div>':"")
       +'</div><div class="asset-card-right">'+bdg(a.status,AC)+'<span style="font-size:16px;color:#475569">&#8250;</span></div></div>';

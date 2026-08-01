@@ -158,9 +158,19 @@ function closeModal(id){document.getElementById(id).classList.remove("open");}
 function openModal(id){document.getElementById(id).classList.add("open");}
 document.querySelectorAll(".modal").forEach(function(m){m.addEventListener("click",function(e){if(e.target===this)this.classList.remove("open");});});
 
+// Rotulo do <option> de ativo nos dropdowns de abertura de OS: mostra a
+// TAG e/ou o Patrimonio junto do nome, pra facilitar identificar o
+// equipamento certo quando ha varios com nomes parecidos.
+function ativoOptLabel(a){
+  var codes=[];
+  if(a.tag) codes.push(a.tag);
+  if(a.patrimonio) codes.push(a.patrimonio);
+  return esc(a.nome)+(codes.length?" — "+esc(codes.join(" / ")):"");
+}
+
 // ── NOVA OS CORRETIVA ─────────────────────────────────────────────────
 function openNewOSCorretiva(){
-  document.getElementById("oc-ativo").innerHTML='<option value="" data-i18n="btn_selecione">Selecione...</option>'+ativos.map(function(a){return'<option value="'+a.id+'">'+esc(a.nome)+'</option>';}).join("");
+  document.getElementById("oc-ativo").innerHTML='<option value="" data-i18n="btn_selecione">Selecione...</option>'+ativos.map(function(a){return'<option value="'+a.id+'">'+ativoOptLabel(a)+'</option>';}).join("");
   populaSelectTecnicos("oc-tec");
   openModal("modal-os-cor");
 }
@@ -183,7 +193,7 @@ function setTipoProgramada(val,el){
   el.classList.add("selected");
 }
 function openNewOSProgramada(){
-  document.getElementById("op-ativo").innerHTML='<option value="" data-i18n="btn_selecione">Selecione...</option>'+ativos.map(function(a){return'<option value="'+a.id+'">'+esc(a.nome)+'</option>';}).join("");
+  document.getElementById("op-ativo").innerHTML='<option value="" data-i18n="btn_selecione">Selecione...</option>'+ativos.map(function(a){return'<option value="'+a.id+'">'+ativoOptLabel(a)+'</option>';}).join("");
   populaSelectTecnicos("op-tec");
   document.querySelectorAll("#modal-os-prog .os-type-btn").forEach(function(b,i){b.classList.toggle("selected",i==0);});
   document.getElementById("op-tipo").value="Preventiva";
