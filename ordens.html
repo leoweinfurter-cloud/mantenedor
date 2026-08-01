@@ -202,18 +202,6 @@ function saveOSProgramada(){
   render();
 }
 
-// ── GERAR OS PROGRAMADAS (a partir dos planos) ──────────────────────────
-function gerarOSDialog(){
-  var novas = gerarOSProgramadas(7);
-  ordens = loadData().ordens;
-  if(novas.length === 0){
-    alert("Nenhum plano vencido ou com vencimento em 7 dias. Verifique os planos na ficha dos ativos.");
-  } else {
-    alert(novas.length + " OS gerada(s) com sucesso! Numeracao: "+novas.map(function(n){return n.numero_os;}).join(", "));
-  }
-  render();
-}
-
 // ── RENDER ─────────────────────────────────────────────────────────────
 function render(){
   if(backfillNumerosOS(ordens)){saveOrdens(ordens);}
@@ -291,7 +279,6 @@ function renderList(){
         +'</div>';
     }).join("");
   var acoes=isCoordenador()?'<div class="os-hub-split">'
-      +'<button class="btn bx bsm" onclick="gerarOSDialog()" style="font-size:11px">&#9654; Gerar OS Programadas</button>'
       +'<button class="btn bx" onclick="openNewOSProgramada()">+ Nova Prev./Predit.</button>'
       +'<button class="btn bp" onclick="openNewOSCorretiva()">+ Nova OS Corretiva</button>'
       +'</div>':'';

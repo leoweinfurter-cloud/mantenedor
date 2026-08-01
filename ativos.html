@@ -940,7 +940,6 @@ function tabPrev(a,f){
   return alertHtml
     +'<div class="fr"><div style="font-size:13px;color:#64748b">'+planosFiltro.length+' plano(s) ativo(s)</div>'
     +'<div style="display:flex;gap:8px">'
-    +(isCoordenador()?'<button class="btn bx bsm" onclick="gerarOSTodos()" style="font-size:11px">&#9654; Gerar OS Vencidas</button>':'')
     +(isCoordenador()?'<button class="btn bp" onclick="openNewPlano()">+ Novo Plano</button>':'')
     +'</div></div>'
     +cards+cardsInativos;
@@ -986,14 +985,6 @@ function gerarOSPlano(ativoId, planoId){
   saveOrdens(D.ordens);saveFichas(D.fichas);
   ordens=D.ordens;fichas=D.fichas;
   alert("OS "+numeroOS+" gerada com sucesso!");render();
-}
-
-function gerarOSTodos(){
-  var novas=gerarOSProgramadas(7);
-  ordens=loadData().ordens;fichas=loadData().fichas;
-  if(novas.length===0){alert(t("msg_sem_plano_venc"));}
-  else{alert(novas.length+t("msg_os_geradas"));}
-  render();
 }
 
 function tabPred(a,f){
@@ -1104,18 +1095,7 @@ function setCrit(aid,criterio,val){
   }
 })();
 
-render();
-
-// Recarrega dados ao voltar para esta aba (ex: apos concluir OS no ordens.html)
-window.addEventListener("focus", function(){
-  var D = loadData();
-  ordens = D.ordens; ativos = D.ativos; fichas = D.fichas;
-  if(selAtivo){
-    // Refresh selAtivo from updated data
-    selAtivo = ativos.find(function(a){return a.id===selAtivo.id;}) || selAtivo;
-  }
-  render();
-});
+initApp(render);
 </script>
 <nav id="bottom-nav">
   <a class="bn-item" href="dashboard.html"><span class="bn-icon">&#9672;</span><span class="bn-label" data-i18n="nav_dashboard">Dashboard</span></a>
