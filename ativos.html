@@ -132,11 +132,15 @@
   <div class="mt2" data-i18n="pr_nova_titulo">Nova Leitura Preditiva</div>
   <div class="g2">
     <div class="fg"><label class="lbl" data-i18n="h_f_data">Data</label><input type="date" id="p-data"/></div>
-    <div class="fg"><label class="lbl" data-i18n="exec_param">Parametro</label><select id="p-param"><option value="Vibracao (mm/s)" data-i18n-param="vib">Vibracao (mm/s)</option><option value="Temperatura (C)" data-i18n-param="temp">Temperatura (C)</option><option value="Ruido (dB)" data-i18n-param="ruido">Ruido (dB)</option><option value="Pressao (bar)" data-i18n-param="pres">Pressao (bar)</option><option value="Corrente (A)" data-i18n-param="corr">Corrente (A)</option><option value="Espessura (mm)" data-i18n-param="esp">Espessura (mm)</option><option value="Outro" data-i18n-param="outro">Outro</option></select></div>
+    <div class="fg"><label class="lbl" data-i18n="exec_param">Parametro</label><input id="p-param" list="p-param-list" data-i18n-ph="pr_ph_param" placeholder="Ex: Vibracao, Temperatura, Pressao..." oninput="onParamPredChange()"/><datalist id="p-param-list"></datalist></div>
   </div>
   <div class="g2">
     <div class="fg"><label class="lbl" data-i18n="at_valor_med">Valor medido</label><input type="number" id="p-val" step="0.01" placeholder="0.0"/></div>
-    <div class="fg"><label class="lbl" data-i18n="pr_lim_alerta">Limite de alerta</label><input type="number" id="p-lim" step="0.01" placeholder="0.0"/></div>
+    <div class="fg"><label class="lbl" data-i18n="pr_unidade">Unidade</label><input id="p-unid" data-i18n-ph="pr_ph_unidade" placeholder="Ex: mm/s, C, bar..."/></div>
+  </div>
+  <div class="g2">
+    <div class="fg"><label class="lbl" data-i18n="pl_ac_lim_min">Limite min</label><input type="number" id="p-lim-min" step="0.01" placeholder="0.0"/></div>
+    <div class="fg"><label class="lbl" data-i18n="pl_ac_lim_max">Limite max</label><input type="number" id="p-lim-max" step="0.01" placeholder="0.0"/></div>
   </div>
   <div class="fg"><label class="lbl" data-i18n="exec_tipo_obs">Observacao</label><input id="p-obs" data-i18n-ph="pr_ph_obs" placeholder="Condicao observada..."/></div>
   <div class="mf"><button class="btn bx" onclick="closeModal('modal-pred')" data-i18n="btn_cancelar">Cancelar</button><button class="btn bp" onclick="savePred()" data-i18n="btn_salvar">Salvar</button></div>
@@ -517,12 +521,79 @@ function savePlano(){
   render();
 }
 
+// Lista de todos os nomes de parametro ja usados em QUALQUER leitura
+// preditiva do sistema (nao so deste ativo) — alimenta o <datalist> do
+// campo "Parametro" pra incentivar reuso do mesmo nome/grafia e evitar
+// que um parametro se fragmente em varios por causa de digitacao diferente.
+function todosParamsPreditiva(){
+  var nomes={};
+  Object.keys(fichas).forEach(function(aid){
+    (fichas[aid].preditiva||[]).forEach(function(p){if(p.param)nomes[p.param]=true;});
+  });
+  return Object.keys(nomes).sort();
+}
+
+// Acha a leitura mais recente (de qualquer ativo) com este nome exato de
+// parametro — usada pra pre-preencher unidade/limites quando o usuario
+// escolhe um parametro ja existente, mantendo consistencia entre leituras.
+function ultimaLeituraDoParam(nomeParam){
+  var achou=null;
+  Object.keys(fichas).forEach(function(aid){
+    (fichas[aid].preditiva||[]).forEach(function(p){
+      if(p.param===nomeParam&&(!achou||p.data>achou.data))achou=p;
+    });
+  });
+  return achou;
+}
+
+function onParamPredChange(){
+  var nome=gv("p-param").trim();
+  var ref=nome?ultimaLeituraDoParam(nome):null;
+  if(!ref)return;
+  if(!gv("p-unid"))sv("p-unid",ref.unidade||"");
+  if(!gv("p-lim-min"))sv("p-lim-min",predLimMin(ref)||"");
+  if(!gv("p-lim-max"))sv("p-lim-max",predLimMax(ref)||"");
+}
+
+function openNovaLeitura(){
+  var dl=document.getElementById("p-param-list");
+  if(dl)dl.innerHTML=todosParamsPreditiva().map(function(n){return'<option value="'+esc(n)+'"></option>';}).join("");
+  ["p-param","p-val","p-unid","p-lim-min","p-lim-max","p-obs"].forEach(function(id){var el=document.getElementById(id);if(el)el.value="";});
+  openModal("modal-pred");
+}
+
+// ── Leituras preditivas: identificacao do parametro e limites ──────────
+// A "identidade" de um parametro (pra fins de grafico/tendencia) e o texto
+// exato digitado em "Parametro" — leituras com o mesmo texto (mesma
+// grafia) sao tratadas como a mesma serie; textos diferentes viram series
+// separadas. O <datalist> acima e o auto-preenchimento existem justamente
+// pra reduzir o risco de o usuario digitar "Vibracao" numa leitura e
+// "Vibração" (ou com espaco extra) na proxima, o que criaria duas series
+// para o que deveria ser um unico parametro.
+//
+// limite_min/limite_max seguem a mesma convencao ja usada nos planos
+// (_shared.js): 0 (ou vazio) significa "sem limite definido" naquele lado.
+// Leituras antigas (antes desta mudanca) so tinham um campo "limite"
+// unico — tratamos ele como limite_max pra nao perder esse historico.
+function predLimMax(p){
+  if(p.limite_max!=null&&p.limite_max!=="")return parseFloat(p.limite_max)||0;
+  return parseFloat(p.limite)||0;
+}
+function predLimMin(p){
+  return parseFloat(p.limite_min)||0;
+}
+function predForaLimite(p){
+  var max=predLimMax(p),min=predLimMin(p);
+  return (max>0&&p.valor>max)||(min>0&&p.valor<min);
+}
+
 function savePred(){
   var v=parseFloat(gv("p-val"));if(isNaN(v)){alert(t("msg_informe_valor"));return;}
+  var param=gv("p-param").trim();if(!param){alert(t("msg_informe_param"));return;}
   var f=fichas[selAtivo.id];
-  f.preditiva.push({id:nextId(),data:gv("p-data")||new Date().toISOString().split("T")[0],param:gv("p-param"),valor:v,limite:parseFloat(gv("p-lim"))||0,obs:gv("p-obs")});
+  f.preditiva.push({id:nextId(),data:gv("p-data")||new Date().toISOString().split("T")[0],param:param,unidade:gv("p-unid"),valor:v,limite_min:parseFloat(gv("p-lim-min"))||0,limite_max:parseFloat(gv("p-lim-max"))||0,obs:gv("p-obs")});
   saveFichas(fichas);
-  ["p-val","p-lim","p-obs"].forEach(function(id){document.getElementById(id).value="";});
+  ["p-param","p-val","p-unid","p-lim-min","p-lim-max","p-obs"].forEach(function(id){document.getElementById(id).value="";});
   closeModal("modal-pred");render();
 }
 
@@ -993,25 +1064,38 @@ function gerarOSPlano(ativoId, planoId){
 }
 
 function tabPred(a,f){
-  if(!f.preditiva||f.preditiva.length==0)return'<div class="fr"><div></div><button class="btn bp" onclick="openModal(\'modal-pred\')">+ Nova Leitura</button></div><div style="color:#475569;text-align:center;padding:40px;font-size:14px">'+t("at_sem_leituras")+'</div>';
+  if(!f.preditiva||f.preditiva.length==0)return'<div class="fr"><div></div><button class="btn bp" onclick="openNovaLeitura()">+ Nova Leitura</button></div><div style="color:#475569;text-align:center;padding:40px;font-size:14px">'+t("at_sem_leituras")+'</div>';
   var params=[...new Set(f.preditiva.map(function(p){return p.param;}))];
   var charts=params.map(function(param){
     var data=f.preditiva.filter(function(p){return p.param==param;}).sort(function(a,b){return a.data>b.data?1:-1;});
-    if(data.length<2)return'<div class="cw"><div class="ct2">'+param+'</div><div style="color:#475569;font-size:13px;padding:8px">'+t("at_mais_leituras")+'</div></div>';
-    var all=data.map(function(d){return d.valor;}).concat(data.map(function(d){return d.limite;})).filter(function(v){return v>0;});
+    if(data.length<2)return'<div class="cw"><div class="ct2">'+esc(param)+'</div><div style="color:#475569;font-size:13px;padding:8px">'+t("at_mais_leituras")+'</div></div>';
+    var hasMax=data.some(function(d){return predLimMax(d)>0;});
+    var hasMin=data.some(function(d){return predLimMin(d)>0;});
+    var all=data.map(function(d){return d.valor;}).concat(data.map(predLimMax)).concat(data.map(predLimMin)).filter(function(v){return v>0;});
     var mn=Math.min.apply(null,all)*0.9,mx=Math.max.apply(null,all)*1.1;
     var W=500,H=140,pd=36;
     var fx=function(i){return pd+(i/(data.length-1))*(W-pd*2);};
     var fy=function(v){return H-pd-((v-mn)/(mx-mn))*(H-pd*2);};
     var vp=data.map(function(d,i){return(i==0?"M":"L")+fx(i).toFixed(1)+","+fy(d.valor).toFixed(1);}).join(" ");
-    var lp=data.map(function(d,i){return(i==0?"M":"L")+fx(i).toFixed(1)+","+fy(d.limite).toFixed(1);}).join(" ");
-    var dots=data.map(function(d,i){var c=d.limite>0&&d.valor>=d.limite?"#f87171":"#4ade80";return'<circle cx="'+fx(i).toFixed(1)+'" cy="'+fy(d.valor).toFixed(1)+'" r="4" fill="'+c+'"><title>'+d.data+': '+d.valor+'</title></circle>';}).join("");
+    var lpMax=hasMax?data.map(function(d,i){return(i==0?"M":"L")+fx(i).toFixed(1)+","+fy(predLimMax(d)).toFixed(1);}).join(" "):"";
+    var lpMin=hasMin?data.map(function(d,i){return(i==0?"M":"L")+fx(i).toFixed(1)+","+fy(predLimMin(d)).toFixed(1);}).join(" "):"";
+    var dots=data.map(function(d,i){var c=predForaLimite(d)?"#f87171":"#4ade80";return'<circle cx="'+fx(i).toFixed(1)+'" cy="'+fy(d.valor).toFixed(1)+'" r="4" fill="'+c+'"><title>'+d.data+': '+d.valor+'</title></circle>';}).join("");
     var lbls=data.map(function(d,i){return'<text x="'+fx(i).toFixed(1)+'" y="'+(H-5)+'" text-anchor="middle" font-size="9" fill="#475569">'+d.data.slice(5)+'</text>';}).join("");
-    var last=data[data.length-1];var alrt=last.limite>0&&last.valor>=last.limite?'<div class="aw" style="margin-top:8px">Ultimo valor acima do limite de alerta!</div>':"";
-    return'<div class="cw"><div style="display:flex;gap:16px;margin-bottom:6px;font-size:11px"><span style="color:#60a5fa">&#9644; Valor medido</span><span style="color:#f87171">&#9644; Limite</span></div><div class="ct2">'+esc(param)+'</div><svg viewBox="0 0 '+W+' '+H+'" style="width:100%;height:auto;overflow:visible"><path d="'+lp+'" fill="none" stroke="#f87171" stroke-width="1.5" stroke-dasharray="5,3" opacity=".7"/><path d="'+vp+'" fill="none" stroke="#60a5fa" stroke-width="2"/>'+dots+lbls+'</svg>'+alrt+'</div>';
+    var last=data[data.length-1];var alrt=predForaLimite(last)?'<div class="aw" style="margin-top:8px">Ultimo valor fora do limite!</div>':"";
+    var legend='<div style="display:flex;gap:16px;margin-bottom:6px;font-size:11px"><span style="color:#60a5fa">&#9644; Valor medido</span>'+(hasMax?'<span style="color:#f87171">&#9644; Lim. Max</span>':'')+(hasMin?'<span style="color:#fbbf24">&#9644; Lim. Min</span>':'')+'</div>';
+    var unidLbl=last.unidade?' ('+esc(last.unidade)+')':'';
+    return'<div class="cw">'+legend+'<div class="ct2">'+esc(param)+unidLbl+'</div><svg viewBox="0 0 '+W+' '+H+'" style="width:100%;height:auto;overflow:visible">'
+      +(hasMax?'<path d="'+lpMax+'" fill="none" stroke="#f87171" stroke-width="1.5" stroke-dasharray="5,3" opacity=".7"/>':'')
+      +(hasMin?'<path d="'+lpMin+'" fill="none" stroke="#fbbf24" stroke-width="1.5" stroke-dasharray="5,3" opacity=".7"/>':'')
+      +'<path d="'+vp+'" fill="none" stroke="#60a5fa" stroke-width="2"/>'+dots+lbls+'</svg>'+alrt+'</div>';
   }).join("");
-  var trows=f.preditiva.slice().sort(function(a,b){return a.data<b.data?1:-1;}).slice(0,10).map(function(p){return'<tr><td class="cm">'+esc(p.data)+'</td><td class="cd">'+esc(p.param)+'</td><td style="font-weight:700;color:'+(p.limite>0&&p.valor>=p.limite?"#f87171":"#4ade80")+'">'+p.valor+'</td><td class="cm">'+p.limite+'</td><td class="cd">'+esc(p.obs)+'</td></tr>';}).join("");
-  return'<div class="fr"><div></div><button class="btn bp" onclick="openModal(\'modal-pred\')">+ Nova Leitura</button></div>'+charts+'<div class="card" style="padding:0"><div class="tw"><table><thead><tr><th>Data</th><th>Parametro</th><th>Valor</th><th>Limite</th><th>Obs</th></tr></thead><tbody>'+trows+'</tbody></table></div></div>';
+  var trows=f.preditiva.slice().sort(function(a,b){return a.data<b.data?1:-1;}).slice(0,10).map(function(p){
+    var lims=[];
+    if(predLimMin(p)>0)lims.push("min "+predLimMin(p));
+    if(predLimMax(p)>0)lims.push("max "+predLimMax(p));
+    return'<tr><td class="cm">'+esc(p.data)+'</td><td class="cd">'+esc(p.param)+(p.unidade?' <span style="color:#64748b;font-size:11px">('+esc(p.unidade)+')</span>':'')+'</td><td style="font-weight:700;color:'+(predForaLimite(p)?"#f87171":"#4ade80")+'">'+p.valor+'</td><td class="cm">'+(lims.length?esc(lims.join(" / ")):"--")+'</td><td class="cd">'+esc(p.obs)+'</td></tr>';
+  }).join("");
+  return'<div class="fr"><div></div><button class="btn bp" onclick="openNovaLeitura()">+ Nova Leitura</button></div>'+charts+'<div class="card" style="padding:0"><div class="tw"><table><thead><tr><th>Data</th><th>Parametro</th><th>Valor</th><th>Limites</th><th>Obs</th></tr></thead><tbody>'+trows+'</tbody></table></div></div>';
 }
 
 function tabDocs(a,f){

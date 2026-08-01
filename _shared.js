@@ -457,7 +457,7 @@ function saveFichas(fichasObj){
     // Sync seguro (upsert-first): nunca deleta antes de garantir a gravacao.
     syncChildTable("planos","ativo_id",ativoId,(f.planos||[]).map(function(p){return{id:p.id,ativo_id:ativoId,nome:p.nome,tipo:p.tipo||"Preventiva",frequencia:p.frequencia||"Mensal",ultima_execucao:p.ultima_execucao||"--",proxima_execucao:p.proxima_execucao||"--",responsavel:p.responsavel||"",status:p.status||"OK",os_gerada_id:p.os_gerada_id||null,acoes:p.acoes||[],ativo:p.ativo!==false,motivo_desativacao:p.motivo_desativacao||"",desativado_em:p.desativado_em||""};}));
     syncChildTable("historico","ativo_id",ativoId,(f.historico||[]).map(function(h){return{id:h.id,ativo_id:ativoId,descricao:h.desc||"",data:h.data||"",tipo:h.tipo||"Corretiva",tecnico:h.tecnico||"",horas:h.horas||0,custo:h.custo||0,obs:h.obs||"",analise:h.analise||null,os_id:h.os_id||null};}));
-    syncChildTable("medicoes","ativo_id",ativoId,(f.preditiva||[]).map(function(m){return{id:m.id,ativo_id:ativoId,data:m.data||"",param:m.param||"",valor:m.valor||0,limite:m.limite||0,obs:m.obs||""};}));
+    syncChildTable("medicoes","ativo_id",ativoId,(f.preditiva||[]).map(function(m){return{id:m.id,ativo_id:ativoId,data:m.data||"",param:m.param||"",unidade:m.unidade||"",valor:m.valor||0,limite:m.limite||0,limite_min:m.limite_min||0,limite_max:m.limite_max||0,obs:m.obs||""};}));
   });
 }
 function saveUsuarios(d){localStorage.setItem("mx_usuarios",JSON.stringify(d));sbUpsert("usuarios",d.map(function(u){return{id:u.id,nome:u.nome,email:u.email||"",telefone:u.telefone||"",perfil:u.perfil||"Tecnico",ativo:u.ativo!==false,status:u.status||"Ativo",user_id:u.user_id||null};}));}
@@ -551,7 +551,7 @@ function concluirOSProgramada(os,fichasObj){
           if(a.tipo==="medicao"&&a.valor_exec!=null&&a.valor_exec!==""){
             var valor=parseFloat(a.valor_exec);
             if(!f.preditiva)f.preditiva=[];
-            f.preditiva.push({id:nextId(),data:hoje,param:a.param||a.desc,valor:valor,limite:parseFloat(a.limite_max)||0,obs:a.obs_exec||""});
+            f.preditiva.push({id:nextId(),data:hoje,param:a.param||a.desc,unidade:a.unidade||"",valor:valor,limite:parseFloat(a.limite_max)||0,limite_min:parseFloat(a.limite_min)||0,limite_max:parseFloat(a.limite_max)||0,obs:a.obs_exec||""});
             // 0 (ou vazio) em limite_min/limite_max significa "sem limite definido"
             // — mesma convencao ja usada no restante do arquivo (ver linha de cima).
             var max=parseFloat(a.limite_max)||0, min=parseFloat(a.limite_min)||0;
@@ -714,7 +714,7 @@ function initApp(renderFn){
       });
       (dbPl||[]).forEach(function(p){if(fichas[p.ativo_id])fichas[p.ativo_id].planos.push({id:p.id,nome:p.nome,tipo:p.tipo,frequencia:p.frequencia,ultima_execucao:p.ultima_execucao,proxima_execucao:p.proxima_execucao,responsavel:p.responsavel,status:p.status||calcPlanStatus(p.proxima_execucao),os_gerada_id:p.os_gerada_id||null,acoes:p.acoes||[]});});
       (dbHist||[]).forEach(function(h){if(fichas[h.ativo_id])fichas[h.ativo_id].historico.push({id:h.id,desc:h.descricao,data:h.data,tipo:h.tipo,tecnico:h.tecnico,horas:h.horas,custo:h.custo,obs:h.obs,analise:h.analise||null,os_id:h.os_id||null});});
-      (dbMed||[]).forEach(function(m){if(fichas[m.ativo_id])fichas[m.ativo_id].preditiva.push({id:m.id,data:m.data,param:m.param,valor:m.valor,limite:m.limite,obs:m.obs});});
+      (dbMed||[]).forEach(function(m){if(fichas[m.ativo_id])fichas[m.ativo_id].preditiva.push({id:m.id,data:m.data,param:m.param,unidade:m.unidade,valor:m.valor,limite:m.limite,limite_min:m.limite_min,limite_max:m.limite_max,obs:m.obs});});
       localStorage.setItem("mx_ativos",JSON.stringify(ativos));
       localStorage.setItem("mx_fichas",JSON.stringify(fichas));
     }else{ativos=[];fichas={};}
