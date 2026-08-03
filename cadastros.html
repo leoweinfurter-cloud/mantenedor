@@ -42,6 +42,16 @@
 .perfil-opt-label{font-size:11px;font-weight:700;color:#94a3b8}
 .perfil-opt.selected .perfil-opt-label{color:#60a5fa}
 
+/* ── EMPRESA MULTI-SELECT (chips) ── */
+.emp-chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:6px}
+.emp-chip{padding:7px 12px;border-radius:20px;border:1px solid var(--border,#1e3a5f);background:var(--inner-bg,#060b12);cursor:pointer;font-size:12px;font-weight:600;color:#94a3b8;transition:all .15s}
+.emp-chip.selected{border-color:#3b82f6;background:rgba(59,130,246,.12);color:#60a5fa}
+.emp-chip-hint{font-size:11px;color:#64748b;margin-top:6px}
+.emp-badge{display:inline-block;font-size:10px;font-weight:700;color:#60a5fa;background:rgba(96,165,250,.12);border:1px solid rgba(96,165,250,.3);border-radius:20px;padding:2px 8px;margin:2px 4px 0 0}
+.emp-badge.todas{color:#64748b;background:transparent;border-color:var(--border,#1e3a5f)}
+.cad-filter{margin-bottom:14px}
+.cad-filter select{width:100%;max-width:280px}
+
 /* ── STATUS TOGGLE ── */
 .status-opts{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:6px}
 .status-opt{padding:10px;border-radius:10px;border:1px solid var(--border,#1e3a5f);background:var(--inner-bg,#060b12);cursor:pointer;text-align:center;transition:all .15s;font-size:12px;font-weight:700;color:#64748b}
@@ -154,6 +164,11 @@
     </div>
     <input type="hidden" id="u-perfil" value="Coordenador"/>
   </div>
+  <div class="fg">
+    <label class="lbl" data-i18n="cad_f_user_empresas">Empresas</label>
+    <div class="emp-chips" id="user-emp-chips"></div>
+    <div class="emp-chip-hint" data-i18n="cad_emp_hint_user">Nenhuma selecionada = vê ativos, OS, histórico e relatórios de todas as empresas. Selecionando uma ou mais, o acesso fica restrito só a elas.</div>
+  </div>
   <div class="fg" id="user-status-wrap" style="display:none">
     <label class="lbl" data-i18n="cad_f_status">Status</label>
     <div class="status-opts">
@@ -188,6 +203,11 @@
   <input type="hidden" id="c-id"/>
   <div class="fg"><label class="lbl" data-i18n="cad_f_cat_nome">Nome *</label><input id="c-nome" placeholder="Ex: Robotica" oninput="updatePreview()"/></div>
   <div class="fg"><label class="lbl" data-i18n="cad_f_cat_desc">Descricao</label><input id="c-desc" data-i18n-ph="cad_ph_desc_breve" placeholder="Descricao breve..." oninput="updatePreview()"/></div>
+  <div class="fg">
+    <label class="lbl" data-i18n="cad_f_cat_empresas">Empresas</label>
+    <div class="emp-chips" id="cat-emp-chips"></div>
+    <div class="emp-chip-hint" data-i18n="cad_emp_hint_cat">Nenhuma selecionada = categoria aparece para todas as empresas.</div>
+  </div>
   <div class="fg">
     <label class="lbl" data-i18n="cad_f_cat_icone">Icone</label>
     <div class="icon-opts" id="icon-picker"></div>
@@ -299,7 +319,9 @@ function renderUsuarios(){
       +(u.telefone?esc(u.telefone)+' &bull; ':"")+esc((t("cad_perfis")||{})[u.perfil]||u.perfil)
       +(pendente?' &bull; <span style="color:#fbbf24">'+t("cad_convite_pend")+'</span>':'')
       +(u.ativo?'':' &bull; <span style="color:#f87171">Inativo</span>')
-      +'</div></div>'
+      +'</div>'
+      +(u.empresas&&u.empresas.length?'<div style="margin-top:4px">'+empresasBadgesHtml(u.empresas)+'</div>':'')
+      +'</div>'
       +'<div class="user-btns">'
       +(pendente?'<button class="btn bp bsm" onclick="copiarLinkConvite('+u.id+')" style="font-size:11px">'+t("cad_copiar_link")+'</button>':'')
       +'<button class="btn bx bsm" onclick="editUser('+u.id+')" style="font-size:11px">'+t("btn_editar")+'</button>'
@@ -332,6 +354,8 @@ function openNewUser(){
   document.getElementById("user-invite-status").textContent = "Ao salvar, um link de convite é gerado pra essa pessoa criar a própria senha.";
   document.getElementById("user-save-btn").querySelector("span").textContent = "Salvar e gerar convite";
   setPerfil("Coordenador", document.getElementById("perfil-Coordenador"));
+  selUserEmpresas = [];
+  buildEmpChips("user-emp-chips", selUserEmpresas);
   openModal("modal-user");
 }
 
@@ -353,6 +377,8 @@ function editUser(id){
   document.getElementById("user-save-btn").querySelector("span").textContent = "Salvar";
   setPerfil(u.perfil, document.getElementById("perfil-"+u.perfil));
   setStatus(u.ativo);
+  selUserEmpresas = (u.empresas||[]).slice();
+  buildEmpChips("user-emp-chips", selUserEmpresas);
   openModal("modal-user");
 }
 
@@ -383,13 +409,14 @@ function saveUser(){
   var perfil = document.getElementById("u-perfil").value;
   var ativo  = document.getElementById("u-ativo").value === "true";
   var tel    = document.getElementById("u-tel").value.trim();
+  var emps   = selUserEmpresas.slice();
 
   if(id){
     // Editar (mantém status atual — não mexe em Pendente/Ativo aqui)
     var atual = usuarios.find(function(u){return u.id==parseInt(id);});
     usuarios = usuarios.map(function(u){
       return u.id==parseInt(id)
-        ? {id:u.id, nome:nome, email:email, telefone:tel, perfil:perfil, ativo:ativo, status:(atual&&atual.status)||"Ativo", user_id:atual&&atual.user_id}
+        ? {id:u.id, nome:nome, email:email, telefone:tel, perfil:perfil, ativo:ativo, status:(atual&&atual.status)||"Ativo", user_id:atual&&atual.user_id, empresas:emps}
         : u;
     });
     saveUsuarios(usuarios);
@@ -400,7 +427,7 @@ function saveUser(){
     if(usuarios.find(function(u){return u.email===email;})){
       alert("Ja existe um usuario com este e-mail."); return;
     }
-    var novo = {id:nextId(), nome:nome, email:email, telefone:tel, perfil:perfil, ativo:true, status:"Pendente"};
+    var novo = {id:nextId(), nome:nome, email:email, telefone:tel, perfil:perfil, ativo:true, status:"Pendente", empresas:emps};
     usuarios.push(novo);
     saveUsuarios(usuarios);
     closeModal("modal-user");
@@ -464,9 +491,20 @@ var CORES = ["#60a5fa","#3b82f6","#7c3aed","#a78bfa","#f87171","#fb923c","#fbbf2
 var ICONES = ["&#9881;","&#128168;","&#128167;","&#9889;","&#128694;","&#127755;","&#128207;","&#128295;","&#128200;","&#128170;","&#128736;","&#9978;","&#128299;","&#127981;","&#128268;","&#128269;"];
 var selIcone = "&#9881;", selCor = "#60a5fa";
 
+var catFiltroEmp = "";
+
 function renderCategorias(){
   var D = loadData();
-  var cards = categorias.map(function(cat){
+  var visiveis = categorias.filter(function(cat){
+    return !catFiltroEmp || !cat.empresas || !cat.empresas.length || cat.empresas.indexOf(catFiltroEmp)>-1;
+  });
+  var filtro = empresas.length
+    ? '<div class="cad-filter"><select id="cat-filtro-emp" onchange="catFiltroEmp=this.value;render()">'
+      +'<option value=""'+(catFiltroEmp===""?" selected":"")+'>'+t("cad_filtro_todas_emp")+'</option>'
+      +empresas.map(function(e){return'<option value="'+esc(e.nome)+'"'+(catFiltroEmp===e.nome?" selected":"")+'>'+esc(e.nome)+'</option>';}).join("")
+      +'</select></div>'
+    : "";
+  var cards = visiveis.map(function(cat){
     var count = D.ativos.filter(function(a){return a.categoria===cat.nome;}).length;
     return '<div class="cat-card">'
       +'<div class="cat-icon-box" style="background:'+cat.cor+'20;border:1px solid '+cat.cor+'40">'+cat.icone+'</div>'
@@ -474,6 +512,7 @@ function renderCategorias(){
       +'<div class="cat-nome">'+esc(cat.nome)+'</div>'
       +'<div class="cat-desc">'+esc(cat.desc||t("cad_sem_desc"))+'</div>'
       +'<div style="font-size:11px;color:#475569;margin-top:3px">'+count+t("cad_ativos_label")+'</div>'
+      +'<div style="margin-top:4px">'+empresasBadgesHtml(cat.empresas)+'</div>'
       +'</div>'
       +'<div class="cat-btns">'
       +'<button class="btn bx bsm" onclick="editCat('+cat.id+')" style="font-size:11px">'+t("btn_editar")+'</button>'
@@ -482,9 +521,38 @@ function renderCategorias(){
   }).join("");
 
   return renderCadTabs("categorias")
-    +'<div class="fr"><div style="font-size:13px;color:#64748b">'+categorias.length+t("cad_cats_cad")+'</div>'
+    +filtro
+    +'<div class="fr"><div style="font-size:13px;color:#64748b">'+visiveis.length+t("cad_cats_cad")+'</div>'
     +'<button class="btn bp" onclick="openNewCat()">'+t("cad_nova_cat")+'</button></div>'
     +cards;
+}
+
+// ── EMPRESA MULTI-SELECT (compartilhado entre categoria e usuario) ───────────
+var selCatEmpresas  = [];
+var selUserEmpresas = [];
+function buildEmpChips(containerId, selectedArr){
+  var box = document.getElementById(containerId);
+  if(!box) return;
+  box.innerHTML = "";
+  if(!empresas.length){
+    box.innerHTML = '<div style="font-size:11px;color:#475569">'+t("cad_nenhuma_emp")+'</div>';
+    return;
+  }
+  empresas.forEach(function(e){
+    var chip = document.createElement("div");
+    chip.className = "emp-chip" + (selectedArr.indexOf(e.nome)>-1 ? " selected" : "");
+    chip.textContent = e.nome;
+    chip.onclick = function(){
+      var idx = selectedArr.indexOf(e.nome);
+      if(idx>-1){ selectedArr.splice(idx,1); } else { selectedArr.push(e.nome); }
+      chip.classList.toggle("selected");
+    };
+    box.appendChild(chip);
+  });
+}
+function empresasBadgesHtml(list){
+  if(!list || !list.length) return '<span class="emp-badge todas">'+t("cad_todas_emp")+'</span>';
+  return list.map(function(nome){return '<span class="emp-badge">'+esc(nome)+'</span>';}).join("");
 }
 
 // ── CRUD CATEGORIAS ──────────────────────────────────────────────────────────
@@ -541,7 +609,9 @@ function openNewCat(){
   selIcone = "&#9881;"; selCor = "#60a5fa";
   document.getElementById("c-icone").value = selIcone;
   document.getElementById("c-cor").value   = selCor;
+  selCatEmpresas = [];
   buildPickers();
+  buildEmpChips("cat-emp-chips", selCatEmpresas);
   updatePreview();
   openModal("modal-cat");
 }
@@ -556,7 +626,9 @@ function editCat(id){
   selIcone = cat.icone; selCor = cat.cor;
   document.getElementById("c-icone").value = cat.icone;
   document.getElementById("c-cor").value   = cat.cor;
+  selCatEmpresas = (cat.empresas||[]).slice();
   buildPickers();
+  buildEmpChips("cat-emp-chips", selCatEmpresas);
   updatePreview();
   openModal("modal-cat");
 }
@@ -568,16 +640,17 @@ function saveCat(){
   var ic   = document.getElementById("c-icone").value;
   var cor  = document.getElementById("c-cor").value;
   var desc = document.getElementById("c-desc").value.trim();
+  var emps = selCatEmpresas.slice();
 
   if(id){
     categorias = categorias.map(function(c){
-      return c.id==parseInt(id) ? {id:c.id,nome:nome,icone:ic,cor:cor,desc:desc} : c;
+      return c.id==parseInt(id) ? {id:c.id,nome:nome,icone:ic,cor:cor,desc:desc,empresas:emps} : c;
     });
   } else {
     if(categorias.find(function(c){return c.nome.toLowerCase()===nome.toLowerCase();})){
       alert("Ja existe uma categoria com este nome."); return;
     }
-    categorias.push({id:nextId(),nome:nome,icone:ic,cor:cor,desc:desc});
+    categorias.push({id:nextId(),nome:nome,icone:ic,cor:cor,desc:desc,empresas:emps});
   }
   saveCategorias(categorias);
   closeModal("modal-cat");

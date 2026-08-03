@@ -261,11 +261,22 @@ function loadEmpresasData(){
 function populateCatSelect(){
   var sel=document.getElementById("at-cat");
   if(!sel)return;
-  var cats=loadCatData();
-  sel.innerHTML='<option value="" data-i18n="btn_selecione">Selecione...</option>'
-    +cats.map(function(cat){
-      return'<option value="'+esc(cat.nome)+'">'+esc(cat.nome)+'</option>';
-    }).join("");
+  var atual=sel.value;
+  var empNome=(document.getElementById("at-emp")||{}).value||"";
+  var todasCats=loadCatData();
+  var cats=todasCats.filter(function(cat){
+    return !empNome || !cat.empresas || !cat.empresas.length || cat.empresas.indexOf(empNome)>-1;
+  });
+  var opts=cats.map(function(cat){
+    return'<option value="'+esc(cat.nome)+'"'+(cat.nome===atual?" selected":"")+'>'+esc(cat.nome)+'</option>';
+  }).join("");
+  // Nunca descarta silenciosamente a categoria já selecionada, mesmo que ela
+  // não esteja mais no filtro da empresa atual (ex: dado legado, ou empresa
+  // trocada) — mantém visível e marcada, só sinalizando que está fora do filtro.
+  if(atual && !cats.some(function(c){return c.nome===atual;})){
+    opts += '<option value="'+esc(atual)+'" selected>'+esc(atual)+' ('+t("at_cat_fora_filtro")+')</option>';
+  }
+  sel.innerHTML='<option value="" data-i18n="btn_selecione">Selecione...</option>'+opts;
 }
 
 function populateEmpSelect(){
@@ -282,6 +293,7 @@ function populateEmpSelect(){
 
 function onEmpChange(){
   var empNome=document.getElementById("at-emp").value;
+  populateCatSelect();
   var unidSel=document.getElementById("at-unid");
   unidSel.innerHTML='<option value="" data-i18n="at_sel_unidade">Selecione a unidade...</option>';
   if(!empNome){unidSel.disabled=true;return;}

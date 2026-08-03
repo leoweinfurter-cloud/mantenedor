@@ -460,8 +460,8 @@ function saveFichas(fichasObj){
     syncChildTable("medicoes","ativo_id",ativoId,(f.preditiva||[]).map(function(m){return{id:m.id,ativo_id:ativoId,data:m.data||"",desc:m.desc||"",param:m.param||"",unidade:m.unidade||"",valor:m.valor||0,limite:m.limite||0,limite_min:m.limite_min||0,limite_max:m.limite_max||0,obs:m.obs||""};}));
   });
 }
-function saveUsuarios(d){localStorage.setItem("mx_usuarios",JSON.stringify(d));sbUpsert("usuarios",d.map(function(u){return{id:u.id,nome:u.nome,email:u.email||"",telefone:u.telefone||"",perfil:u.perfil||"Tecnico",ativo:u.ativo!==false,status:u.status||"Ativo",user_id:u.user_id||null};}));}
-function saveCategorias(d){localStorage.setItem("mx_categorias",JSON.stringify(d));sbUpsert("categorias",d.map(function(c){return{id:c.id,nome:c.nome,descricao:c.desc||"",icone:c.icone||"⚙",cor:c.cor||"#60a5fa"};}));}
+function saveUsuarios(d){localStorage.setItem("mx_usuarios",JSON.stringify(d));sbUpsert("usuarios",d.map(function(u){return{id:u.id,nome:u.nome,email:u.email||"",telefone:u.telefone||"",perfil:u.perfil||"Tecnico",ativo:u.ativo!==false,status:u.status||"Ativo",user_id:u.user_id||null,empresas:u.empresas||[]};}));}
+function saveCategorias(d){localStorage.setItem("mx_categorias",JSON.stringify(d));sbUpsert("categorias",d.map(function(c){return{id:c.id,nome:c.nome,descricao:c.desc||"",icone:c.icone||"⚙",cor:c.cor||"#60a5fa",empresas:c.empresas||[]};}));}
 function saveEmpresas(d){
   localStorage.setItem("mx_empresas",JSON.stringify(d));
   var er=[],ur=[];
@@ -732,7 +732,7 @@ function initApp(renderFn){
 
     // Categorias
     if(Array.isArray(dbCats)&&dbCats.length){
-      var cats=dbCats.map(function(c){return{id:c.id,nome:c.nome,desc:c.descricao||"",icone:c.icone||"⚙",cor:c.cor||"#60a5fa"};});
+      var cats=dbCats.map(function(c){return{id:c.id,nome:c.nome,desc:c.descricao||"",icone:c.icone||"⚙",cor:c.cor||"#60a5fa",empresas:c.empresas||[]};});
       localStorage.setItem("mx_categorias",JSON.stringify(cats));
     }else{localStorage.removeItem("mx_categorias");}
 
