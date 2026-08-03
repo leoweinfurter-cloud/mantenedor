@@ -461,7 +461,7 @@ function saveFichas(fichasObj){
   });
 }
 function saveUsuarios(d){localStorage.setItem("mx_usuarios",JSON.stringify(d));sbUpsert("usuarios",d.map(function(u){return{id:u.id,nome:u.nome,email:u.email||"",telefone:u.telefone||"",perfil:u.perfil||"Tecnico",ativo:u.ativo!==false,status:u.status||"Ativo",user_id:u.user_id||null};}));}
-function saveCategorias(d){localStorage.setItem("mx_categorias",JSON.stringify(d));sbUpsert("categorias",d.map(function(c){return{id:c.id,nome:c.nome,descricao:c.descricao||"",icone:c.icone||"⚙",cor:c.cor||"#60a5fa"};}));}
+function saveCategorias(d){localStorage.setItem("mx_categorias",JSON.stringify(d));sbUpsert("categorias",d.map(function(c){return{id:c.id,nome:c.nome,descricao:c.desc||"",icone:c.icone||"⚙",cor:c.cor||"#60a5fa"};}));}
 function saveEmpresas(d){
   localStorage.setItem("mx_empresas",JSON.stringify(d));
   var er=[],ur=[];
@@ -732,7 +732,8 @@ function initApp(renderFn){
 
     // Categorias
     if(Array.isArray(dbCats)&&dbCats.length){
-      localStorage.setItem("mx_categorias",JSON.stringify(dbCats));
+      var cats=dbCats.map(function(c){return{id:c.id,nome:c.nome,desc:c.descricao||"",icone:c.icone||"⚙",cor:c.cor||"#60a5fa"};});
+      localStorage.setItem("mx_categorias",JSON.stringify(cats));
     }else{localStorage.removeItem("mx_categorias");}
 
     // Empresas
