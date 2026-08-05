@@ -49,24 +49,39 @@
 <script src="_shared.js"></script>
 <script>
 var D=loadData(), ordens=D.ordens, ativos=D.ativos, fichas=D.fichas;
+var filtroEmpDash="", filtroCatDash="";
 
-function kpis(){
+function getAtivosFiltrados(){
+  return ativos.filter(function(a){
+    return (!filtroEmpDash || a.empresa===filtroEmpDash)
+        && (!filtroCatDash || a.categoria===filtroCatDash);
+  });
+}
+function getOrdensFiltradas(ativosF){
+  if(!filtroEmpDash && !filtroCatDash) return ordens;
+  var ids={}; ativosF.forEach(function(a){ids[a.id]=true;});
+  return ordens.filter(function(o){return ids[o.ativo_id];});
+}
+
+function kpis(ativosF,ordensF){
+  ativosF=ativosF||ativos; ordensF=ordensF||ordens;
   return{
-    abertas:ordens.filter(function(o){return o.status=="Aberta";}).length,
-    andamento:ordens.filter(function(o){return o.status=="Em Andamento";}).length,
-    concluidas:ordens.filter(function(o){return o.status=="Concluida";}).length,
-    criticas:ordens.filter(function(o){return o.prioridade=="Critica"&&o.status!="Concluida"&&o.status!="Cancelada";}).length,
-    ativosOp:ativos.filter(function(a){return a.status=="Operacional";}).length,
-    total:ordens.length,totalAt:ativos.length
+    abertas:ordensF.filter(function(o){return o.status=="Aberta";}).length,
+    andamento:ordensF.filter(function(o){return o.status=="Em Andamento";}).length,
+    concluidas:ordensF.filter(function(o){return o.status=="Concluida";}).length,
+    criticas:ordensF.filter(function(o){return o.prioridade=="Critica"&&o.status!="Concluida"&&o.status!="Cancelada";}).length,
+    ativosOp:ativosF.filter(function(a){return a.status=="Operacional";}).length,
+    total:ordensF.length,totalAt:ativosF.length
   };
 }
 
-function calcGlobal(){
-  var allH=[];ativos.forEach(function(a){var f=fichas[a.id];if(f&&f.historico)allH=allH.concat(f.historico);});
+function calcGlobal(ativosF,ordensF){
+  ativosF=ativosF||ativos; ordensF=ordensF||ordens;
+  var allH=[];ativosF.forEach(function(a){var f=fichas[a.id];if(f&&f.historico)allH=allH.concat(f.historico);});
   var corr=allH.filter(function(h){return h.tipo=="Corretiva";}),plan=allH.filter(function(h){return h.tipo=="Preventiva"||h.tipo=="Preditiva";});
   var nC=corr.length,nT=allH.length,hC=corr.reduce(function(s,h){return s+(h.horas||0);},0);
-  var bkl=ordens.filter(function(o){return o.status=="Aberta"||o.status=="Em Andamento";}).length;
-  var allP=[];ativos.forEach(function(a){var f=fichas[a.id];if(f&&f.planos)allP=allP.concat(f.planos);});
+  var bkl=ordensF.filter(function(o){return o.status=="Aberta"||o.status=="Em Andamento";}).length;
+  var allP=[];ativosF.forEach(function(a){var f=fichas[a.id];if(f&&f.planos)allP=allP.concat(f.planos);});
   var atrasados=allP.filter(function(p){return p.status!="OK";});
   // Sem historico — nao calcula indicadores
   if(nT===0){
@@ -74,7 +89,7 @@ function calcGlobal(){
     return{mtbf:"--",mttr:"--",disp:"--",mp:0,comp:comp2,bkl:bkl,nCorr:0,atrasados:atrasados};
   }
   var per=0,anyHist=false;
-  ativos.forEach(function(a){
+  ativosF.forEach(function(a){
     var f=fichas[a.id],h=(f&&f.historico)||[];
     if(!h.length)return;
     anyHist=true;
@@ -90,10 +105,11 @@ function calcGlobal(){
   return{mtbf:mtbf,mttr:mttr,disp:disp,mp:mp,comp:comp,bkl:bkl,nCorr:nC,atrasados:atrasados};
 }
 
-function calcCriticidadeGlobal(){
+function calcCriticidadeGlobal(ativosF){
+  ativosF=ativosF||ativos;
   var counts={A:0,B:0,C:0,D:0};
   var list=[];
-  ativos.forEach(function(a){
+  ativosF.forEach(function(a){
     var f=fichas[a.id];
     if(f&&f.crit&&f.crit.hse&&f.crit.freq){
       var score=calcCritScore(f.crit);
@@ -157,7 +173,9 @@ function kc(label,val,color,sub,norma){
 }
 
 function render(){
-  var k=kpis(),g=calcGlobal(),cr=calcCriticidadeGlobal();
+  var ativosF=getAtivosFiltrados();
+  var ordensF=getOrdensFiltradas(ativosF);
+  var k=kpis(ativosF,ordensF),g=calcGlobal(ativosF,ordensF),cr=calcCriticidadeGlobal(ativosF);
   var al=document.getElementById("ta");
   if(k.criticas>0){al.style.display="block";al.textContent=k.criticas+t("topbar_alert_criticas");}
   else al.style.display="none";
@@ -167,15 +185,34 @@ function render(){
   var compCol=g.comp>=80?"#4ade80":g.comp>=60?"#fbbf24":"#f87171";
   var bkCol=g.bkl==0?"#4ade80":g.bkl<=3?"#fbbf24":"#f87171";
 
+  // Filtro por empresa/categoria (para coordenadores verem cada empresa separadamente)
+  var todasEmpresas=Array.from(new Set(ativos.map(function(a){return a.empresa||"";}).filter(Boolean))).sort();
+  var catsParaFiltro=Array.from(new Set(
+    ativos.filter(function(a){return !filtroEmpDash || a.empresa===filtroEmpDash;})
+          .map(function(a){return a.categoria||"";}).filter(Boolean)
+  )).sort();
+  var filtroBar=(todasEmpresas.length||catsParaFiltro.length)?(
+    '<div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px">'
+    +(todasEmpresas.length?'<select id="dash-filtro-emp" style="max-width:220px" onchange="filtroEmpDash=this.value;filtroCatDash=\'\';render()">'
+      +'<option value=""'+(filtroEmpDash===""?" selected":"")+'>'+t("cad_filtro_todas_emp")+'</option>'
+      +todasEmpresas.map(function(e){return'<option value="'+esc(e)+'"'+(filtroEmpDash===e?" selected":"")+'>'+esc(e)+'</option>';}).join("")
+      +'</select>':'')
+    +(catsParaFiltro.length?'<select id="dash-filtro-cat" style="max-width:220px" onchange="filtroCatDash=this.value;render()">'
+      +'<option value=""'+(filtroCatDash===""?" selected":"")+'>'+t("at_filtro_todas_cat")+'</option>'
+      +catsParaFiltro.map(function(c){return'<option value="'+esc(c)+'"'+(filtroCatDash===c?" selected":"")+'>'+esc(c)+'</option>';}).join("")
+      +'</select>':'')
+    +'</div>'
+  ):"";
+
   // OS recentes
-  var ohHtml=ordens.slice(0,5).map(function(o){
+  var ohHtml=ordensF.slice(0,5).map(function(o){
     return'<a class="mi" href="'+ordensDetailUrl(o)+'" style="text-decoration:none">'
       +'<div><div class="mn">'+esc(o.titulo)+'</div><div class="ms">'+esc(o.ativo)+' &bull; '+esc(o.tipo)+'</div></div>'
       +'<div class="mb">'+bdg(o.status,SC)+bdg(o.prioridade,PC)+'</div></a>';
   }).join("")||'<div style="color:#64748b;padding:16px;text-align:center;font-size:13px">'+ t("ord_nenhuma_cad") +'</div>';
 
   // Equipamentos
-  var ahHtml=ativos.map(function(a){
+  var ahHtml=ativosF.map(function(a){
     var f=fichas[a.id];
     var critBadge="";
     if(f&&f.crit){var sc=calcCritScore(f.crit);var cl=getCritClass(sc);var col=CRIT_CLASS_COLORS[cl];critBadge='<span style="font-size:10px;font-weight:800;color:'+col+';background:'+col+'18;border:1px solid '+col+'35;padding:2px 7px;border-radius:10px;margin-left:6px">'+cl+'</span>';}
@@ -217,7 +254,8 @@ function render(){
   }
 
   document.getElementById("ct").innerHTML=
-    '<div class="ks2">'+t('dash_status')+'</div>'
+    filtroBar
+    +'<div class="ks2">'+t('dash_status')+'</div>'
     +'<div class="kg">'
     +kc(t("kpi_abertas"),k.abertas,"#fbbf24",t("kpi_aguardando"))
     +kc(t("kpi_andamento"),k.andamento,"#60a5fa",t("kpi_em_exec"))

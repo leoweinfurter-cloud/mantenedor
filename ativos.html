@@ -234,6 +234,7 @@
 var D=loadData();
 var ativos=D.ativos, ordens=D.ordens, fichas=D.fichas;
 var selAtivo=null, fichaTab="geral";
+var filtroEmpLista="", filtroCatLista="";
 var analAid=null, analHid=null, analTab="5porques";
 var ftaIC=0, ftaBC=0;
 
@@ -877,8 +878,19 @@ function render(){
 }
 
 function renderList(){
-  var ativosAtivos=ativos.filter(function(a){return a.status!=="Desativado";});
-  var ativosDesativ=ativos.filter(function(a){return a.status==="Desativado";});
+  var todasEmpresas = Array.from(new Set(ativos.map(function(a){return a.empresa||"";}).filter(Boolean))).sort();
+  var catsParaFiltro = Array.from(new Set(
+    ativos.filter(function(a){return !filtroEmpLista || a.empresa===filtroEmpLista;})
+          .map(function(a){return a.categoria||"";}).filter(Boolean)
+  )).sort();
+
+  var filtrados = ativos.filter(function(a){
+    return (!filtroEmpLista || a.empresa===filtroEmpLista)
+        && (!filtroCatLista || a.categoria===filtroCatLista);
+  });
+  var ativosAtivos=filtrados.filter(function(a){return a.status!=="Desativado";});
+  var ativosDesativ=filtrados.filter(function(a){return a.status==="Desativado";});
+
   function mkCard(a,inactive){
     var f=fichas[a.id];var critBadge="";
     if(f&&f.crit&&f.crit.hse){var sc=calcCritScore(f.crit);var cl=getCritClass(sc);var col=CRIT_CLASS_COLORS[cl];critBadge='<span style="font-size:10px;font-weight:800;color:'+col+';background:'+col+'18;border:1px solid '+col+'35;padding:2px 7px;border-radius:10px;margin-left:6px">'+cl+'</span>';}
@@ -896,7 +908,21 @@ function renderList(){
   }
   var cards=ativosAtivos.length===0?'<div style="color:#64748b;text-align:center;padding:40px;font-size:14px">'+t("at_nenhum")+'</div>':ativosAtivos.map(function(a){return mkCard(a,false);}).join("");
   var cardsD=ativosDesativ.length===0?"":'<div style="margin-top:14px"><div style="font-size:11px;font-weight:800;color:#64748b;text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px">Desativados ('+ativosDesativ.length+')</div>'+ativosDesativ.map(function(a){return mkCard(a,true);}).join("")+'</div>';
-  return'<div class="fr"><div></div>'+(isCoordenador()?'<button class="btn bp" onclick="openNewAtivo()">+ Novo Ativo</button>':'')+'</div>'+'<div class="asset-list">'+cards+cardsD+'</div>';
+
+  var filtroBar = (todasEmpresas.length || catsParaFiltro.length) ? (
+    '<div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px">'
+    +(todasEmpresas.length?'<select id="lst-filtro-emp" style="max-width:220px" onchange="filtroEmpLista=this.value;filtroCatLista=\'\';render()">'
+      +'<option value=""'+(filtroEmpLista===""?" selected":"")+'>'+t("cad_filtro_todas_emp")+'</option>'
+      +todasEmpresas.map(function(e){return'<option value="'+esc(e)+'"'+(filtroEmpLista===e?" selected":"")+'>'+esc(e)+'</option>';}).join("")
+      +'</select>':'')
+    +(catsParaFiltro.length?'<select id="lst-filtro-cat" style="max-width:220px" onchange="filtroCatLista=this.value;render()">'
+      +'<option value=""'+(filtroCatLista===""?" selected":"")+'>'+t("at_filtro_todas_cat")+'</option>'
+      +catsParaFiltro.map(function(c){return'<option value="'+esc(c)+'"'+(filtroCatLista===c?" selected":"")+'>'+esc(c)+'</option>';}).join("")
+      +'</select>':'')
+    +'</div>'
+  ) : "";
+
+  return filtroBar+'<div class="fr"><div style="font-size:12px;color:#64748b">'+filtrados.length+t("at_filtro_encontrados")+'</div>'+(isCoordenador()?'<button class="btn bp" onclick="openNewAtivo()">+ Novo Ativo</button>':'')+'</div>'+'<div class="asset-list">'+cards+cardsD+'</div>';
 }
 
 function selAti(id){selAtivo=ativos.find(function(a){return a.id==id;});fichaTab="geral";if(!fichas[id])fichas[id]={historico:[],preditiva:[],planos:[],docs:[],indicadores:["mtbf","mttr","disp","manuplan"]};render();}
