@@ -271,6 +271,8 @@ pt: {
   // Plano form
   pl_f_nome:          "Nome *",
   pl_f_freq:          "Frequencia",
+  pl_f_freq_dias:    "A cada quantos dias?",
+  pl_freq_personalizada: "Personalizada (dias)",
   pl_f_prox:          "Proxima Execucao",
   pl_f_resp:          "Responsavel",
   pl_freq: {
@@ -278,6 +280,7 @@ pt: {
     Bimestral:"Bimestral", Trimestral:"Trimestral",
     Semestral:"Semestral", Anual:"Anual"
   },
+  pl_freq_custom:    "A cada {n} dias",
 
   // Plano status
   pl_ok:              "OK",
@@ -667,6 +670,7 @@ pt: {
   msg_so_coord_reat_at: "Apenas Coordenadores podem reativar ativos.",
   msg_so_coord_excl_pl: "Apenas Coordenadores podem excluir planos.",
   msg_informe_nome: "Informe o nome.",
+  msg_informe_dias_freq: "Informe um numero valido de dias para a frequencia personalizada.",
   msg_informe_desc: "Informe a descricao.",
   msg_informe_valor: "Informe o valor.",
   msg_informe_param: "Informe o parametro.",
@@ -947,11 +951,14 @@ en: {
 
   pl_f_nome:"Name *", pl_f_freq:"Frequency",
   pl_f_prox:"Next Execution", pl_f_resp:"Responsible",
+  pl_f_freq_dias:    "Every how many days?",
+  pl_freq_personalizada: "Custom (days)",
   pl_freq: {
     Semanal:"Weekly", Quinzenal:"Biweekly", Mensal:"Monthly",
     Bimestral:"Bimonthly", Trimestral:"Quarterly",
     Semestral:"Semiannual", Anual:"Annual"
   },
+  pl_freq_custom:    "Every {n} days",
   pl_ok:"OK", pl_atrasado:"Overdue", pl_vence:"Due Today",
   pl_todos_ok:"✓ All plans on schedule",
   pl_nenhuma_os:"No work orders registered",
@@ -1327,6 +1334,7 @@ en: {
   msg_so_coord_reat_at: "Only Coordinators can reactivate assets.",
   msg_so_coord_excl_pl: "Only Coordinators can delete plans.",
   msg_informe_nome: "Enter the name.",
+  msg_informe_dias_freq: "Enter a valid number of days for the custom frequency.",
   msg_informe_desc: "Enter the description.",
   msg_informe_valor: "Enter the value.",
   msg_informe_param: "Enter the parameter.",
@@ -1607,11 +1615,14 @@ es: {
 
   pl_f_nome:"Nombre *", pl_f_freq:"Frecuencia",
   pl_f_prox:"Proxima Ejecucion", pl_f_resp:"Responsable",
+  pl_f_freq_dias:    "Cada cuantos dias?",
+  pl_freq_personalizada: "Personalizada (dias)",
   pl_freq: {
     Semanal:"Semanal", Quinzenal:"Quincenal", Mensal:"Mensual",
     Bimestral:"Bimestral", Trimestral:"Trimestral",
     Semestral:"Semestral", Anual:"Anual"
   },
+  pl_freq_custom:    "Cada {n} dias",
   pl_ok:"OK", pl_atrasado:"Atrasado", pl_vence:"Vence Hoy",
   pl_todos_ok:"✓ Todos los planes al dia",
   pl_nenhuma_os:"Ninguna orden registrada",
@@ -1987,6 +1998,7 @@ es: {
   msg_so_coord_reat_at: "Solo los Coordinadores pueden reactivar activos.",
   msg_so_coord_excl_pl: "Solo los Coordinadores pueden eliminar planes.",
   msg_informe_nome: "Ingrese el nombre.",
+  msg_informe_dias_freq: "Ingrese un numero valido de dias para la frecuencia personalizada.",
   msg_informe_desc: "Ingrese la descripcion.",
   msg_informe_valor: "Ingrese el valor.",
   msg_informe_param: "Ingrese el parametro.",

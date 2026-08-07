@@ -109,8 +109,12 @@
   <input type="hidden" id="pl-tipo" value="Preventiva"/>
 
   <div class="g2">
-    <div class="fg"><label class="lbl" data-i18n="pl_f_freq">Frequencia</label><select id="pl-freq"><option value="Semanal" data-i18n-freq="Semanal">Semanal</option><option value="Quinzenal" data-i18n-freq="Quinzenal">Quinzenal</option><option value="Mensal" selected data-i18n-freq="Mensal">Mensal</option><option value="Bimestral" data-i18n-freq="Bimestral">Bimestral</option><option value="Trimestral" data-i18n-freq="Trimestral">Trimestral</option><option value="Semestral" data-i18n-freq="Semestral">Semestral</option><option value="Anual" data-i18n-freq="Anual">Anual</option></select></div>
+    <div class="fg"><label class="lbl" data-i18n="pl_f_freq">Frequencia</label><select id="pl-freq" onchange="onFreqChange()"><option value="Semanal" data-i18n-freq="Semanal">Semanal</option><option value="Quinzenal" data-i18n-freq="Quinzenal">Quinzenal</option><option value="Mensal" selected data-i18n-freq="Mensal">Mensal</option><option value="Bimestral" data-i18n-freq="Bimestral">Bimestral</option><option value="Trimestral" data-i18n-freq="Trimestral">Trimestral</option><option value="Semestral" data-i18n-freq="Semestral">Semestral</option><option value="Anual" data-i18n-freq="Anual">Anual</option><option value="Personalizada" data-i18n="pl_freq_personalizada">Personalizada (dias)</option></select></div>
     <div class="fg"><label class="lbl" data-i18n="pl_f_prox">Proxima Execucao</label><input type="date" id="pl-prox"/></div>
+  </div>
+  <div class="fg" id="pl-freq-dias-wrap" style="display:none">
+    <label class="lbl" data-i18n="pl_f_freq_dias">A cada quantos dias?</label>
+    <input type="number" id="pl-freq-dias" min="1" placeholder="Ex: 45"/>
   </div>
   <div class="fg"><label class="lbl" data-i18n="pl_f_resp">Responsavel</label><select id="pl-resp"><option value="" data-i18n="btn_selecione">Selecione...</option></select></div>
   <div class="fg">
@@ -415,6 +419,22 @@ var _plEditId = null;
 
 function setPlTipo(val, el){ _plTipo = val; }
 
+function onFreqChange(){
+  var isCustom = gv("pl-freq")==="Personalizada";
+  document.getElementById("pl-freq-dias-wrap").style.display = isCustom ? "block" : "none";
+}
+// Resolve o valor final de "frequencia" a partir do que esta no formulario:
+// se for "Personalizada", valida o numero de dias e monta "A cada N dias";
+// caso contrario, usa o valor do select como sempre. Retorna null se
+// invalido (Personalizada sem numero valido) — quem chamar deve tratar.
+function resolveFreqValue(){
+  var sel = gv("pl-freq");
+  if(sel!=="Personalizada") return sel;
+  var dias = parseInt(gv("pl-freq-dias"),10);
+  if(!dias || dias<1) return null;
+  return "A cada "+dias+" dias";
+}
+
 function openNewPlano(){
   _plEditId = null;
   _plAcoes = [];
@@ -423,6 +443,9 @@ function openNewPlano(){
   document.getElementById("pl-id").value = "";
   document.getElementById("pl-nome").value = "";
   document.getElementById("pl-prox").value = "";
+  document.getElementById("pl-freq").value = "Mensal";
+  document.getElementById("pl-freq-dias").value = "";
+  onFreqChange();
   // Populate responsavel dropdown from usuarios
   var respSel = document.getElementById("pl-resp");
   var usuarios = loadUsuarios();
@@ -452,7 +475,15 @@ function editPlano(planoId){
     + usuarios.filter(function(u){return u.ativo;}).map(function(u){
         return '<option value="'+u.nome+'"'+(u.nome===p.responsavel?' selected':'')+'>'+u.nome+'</option>';
       }).join("");
-  document.getElementById("pl-freq").value = p.frequencia || "Mensal";
+  var freqCustomDias = freqDiasCustom(p.frequencia);
+  if(freqCustomDias!=null){
+    document.getElementById("pl-freq").value = "Personalizada";
+    document.getElementById("pl-freq-dias").value = freqCustomDias;
+  } else {
+    document.getElementById("pl-freq").value = p.frequencia || "Mensal";
+    document.getElementById("pl-freq-dias").value = "";
+  }
+  onFreqChange();
   renderPlAcoes();
   openModal("modal-plano");
 }
@@ -508,13 +539,15 @@ function savePlano(){
   if(!isCoordenador()){mxToast(t("msg_so_coord_planos"),"error");return;}
   var n=document.getElementById("pl-nome").value.trim();
   if(!n){alert(t("msg_informe_nome"));return;}
+  var freq = resolveFreqValue();
+  if(freq===null){alert(t("msg_informe_dias_freq"));return;}
   var f=fichas[selAtivo.id];
   if(!f.planos) f.planos=[];
-  var prox = gv("pl-prox") || calcProxima(new Date().toISOString().slice(0,10), gv("pl-freq"));
+  var prox = gv("pl-prox") || calcProxima(new Date().toISOString().slice(0,10), freq);
   var planoObj = {
     nome:n,
     tipo: document.getElementById("pl-tipo").value,
-    frequencia: gv("pl-freq"),
+    frequencia: freq,
     proxima_execucao: prox,
     responsavel: gv("pl-resp"),
     ultima_execucao: "--",
@@ -1045,7 +1078,7 @@ function tabPrev(a,f){
         +sc
         +'</div>'
         +'<div class="plan-card-nome">'+esc(p.nome)+'</div>'
-        +'<div class="plan-card-meta">'+esc(p.frequencia)+' &bull; Prox: '+esc(p.proxima_execucao)+'</div>'
+        +'<div class="plan-card-meta">'+esc(freqLabel(p.frequencia))+' &bull; Prox: '+esc(p.proxima_execucao)+'</div>'
         +'<div class="plan-card-meta">Ultima: '+esc(p.ultima_execucao)+' &bull; Resp: '+esc(p.responsavel||"--")+'</div>'
         +(nAcao>0||nMed>0?'<div style="font-size:11px;color:#64748b;margin-top:4px">'+nAcao+' acoes / '+nMed+' medicoes</div>':"")
         +'</div>'

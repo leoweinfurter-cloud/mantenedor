@@ -295,6 +295,37 @@ var LP={"OK":"#4ade80","Atrasado":"#f87171","Vence Hoje":"#fbbf24","Vence em Bre
 var ANAL_LABELS={"5porques":"5 Porques","ishikawa":"Ishikawa (6M)","fmea":"FMEA","rca":"RCA","fta":"Arvore de Falhas","pdca":"PDCA"};
 var ANAL_COLORS={"5porques":"#60a5fa","ishikawa":"#4ade80","fmea":"#f87171","rca":"#fbbf24","fta":"#a78bfa","pdca":"#818cf8"};
 var FREQ_DIAS={"Semanal":7,"Quinzenal":15,"Mensal":30,"Bimestral":60,"Trimestral":90,"Semestral":180,"Anual":365};
+// Alem das frequencias fixas acima, o plano aceita um intervalo
+// personalizado em dias (ex: "a cada 45 dias") — guardado como texto no
+// formato "A cada N dias" pra nao precisar de coluna nova no banco nem
+// mudar o que ja consome p.frequencia (calendario, cards, etc.).
+var FREQ_CUSTOM_RE=/^A cada (\d+) dias?$/i;
+function freqDiasCustom(freq){
+  var m=FREQ_CUSTOM_RE.exec((freq||"").trim());
+  return m?parseInt(m[1],10):null;
+}
+function calcProxima(ultima,freq){
+  var custom=freqDiasCustom(freq);
+  var d=(custom!=null?custom:FREQ_DIAS[freq])||30;
+  var dt=(ultima&&mxParseDate(ultima))||new Date();
+  dt.setDate(dt.getDate()+d);
+  return mxFmtDate(dt);
+}
+// Rotulo traduzido de uma frequencia pra exibicao (cards, calendario...).
+// Frequencias fixas usam o dicionario pl_freq (traduzido por idioma);
+// frequencias personalizadas usam o padrao "A cada N dias" traduzido via
+// pl_freq_custom, com {n} substituido pelo numero de dias.
+function freqLabel(freq){
+  var dic=(typeof t==="function")?t("pl_freq"):null;
+  if(dic&&typeof dic[freq]==="string") return dic[freq];
+  var custom=freqDiasCustom(freq);
+  if(custom!=null){
+    var tpl=(typeof t==="function")?t("pl_freq_custom"):null;
+    if(typeof tpl==="string") return tpl.replace("{n}",custom);
+    return "A cada "+custom+" dias";
+  }
+  return freq||"";
+}
 var IND_CATALOG=[
   {id:"mtbf",abbr:"MTBF",nome:"Tempo Medio entre Falhas",unit:"h",color:"#60a5fa",norma:"EN 13306"},
   {id:"mttr",abbr:"MTTR",nome:"Tempo Medio de Reparo",unit:"h",color:"#f59e0b",norma:"EN 13306"},
@@ -521,7 +552,6 @@ function mxFmtDate(d){
 }
 function mxHoje(){return mxFmtDate(new Date());}
 
-function calcProxima(ultima,freq){var d=FREQ_DIAS[freq]||30,dt=(ultima&&mxParseDate(ultima))||new Date();dt.setDate(dt.getDate()+d);return mxFmtDate(dt);}
 function calcPlanStatus(p){
   if(!p||p==="--")return"OK";
   var hoje=new Date();hoje.setHours(0,0,0,0);
