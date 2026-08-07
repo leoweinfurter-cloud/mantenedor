@@ -437,6 +437,37 @@ function saveAtivos(arr){
   localStorage.setItem("mx_ativos",JSON.stringify(arr));
   sbUpsert("ativos",arr.map(function(a){return{id:a.id,nome:a.nome,categoria:a.categoria||"",empresa:a.empresa||"",unidade:a.unidade||"",localizacao:a.localizacao||"",fabricante:a.fabricante||"",modelo:a.modelo||"",serie:a.serie||"",ano:a.ano||"",tag:a.tag||"",patrimonio:a.patrimonio||"",status:a.status||"Operacional",motivo_desativacao:a.motivo_desativacao||"",desativado_em:a.desativado_em||""};}));
 }
+
+// ── SINCRONIA STATUS DO ATIVO x OS CORRETIVA ─────────────────────────────
+// Quando uma OS Corretiva vira "Em Andamento", o equipamento e considerado
+// em manutencao. Quando essa OS e concluida/cancelada — e nao ha mais
+// NENHUMA outra OS Corretiva aberta/em andamento pro mesmo ativo — o
+// equipamento volta a "Operacional".
+// So mexe se o ativo estiver "Operacional" (entrando em manutencao) ou
+// "Em Manutencao" (voltando) — nunca mexe em "Parado" ou "Desativado",
+// que sao estados definidos manualmente e nao devem ser sobrescritos
+// automaticamente por essa sincronia.
+// Retorna o array de ativos (igual ao recebido, se nao houve mudanca).
+function syncAtivoStatusPorOS(osAntesStatus, osDepois, ativosArr, todasOrdens){
+  if(!osDepois || osDepois.tipo!=="Corretiva" || !osDepois.ativo_id) return ativosArr;
+  var ativoId=osDepois.ativo_id;
+  var ativoObj=ativosArr.find(function(a){return a.id===ativoId;});
+  if(!ativoObj) return ativosArr;
+
+  if(osDepois.status==="Em Andamento" && osAntesStatus!=="Em Andamento"){
+    if(ativoObj.status==="Operacional"){
+      return ativosArr.map(function(a){return a.id===ativoId?Object.assign({},a,{status:"Em Manutencao"}):a;});
+    }
+  } else if((osDepois.status==="Concluida"||osDepois.status==="Cancelada") && ativoObj.status==="Em Manutencao"){
+    var outraAberta=(todasOrdens||[]).some(function(o){
+      return o.ativo_id===ativoId && o.tipo==="Corretiva" && o.id!==osDepois.id && (o.status==="Aberta"||o.status==="Em Andamento");
+    });
+    if(!outraAberta){
+      return ativosArr.map(function(a){return a.id===ativoId?Object.assign({},a,{status:"Operacional"}):a;});
+    }
+  }
+  return ativosArr;
+}
 function saveFichas(fichasObj){
   localStorage.setItem("mx_fichas",JSON.stringify(fichasObj));
   Object.keys(fichasObj).forEach(function(aid){

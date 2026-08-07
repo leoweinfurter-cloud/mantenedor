@@ -147,9 +147,12 @@ function executarOS(id, ev){
   var o=ordens.find(function(x){return x.id==id;});
   if(!o) return;
   if(o.status=="Aberta"){
+    var osAntesStatus=o.status;
     o=Object.assign({},o,{status:"Em Andamento"});
     ordens=ordens.map(function(x){return x.id==id?o:x;});
     saveOrdens(ordens);
+    var ativosSync=syncAtivoStatusPorOS(osAntesStatus,o,ativos,ordens);
+    if(ativosSync!==ativos){ativos=ativosSync;saveAtivos(ativos);}
   }
   window.location.href=ordensDetailUrl(o);
 }

@@ -214,8 +214,13 @@ function saveExec(){
 
 // ── UPDATE STATUS ──────────────────────────────────────────────────────────
 function updOS(id,status){
+  var osAntes=ordens.find(function(o){return o.id==id;});
+  var osAntesStatus=osAntes?osAntes.status:null;
   ordens=ordens.map(function(o){return o.id==id?Object.assign({},o,{status:status}):o;});
   saveOrdens(ordens);
+  var osDepois=ordens.find(function(o){return o.id==id;});
+  var ativosSync=syncAtivoStatusPorOS(osAntesStatus,osDepois,ativos,ordens);
+  if(ativosSync!==ativos){ativos=ativosSync;saveAtivos(ativos);}
   render();
 }
 
@@ -253,9 +258,12 @@ function render(){
   if(sel&&sel.status=="Aberta"&&(isCoordenador()||sel.tecnico===meuNomeAtivo()||!sel.tecnico)){
     // OS sem responsavel definido: quem inicia a execucao "pega" a OS pra si.
     var assume = !sel.tecnico && !isCoordenador() ? meuNomeAtivo() : sel.tecnico;
+    var osAntesStatus=sel.status;
     ordens=ordens.map(function(o){return o.id==sel.id?Object.assign({},o,{status:"Em Andamento",tecnico:assume}):o;});
     saveOrdens(ordens);
     sel=currentSel();
+    var ativosSync=syncAtivoStatusPorOS(osAntesStatus,sel,ativos,ordens);
+    if(ativosSync!==ativos){ativos=ativosSync;saveAtivos(ativos);}
   }
   if(osId&&sel&&!isOSCorretiva(sel)){
     window.location.replace("ordens-programada.html?id="+sel.id);
