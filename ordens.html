@@ -142,7 +142,7 @@ function selOS(id){
 }
 
 // ── EXECUTAR: move para "Em Andamento" (se necessario) e abre direto na execucao ──
-function executarOS(id, ev){
+async function executarOS(id, ev){
   if(ev){ev.stopPropagation();}
   var o=ordens.find(function(x){return x.id==id;});
   if(!o) return;
@@ -150,9 +150,15 @@ function executarOS(id, ev){
     var osAntesStatus=o.status;
     o=Object.assign({},o,{status:"Em Andamento"});
     ordens=ordens.map(function(x){return x.id==id?o:x;});
-    saveOrdens(ordens);
+    // Espera o salvamento no Supabase terminar ANTES de navegar — se
+    // navegasse logo em seguida, o fetch em andamento podia ser cancelado
+    // pelo browser no meio do caminho e o status nunca chegava a persistir.
+    try{ await saveOrdens(ordens); }catch(e){ console.warn("[OS] falha ao salvar status da OS antes de navegar",e); }
     var ativosSync=syncAtivoStatusPorOS(osAntesStatus,o,ativos,ordens);
-    if(ativosSync!==ativos){ativos=ativosSync;saveAtivos(ativos);}
+    if(ativosSync!==ativos){
+      ativos=ativosSync;
+      try{ await saveAtivos(ativos); }catch(e){ console.warn("[OS] falha ao salvar status do ativo antes de navegar",e); }
+    }
   }
   window.location.href=ordensDetailUrl(o);
 }

@@ -431,11 +431,11 @@ function optsUsuariosTecnicos(selecionado){
 
 function saveOrdens(arr){
   localStorage.setItem("mx_ordens",JSON.stringify(arr));
-  sbUpsert("ordens",arr.map(function(o){return{id:o.id,numero_os:o.numero_os||"",titulo:o.titulo||"",ativo_nome:o.ativo||"",ativo_id:o.ativo_id||null,tipo:o.tipo||"Corretiva",prioridade:o.prioridade||"Normal",status:o.status||"Aberta",tecnico:o.tecnico||"",abertura:o.abertura||"",prazo:o.prazo||"",descricao:o.descricao||"",origem:o.origem||"manual",planos_ids:o.planos_ids||[],planos_exec:o.planos_exec||[],exec_log:o.execLog||[]};}));
+  return sbUpsert("ordens",arr.map(function(o){return{id:o.id,numero_os:o.numero_os||"",titulo:o.titulo||"",ativo_nome:o.ativo||"",ativo_id:o.ativo_id||null,tipo:o.tipo||"Corretiva",prioridade:o.prioridade||"Normal",status:o.status||"Aberta",tecnico:o.tecnico||"",abertura:o.abertura||"",prazo:o.prazo||"",descricao:o.descricao||"",origem:o.origem||"manual",planos_ids:o.planos_ids||[],planos_exec:o.planos_exec||[],exec_log:o.execLog||[]};}));
 }
 function saveAtivos(arr){
   localStorage.setItem("mx_ativos",JSON.stringify(arr));
-  sbUpsert("ativos",arr.map(function(a){return{id:a.id,nome:a.nome,categoria:a.categoria||"",empresa:a.empresa||"",unidade:a.unidade||"",localizacao:a.localizacao||"",fabricante:a.fabricante||"",modelo:a.modelo||"",serie:a.serie||"",ano:a.ano||"",tag:a.tag||"",patrimonio:a.patrimonio||"",status:a.status||"Operacional",motivo_desativacao:a.motivo_desativacao||"",desativado_em:a.desativado_em||""};}));
+  return sbUpsert("ativos",arr.map(function(a){return{id:a.id,nome:a.nome,categoria:a.categoria||"",empresa:a.empresa||"",unidade:a.unidade||"",localizacao:a.localizacao||"",fabricante:a.fabricante||"",modelo:a.modelo||"",serie:a.serie||"",ano:a.ano||"",tag:a.tag||"",patrimonio:a.patrimonio||"",status:a.status||"Operacional",motivo_desativacao:a.motivo_desativacao||"",desativado_em:a.desativado_em||""};}));
 }
 
 // ── SINCRONIA STATUS DO ATIVO x OS CORRETIVA ─────────────────────────────
