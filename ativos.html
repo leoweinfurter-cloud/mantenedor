@@ -1192,11 +1192,20 @@ function tabPred(a,f){
 
 function tabDocs(a,f){
   var docs=f.docs||[];
-  var items=docs.map(function(d){var ext=(d.nome.split(".").pop()||"").toUpperCase();var ic={"PDF":"PDF","DOC":"DOC","DOCX":"DOC","XLS":"XLS","XLSX":"XLS","PNG":"IMG","JPG":"IMG","ZIP":"ZIP"}[ext]||"ARQ";return'<div class="di"><div class="dicon">'+ic+'</div><div style="flex:1"><div style="font-size:13px;font-weight:600;color:#e2e8f0">'+esc(d.nome)+'</div><div style="font-size:11px;color:#475569">'+esc(d.tamanho)+' &bull; '+esc(d.data)+'</div></div>'+(d.url?'<a href="'+d.url+'" download="'+esc(d.nome)+'" class="btn bsm bx" style="text-decoration:none">'+t("at_baixar")+'</a>':"")+'</div>';}).join("")||'<div style="color:#475569;text-align:center;padding:20px;font-size:14px">'+t("at_sem_docs")+'</div>';
+  var items=docs.map(function(d){var ext=(d.nome.split(".").pop()||"").toUpperCase();var ic={"PDF":"PDF","DOC":"DOC","DOCX":"DOC","XLS":"XLS","XLSX":"XLS","PNG":"IMG","JPG":"IMG","ZIP":"ZIP"}[ext]||"ARQ";return'<div class="di"><div class="dicon">'+ic+'</div><div style="flex:1"><div style="font-size:13px;font-weight:600;color:#e2e8f0">'+esc(d.nome)+'</div><div style="font-size:11px;color:#475569">'+esc(d.tamanho)+' &bull; '+esc(d.data)+'</div></div>'+(d.url?'<a href="'+d.url+'" download="'+esc(d.nome)+'" class="btn bsm bx" onclick="event.stopPropagation()" style="text-decoration:none">'+t("at_baixar")+'</a>':"")+'<button class="btn bsm" onclick="event.stopPropagation();delDoc('+a.id+','+d.id+')" style="background:#7f1d1d30;color:#f87171;border:1px solid #f8717140;margin-left:6px" data-i18n-title="at_excluir_doc" title="Excluir">&#10005;</button></div>';}).join("")||'<div style="color:#475569;text-align:center;padding:20px;font-size:14px">'+t("at_sem_docs")+'</div>';
   return'<div class="ua" onclick="document.getElementById(\'fi-'+a.id+'\').click()"><input type="file" id="fi-'+a.id+'" multiple onchange="handleFiles(this,'+a.id+')" style="display:none" accept=".pdf,.doc,.docx,.xls,.xlsx,.png,.jpg,.jpeg,.zip,.txt"><div style="font-size:26px;margin-bottom:8px">&#128206;</div><div style="font-size:14px;font-weight:600;color:#94a3b8">'+t("at_anexar")+'</div><div style="font-size:12px;color:#475569;margin-top:4px">'+t("at_anexar_sub")+'</div></div><div>'+items+'</div>';
 }
 
 function handleFiles(input,aid){var files=Array.from(input.files);var f=fichas[aid];if(!f.docs)f.docs=[];var done=0;files.forEach(function(file){var r=new FileReader();r.onload=function(e){f.docs.push({id:nextId(),nome:file.name,tamanho:file.size<1048576?Math.round(file.size/1024)+"KB":(file.size/1048576).toFixed(1)+"MB",data:new Date().toISOString().split("T")[0],url:e.target.result});done++;if(done==files.length){saveFichas(fichas);render();}};r.readAsDataURL(file);});input.value="";}
+
+function delDoc(aid,docId){
+  if(!isCoordenador()){mxToast(t("msg_so_coord_excl_doc"),"error");return;}
+  if(!confirm(t("msg_excluir_doc"))) return;
+  var f=fichas[aid];
+  if(!f||!f.docs) return;
+  f.docs=f.docs.filter(function(d){return d.id!==docId;});
+  saveFichas(fichas);render();
+}
 
 // ── TAB CRITICIDADE ──────────────────────────────────────────────────────
 function tabCrit(a,f){
