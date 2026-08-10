@@ -536,9 +536,19 @@ function syncAtivoStatusPorOS(osAntesStatus, osDepois, ativosArr, todasOrdens){
   }
   return ativosArr;
 }
-function saveFichas(fichasObj){
+// apenasAtivoId (opcional): quando informado, so sincroniza esse UM ativo
+// com o Supabase, em vez de todos os ativos presentes em fichasObj.
+// IMPORTANTE: sem isso, toda chamada de saveFichas() re-envia TODOS os
+// ativos do tenant pro Supabase (um upsert + 3 syncChildTable por ativo),
+// mesmo quando so um foi alterado — alem de desperdicar chamadas de rede,
+// isso faz upserts desnecessarios de ativos que o usuario atual pode nao
+// ter permissao de escrita (ex: usuario restrito a uma empresa, ver RLS
+// "escopo_empresa_ativos*"), gerando erro 403 numa acao que nem deveria
+// ter tocado naqueles ativos.
+function saveFichas(fichasObj,apenasAtivoId){
   localStorage.setItem("mx_fichas",JSON.stringify(fichasObj));
-  Object.keys(fichasObj).forEach(function(aid){
+  var ids=apenasAtivoId!=null?[String(apenasAtivoId)]:Object.keys(fichasObj);
+  ids.forEach(function(aid){
     var ativoId=parseInt(aid),f=fichasObj[aid];
     if(!f)return;
     // O upsert abaixo usa "resolution=merge-duplicates" (INSERT ... ON CONFLICT DO UPDATE).

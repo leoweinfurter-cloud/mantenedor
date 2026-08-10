@@ -200,7 +200,7 @@ function saveExec(){
       if(!fichasMed[os.ativo_id])fichasMed[os.ativo_id]={historico:[],preditiva:[],planos:[],docs:[],indicadores:[]};
       if(!fichasMed[os.ativo_id].preditiva)fichasMed[os.ativo_id].preditiva=[];
       fichasMed[os.ativo_id].preditiva.push({id:nextId(),data:(entry.data||"").split("T")[0]||new Date().toISOString().split("T")[0],desc:descMed,param:entry.param,unidade:entry.unidade,valor:val,limite_min:limMin,limite_max:limMax,obs:entry.obs});
-      saveFichas(fichasMed);
+      saveFichas(fichasMed,os.ativo_id);
     }
   } else if(tipo=="peca"){
     var d2=document.getElementById("exec-peca-desc").value.trim();if(!d2){alert(t("os_informe_peca"));return;}
@@ -323,7 +323,7 @@ function concluirOSComPlano(osId){
   }
   var fichas = loadData().fichas;
   fichas = concluirOSProgramada(os, fichas);
-  saveFichas(fichas);
+  saveFichas(fichas,os.ativo_id);
   updOS(osId, "Concluida");
 }
 
@@ -337,7 +337,7 @@ function concluirOSManualProgramada(osId){
   var fichas = loadData().fichas;
   var entry = registrarHistoricoOS(os, fichas);
   if(entry){
-    saveFichas(fichas);
+    saveFichas(fichas,os.ativo_id);
   } else if(typeof mxToast==="function"){
     mxToast("OS concluída, mas sem vínculo com um ativo específico — não foi possível registrar no histórico.","warn");
   }

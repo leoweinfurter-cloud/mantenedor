@@ -395,7 +395,7 @@ function saveAtivo(){
     dados.id=id;dados.status=t('at_status_op');dados.ultima_manutencao="--";dados.proxima_manutencao="--";
     ativos.unshift(dados);
     fichas[id]={historico:[],preditiva:[],planos:[],docs:[],indicadores:["mtbf","mttr","disp","manuplan"]};
-    saveFichas(fichas);
+    saveFichas(fichas,id);
   }
   saveAtivos(ativos);
   _atEditId=null;
@@ -407,7 +407,7 @@ function saveHist(){
   var d=document.getElementById("h-desc").value.trim();if(!d){alert(t("msg_informe_desc"));return;}
   var f=fichas[selAtivo.id];
   f.historico.unshift({id:nextId(),desc:d,data:gv("h-data")||new Date().toISOString().split("T")[0],tipo:gv("h-tipo"),tecnico:gv("h-tec"),horas:parseFloat(gv("h-horas"))||0,custo:parseFloat(gv("h-custo"))||0,obs:gv("h-obs")});
-  saveFichas(fichas);
+  saveFichas(fichas,selAtivo.id);
   ["h-desc","h-horas","h-custo","h-obs"].forEach(function(id){document.getElementById(id).value="";});
   closeModal("modal-hist");render();
 }
@@ -563,7 +563,7 @@ function savePlano(){
     planoObj.id = nextId();
     f.planos.unshift(planoObj);
   }
-  saveFichas(fichas);
+  saveFichas(fichas,selAtivo.id);
   closeModal("modal-plano");
   render();
 }
@@ -658,7 +658,7 @@ function savePred(){
   var desc=gv("p-desc").trim();if(!desc){alert(t("msg_informe_desc"));return;}
   var f=fichas[selAtivo.id];
   f.preditiva.push({id:nextId(),data:gv("p-data")||new Date().toISOString().split("T")[0],desc:desc,param:gv("p-param").trim(),unidade:gv("p-unid"),valor:v,limite_min:parseFloat(gv("p-lim-min"))||0,limite_max:parseFloat(gv("p-lim-max"))||0,obs:gv("p-obs")});
-  saveFichas(fichas);
+  saveFichas(fichas,selAtivo.id);
   ["p-desc","p-param","p-val","p-unid","p-lim-min","p-lim-max","p-obs"].forEach(function(id){document.getElementById(id).value="";});
   closeModal("modal-pred");render();
 }
@@ -735,7 +735,7 @@ function saveAnalise(){
   else if(tipo=="pdca"){d={p:gv("pdca-p"),d:gv("pdca-d"),c:gv("pdca-c"),a:gv("pdca-a")};}
   var f=fichas[analAid];
   if(f){var h=f.historico.find(function(x){return x.id==analHid;});if(h)h.analise={tipo:tipo,dados:d,data:new Date().toISOString().split("T")[0]};}
-  saveFichas(fichas);closeModal("modal-analise");render();
+  saveFichas(fichas,analAid);closeModal("modal-analise");render();
 }
 
 function updRPN(){
@@ -829,7 +829,7 @@ function abrirDesativarPlano(planoId){
   f.planos = f.planos.map(function(p){
     return p.id==planoId ? Object.assign({},p,{ativo:false,os_gerada_id:null}) : p;
   });
-  saveFichas(fichas);
+  saveFichas(fichas,selAtivo.id);
   render();
 }
 
@@ -870,7 +870,7 @@ function confirmarDesativacao(){
     f.planos = f.planos.map(function(p){
       return Object.assign({},p,{ativo:false,os_gerada_id:null});
     });
-    saveFichas(fichas);
+    saveFichas(fichas,id);
   }
 
   if(osAfetadas > 0) alert(osAfetadas+t("msg_os_canceladas"));
@@ -886,7 +886,7 @@ function reativarPlano(planoId){
   f.planos = f.planos.map(function(p){
     return p.id==planoId ? Object.assign({},p,{ativo:true,motivo_desativacao:"",desativado_em:""}) : p;
   });
-  saveFichas(fichas);
+  saveFichas(fichas,selAtivo.id);
   render();
 }
 
@@ -1013,7 +1013,7 @@ function tabInds(a,f){
   }).join("");
   return cards+'<div class="card"><div class="st" style="margin-bottom:4px">'+t("at_sel_ind")+'</div><div style="font-size:12px;color:#475569;margin-bottom:16px">Clique para ativar ou desativar cada indicador neste equipamento.</div><div class="ind-catalog">'+catalog+'</div></div>';
 }
-function toggleInd(aid,id){var f=fichas[aid];if(!f.indicadores)f.indicadores=[];var arr=f.indicadores;var i=arr.indexOf(id);if(i>=0)arr.splice(i,1);else arr.push(id);saveFichas(fichas);render();}
+function toggleInd(aid,id){var f=fichas[aid];if(!f.indicadores)f.indicadores=[];var arr=f.indicadores;var i=arr.indexOf(id);if(i>=0)arr.splice(i,1);else arr.push(id);saveFichas(fichas,aid);render();}
 
 function tabHist(a,f){
   if(!f.historico||f.historico.length==0)return'<div class="fr"><div></div><button class="btn bp" onclick="openModal(\'modal-hist\')">+ Registrar Manutencao</button></div><div style="color:#475569;text-align:center;padding:40px;font-size:14px">'+t("at_sem_manut")+'</div>';
@@ -1117,7 +1117,7 @@ function delPlano(planoId){
   if(!confirm(t("msg_excluir_plano"))) return;
   var f=fichas[selAtivo.id];
   f.planos=f.planos.filter(function(p){return p.id!==planoId;});
-  saveFichas(fichas);render();
+  saveFichas(fichas,selAtivo.id);render();
 }
 
 function gerarOSPlano(ativoId, planoId){
@@ -1149,7 +1149,7 @@ function gerarOSPlano(ativoId, planoId){
   };
   D.ordens.unshift(novaOS);
   ficha.planos=ficha.planos.map(function(p){return p.id===planoId?Object.assign({},p,{os_gerada_id:osId}):p;});
-  saveOrdens(D.ordens);saveFichas(D.fichas);
+  saveOrdens(D.ordens);saveFichas(D.fichas,ativoId);
   ordens=D.ordens;fichas=D.fichas;
   alert("OS "+numeroOS+" gerada com sucesso!");render();
 }
@@ -1196,7 +1196,7 @@ function tabDocs(a,f){
   return'<div class="ua" onclick="document.getElementById(\'fi-'+a.id+'\').click()"><input type="file" id="fi-'+a.id+'" multiple onchange="handleFiles(this,'+a.id+')" style="display:none" accept=".pdf,.doc,.docx,.xls,.xlsx,.png,.jpg,.jpeg,.zip,.txt"><div style="font-size:26px;margin-bottom:8px">&#128206;</div><div style="font-size:14px;font-weight:600;color:#94a3b8">'+t("at_anexar")+'</div><div style="font-size:12px;color:#475569;margin-top:4px">'+t("at_anexar_sub")+'</div></div><div>'+items+'</div>';
 }
 
-function handleFiles(input,aid){var files=Array.from(input.files);var f=fichas[aid];if(!f.docs)f.docs=[];var done=0;files.forEach(function(file){var r=new FileReader();r.onload=function(e){f.docs.push({id:nextId(),nome:file.name,tamanho:file.size<1048576?Math.round(file.size/1024)+"KB":(file.size/1048576).toFixed(1)+"MB",data:new Date().toISOString().split("T")[0],url:e.target.result});done++;if(done==files.length){saveFichas(fichas);render();}};r.readAsDataURL(file);});input.value="";}
+function handleFiles(input,aid){var files=Array.from(input.files);var f=fichas[aid];if(!f.docs)f.docs=[];var done=0;files.forEach(function(file){var r=new FileReader();r.onload=function(e){f.docs.push({id:nextId(),nome:file.name,tamanho:file.size<1048576?Math.round(file.size/1024)+"KB":(file.size/1048576).toFixed(1)+"MB",data:new Date().toISOString().split("T")[0],url:e.target.result});done++;if(done==files.length){saveFichas(fichas,aid);render();}};r.readAsDataURL(file);});input.value="";}
 
 function delDoc(aid,docId){
   if(!isCoordenador()){mxToast(t("msg_so_coord_excl_doc"),"error");return;}
@@ -1204,7 +1204,7 @@ function delDoc(aid,docId){
   var f=fichas[aid];
   if(!f||!f.docs) return;
   f.docs=f.docs.filter(function(d){return d.id!==docId;});
-  saveFichas(fichas);render();
+  saveFichas(fichas,aid);render();
 }
 
 // ── TAB CRITICIDADE ──────────────────────────────────────────────────────
@@ -1266,7 +1266,7 @@ function setCrit(aid,criterio,val){
   if(!fichas[aid])fichas[aid]={historico:[],preditiva:[],planos:[],docs:[],indicadores:[],crit:{hse:1,prod:1,custo:1,freq:1,det:1,red:1}};
   if(!fichas[aid].crit)fichas[aid].crit={hse:1,prod:1,custo:1,freq:1,det:1,red:1};
   fichas[aid].crit[criterio]=val;
-  saveFichas(fichas);
+  saveFichas(fichas,aid);
   render();
 }
 

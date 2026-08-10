@@ -438,7 +438,7 @@ function goToEvent(kind, idOrAtivo, planoId) {
       ficha.planos = ficha.planos.map(function(p){
         return p.id==planoId ? Object.assign({},p,{os_gerada_id:osId}) : p;
       });
-      saveFichas(fichas);
+      saveFichas(fichas,ativoId);
       localStorage.setItem("mx_cal_os", osId);
       window.location.href = "ordens.html";
     } else {
