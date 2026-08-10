@@ -2116,6 +2116,12 @@ function applyStatic(root){
   // <title> da aba do navegador
   var tk = document.body && document.body.getAttribute("data-i18n-doctitle");
   if(tk) document.title = "Mantenedor — " + get(tk);
+
+  // Reaplica o rotulo traduzido do perfil na identificacao de quem esta
+  // logado (topbar). So existe apos _shared.js carregar — na primeirissima
+  // chamada de applyStatic() (antes de _shared.js terminar de carregar)
+  // isso ainda nao existe, e initApp() cuida de renderizar na primeira vez.
+  if(typeof renderTopbarUser==="function") renderTopbarUser();
 }
 
 function addToggle(){

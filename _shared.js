@@ -45,6 +45,43 @@ function meuPrimeiro(){return meuNome().split(" ")[0]||"";}
 function meuPerfil(){var s=getSession();return s?s.perfil:"";}
 function isCoordenador(){return meuPerfil()==="Coordenador";}
 
+// ── IDENTIFICACAO DE QUEM ESTA LOGADO (topbar) ───────────────────────────
+// Insere (ou atualiza) um bloco com o nome/perfil da pessoa logada, no
+// topbar de qualquer pagina interna. Centralizado aqui de proposito — nao
+// precisa editar cada HTML, e nao tem como "esquecer" numa pagina nova
+// (mesmo problema que ja aconteceu com o bottom-nav copiado por pagina).
+function renderTopbarUser(){
+  var topbar=document.getElementById("topbar");
+  if(!topbar) return;
+  var nome=meuNome();
+  if(!nome) return;
+  var perfil=meuPerfil();
+  var perfilDic=(typeof t==="function")?t("cad_perfis"):null;
+  var perfilLabel=(perfilDic&&perfilDic[perfil])||perfil||"";
+  var primeiro=nome.split(" ")[0]||nome;
+  var inicial=(primeiro.charAt(0)||"?").toUpperCase();
+  var el=document.getElementById("topbar-user");
+  if(!el){
+    el=document.createElement("div");
+    el.id="topbar-user";
+    el.style.cssText=[
+      "display:flex","align-items:center","gap:7px",
+      "font-size:12px","font-weight:700","color:inherit",
+      "flex-shrink:0","white-space:nowrap"
+    ].join(";");
+    var logoutBtn=document.getElementById("logout-btn");
+    if(logoutBtn && logoutBtn.parentNode===topbar){
+      topbar.insertBefore(el,logoutBtn);
+    } else {
+      topbar.appendChild(el);
+    }
+  }
+  el.title=perfilLabel?(nome+" — "+perfilLabel):nome;
+  el.innerHTML=
+    '<span style="width:24px;height:24px;border-radius:50%;background:linear-gradient(135deg,#2563eb,#7c3aed);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;color:#fff;flex-shrink:0">'+esc(inicial)+'</span>'
+    +'<span style="max-width:110px;overflow:hidden;text-overflow:ellipsis">'+esc(primeiro)+'</span>';
+}
+
 // Bloqueia a página inteira pra quem não é Coordenador (Cadastros, Relatórios, etc.)
 function authRequireCoordenador(){
   var s=authRequired();
@@ -746,6 +783,7 @@ function initApp(renderFn){
   var sess=authRequired();
   if(!sess)return;
   aplicarRestricoesNav();
+  renderTopbarUser();
 
   // Show/hide ads based on plan
   if(typeof showAds==="function") showAds(getPlano()==="free");
