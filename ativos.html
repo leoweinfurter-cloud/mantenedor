@@ -344,6 +344,8 @@ document.querySelectorAll(".modal").forEach(function(m){m.addEventListener("clic
 var _atEditId = null;
 
 function openNewAtivo(){
+  var contagem = ativos.filter(function(a){return a.status!=="Desativado";}).length;
+  if(!podeAdicionar("ativos", contagem)) return;
   _atEditId = null;
   document.getElementById("at-modal-title").textContent = t("at_cad_ativo");
   document.getElementById("at-save-btn").querySelector("span").textContent = t("btn_cadastrar");
@@ -391,6 +393,7 @@ function saveAtivo(){
     ativos=ativos.map(function(a){return a.id===eid?Object.assign({},a,dados):a;});
     if(selAtivo&&selAtivo.id===eid) selAtivo=ativos.find(function(a){return a.id===eid;});
   } else {
+    if(!podeAdicionar("ativos", ativos.filter(function(a){return a.status!=="Desativado";}).length)) return;
     var id=nextId();
     dados.id=id;dados.status=t('at_status_op');dados.ultima_manutencao="--";dados.proxima_manutencao="--";
     ativos.unshift(dados);

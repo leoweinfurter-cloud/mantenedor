@@ -343,6 +343,8 @@ var selectedPerfil = "Coordenador";
 var selectedAtivo  = true;
 
 function openNewUser(){
+  var contagem = usuarios.filter(function(u){return u.ativo;}).length;
+  if(!podeAdicionar("usuarios", contagem)) return;
   document.getElementById("user-modal-title").textContent = t("cad_novo_user_tit");
   document.getElementById("u-id").value    = "";
   document.getElementById("u-nome").value  = "";
@@ -426,6 +428,9 @@ function saveUser(){
     // Novo — cria como Pendente e gera convite
     if(usuarios.find(function(u){return u.email===email;})){
       alert("Ja existe um usuario com este e-mail."); return;
+    }
+    if(!podeAdicionar("usuarios", usuarios.filter(function(u){return u.ativo;}).length)){
+      closeModal("modal-user"); return;
     }
     var novo = {id:nextId(), nome:nome, email:email, telefone:tel, perfil:perfil, ativo:true, status:"Pendente", empresas:emps};
     usuarios.push(novo);

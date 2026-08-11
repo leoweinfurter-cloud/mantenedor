@@ -23,6 +23,36 @@ function getPlano(){
   var s=getSession();
   return s?s.plano:"free";
 }
+
+// ── LIMITES DO PLANO FREE ─────────────────────────────────────────────
+// Freemium vinculado a numero de usuarios e ativos: acima destes valores,
+// o tenant "free" precisa fazer upgrade para "paid" (ver tabela tenants.plano).
+var LIMITE_FREE_USUARIOS = 3;
+var LIMITE_FREE_ATIVOS   = 20;
+
+function limitePlano(tipo){
+  if(tipo==="usuarios") return LIMITE_FREE_USUARIOS;
+  if(tipo==="ativos")   return LIMITE_FREE_ATIVOS;
+  return null;
+}
+
+// Verifica se o tenant pode adicionar mais um registro do tipo indicado.
+// Retorna true se pode prosseguir (plano pago, ou dentro do limite free).
+// Se bloqueado, ja exibe o aviso de upgrade (mxToast, com fallback pra alert)
+// e retorna false — quem chamar so precisa dar "return" nesse caso.
+function podeAdicionar(tipo, contagemAtual){
+  if(getPlano()!=="free") return true;
+  var limite = limitePlano(tipo);
+  if(limite===null) return true;
+  if(contagemAtual>=limite){
+    var key = tipo==="usuarios" ? "msg_limite_free_usuarios" : "msg_limite_free_ativos";
+    var msg = (typeof t==="function" ? t(key) : "") || "Limite do plano gratuito atingido.";
+    msg = msg.replace("{limite}", limite);
+    if(typeof mxToast==="function") mxToast(msg,"error"); else alert(msg);
+    return false;
+  }
+  return true;
+}
 function authRequired(){
   var s=getSession();
   if(!s||!s.access_token){window.location.href="login.html";return null;}
