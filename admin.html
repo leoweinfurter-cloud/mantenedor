@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<meta name="theme-color" content="#1d4ed8"/>
+<link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png"/>
+<title>Mantenedor — Admin</title>
+<link rel="stylesheet" href="_style.css" id="theme-link"/>
+<!-- Pagina intencionalmente sem link no menu/sidebar — acesso apenas via URL direta,
+     restrito pela checagem de e-mail abaixo + pelas RPCs SECURITY DEFINER no banco. -->
+</head>
+<body>
+<div id="app">
+  <div id="main" style="margin-left:0">
+    <div id="topbar">
+      <div id="topbar-left">
+        <span class="topbar-logo">&#9881;</span>
+        <div><div id="tt">Admin — Planos dos Tenants</div><div id="ta"></div></div>
+      </div>
+      <button onclick="if(confirm('Sair?'))authLogout()" style="background:transparent;border:1px solid var(--border,#1e3a5f);border-radius:8px;padding:6px 12px;cursor:pointer;font-size:12px;font-weight:700;color:inherit">Sair</button>
+    </div>
+    <div id="ct" style="padding:16px"></div>
+  </div>
+</div>
+<script src="_lang.js"></script>
+<script src="_shared.js"></script>
+<script>
+// ── ACESSO RESTRITO ──────────────────────────────────────────────────
+// Checagem client-side é só conveniencia de UX (evita renderizar a tela
+// pra quem nao deveria nem ver). A seguranca de verdade esta nas RPCs
+// admin_listar_tenants / admin_set_plano, que verificam is_admin_mantenedor()
+// no banco antes de expor ou alterar qualquer dado de outro tenant.
+var ADMIN_EMAIL = "leoweinfurter@gmail.com";
+
+var sess = authRequired();
+if(sess && sess.email !== ADMIN_EMAIL){
+  document.getElementById("ct").innerHTML = '<div style="padding:40px;text-align:center;color:var(--text-muted)">Acesso restrito.</div>';
+  throw new Error("acesso negado a admin.html");
+}
+
+var tenants = [];
+
+function carregar(){
+  document.getElementById("ct").innerHTML = '<div style="padding:30px;text-align:center;color:var(--text-muted)">Carregando...</div>';
+  sbFetch("rpc/admin_listar_tenants",{method:"POST",body:JSON.stringify({})})
+    .then(function(r){
+      if(!r.ok) return r.json().then(function(e){throw new Error((e&&e.message)||("Erro "+r.status));});
+      return r.json();
+    })
+    .then(function(rows){ tenants = rows||[]; render(); })
+    .catch(function(e){
+      console.error("[admin] falha ao listar tenants",e);
+      document.getElementById("ct").innerHTML = '<div style="padding:30px;text-align:center;color:#f87171">Erro ao carregar: '+esc(e.message||"desconhecido")+'</div>';
+    });
+}
+
+function limiteDe(tipo){ return tipo==="usuarios" ? LIMITE_FREE_USUARIOS : LIMITE_FREE_ATIVOS; }
+
+function render(){
+  if(!tenants.length){
+    document.getElementById("ct").innerHTML = '<div style="padding:30px;text-align:center;color:var(--text-muted)">Nenhum tenant encontrado.</div>';
+    return;
+  }
+  var linhas = tenants.map(function(t){
+    var isFree = t.plano!=="paid";
+    var corBadge = isFree ? "background:#33415522;color:#94a3b8" : "background:#16a34a22;color:#4ade80";
+    var estourouUsuarios = isFree && t.qtd_usuarios >= LIMITE_FREE_USUARIOS;
+    var estourouAtivos   = isFree && t.qtd_ativos   >= LIMITE_FREE_ATIVOS;
+    return ''+
+    '<div style="display:flex;align-items:center;gap:14px;padding:14px 16px;border:1px solid var(--border,#1e3a5f);border-radius:10px;margin-bottom:10px;flex-wrap:wrap">'+
+      '<div style="flex:1;min-width:160px">'+
+        '<div style="font-weight:700;font-size:14px;color:var(--text)">'+esc(t.nome||"(sem nome)")+'</div>'+
+        '<div style="font-size:11px;color:var(--text-muted)">'+esc(t.id)+'</div>'+
+      '</div>'+
+      '<div style="min-width:110px">'+
+        '<span class="badge" style="'+corBadge+'">'+(isFree?"Free":"Paid")+'</span>'+
+      '</div>'+
+      '<div style="min-width:110px;font-size:13px;color:'+(estourouUsuarios?'#f87171':'var(--text)')+'">'+
+        (t.qtd_usuarios!=null?t.qtd_usuarios:"?")+' / '+(isFree?LIMITE_FREE_USUARIOS:"∞")+' usuarios'+
+      '</div>'+
+      '<div style="min-width:100px;font-size:13px;color:'+(estourouAtivos?'#f87171':'var(--text)')+'">'+
+        (t.qtd_ativos!=null?t.qtd_ativos:"?")+' / '+(isFree?LIMITE_FREE_ATIVOS:"∞")+' ativos'+
+      '</div>'+
+      '<div style="min-width:120px;font-size:12px;color:var(--text-muted)">'+(t.created_at?String(t.created_at).slice(0,10):"--")+'</div>'+
+      '<button class="btn '+(isFree?'bp':'bx')+'" style="padding:8px 14px;font-size:12px" onclick="alternarPlano(\''+t.id+'\','+"'"+(isFree?"paid":"free")+"'"+')">'+
+        (isFree?"Liberar plano pago":"Reverter para free")+
+      '</button>'+
+    '</div>';
+  }).join("");
+  document.getElementById("ct").innerHTML =
+    '<div style="font-size:12px;color:var(--text-muted);margin-bottom:14px">'+tenants.length+' tenant(s). Ao liberar o plano pago, o cliente precisa sair e entrar de novo pra ver o efeito (o plano fica gravado na sessao local no login).</div>'
+    + linhas;
+}
+
+function alternarPlano(tenantId, novoPlano){
+  var acao = novoPlano==="paid" ? "liberar o plano PAGO" : "reverter para FREE";
+  if(!confirm("Confirma "+acao+" para este tenant?")) return;
+  sbFetch("rpc/admin_set_plano",{method:"POST",body:JSON.stringify({p_tenant_id:tenantId,p_plano:novoPlano})})
+    .then(function(r){
+      if(!r.ok) return r.json().then(function(e){throw new Error((e&&e.message)||("Erro "+r.status));});
+      mxToast("Plano atualizado.","success");
+      carregar();
+    })
+    .catch(function(e){
+      console.error("[admin] falha ao atualizar plano",e);
+      mxToast("Erro ao atualizar plano: "+(e.message||"desconhecido"),"error");
+    });
+}
+
+function esc(s){ return String(s==null?"":s).replace(/[&<>"']/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c];}); }
+
+if(sess) carregar();
+</script>
+</body>
+</html>
