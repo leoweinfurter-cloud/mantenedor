@@ -82,6 +82,7 @@ function render(){
       '<div style="min-width:100px;font-size:13px;color:'+(estourouAtivos?'#f87171':'var(--text)')+'">'+
         (t.qtd_ativos!=null?t.qtd_ativos:"?")+' / '+(isFree?LIMITE_FREE_ATIVOS:"∞")+' ativos'+
       '</div>'+
+      '<div style="min-width:100px;font-size:12px;color:var(--text-muted)">'+(t.criado_em?String(t.criado_em).slice(0,10):"--")+'</div>'+
       '<button class="btn '+(isFree?'bp':'bx')+'" style="padding:8px 14px;font-size:12px" onclick="alternarPlano(\''+t.id+'\','+"'"+(isFree?"paid":"free")+"'"+')">'+
         (isFree?"Liberar plano pago":"Reverter para free")+
       '</button>'+
