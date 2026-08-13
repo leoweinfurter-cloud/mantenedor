@@ -1,8 +1,0 @@
-[{
-      "relation": ["delegate_permission/common.handle_all_urls"],
-      "target": {
-        "namespace": "android_app",
-        "package_name": "io.github.leoweinfurter_cloud.twa",
-        "sha256_cert_fingerprints": ["8F:E7:7F:46:EC:62:6E:9A:19:DC:53:26:80:96:1F:4C:CB:83:A2:A0:13:56:E2:7A:D1:03:28:49:F4:E5:75:2E"]
-      }
-    }]
