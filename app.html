@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<meta name="theme-color" content="#1d4ed8"/>
+<link rel="manifest" href="manifest.json"/>
+<link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png"/>
+<link rel="apple-touch-icon" href="icons/icon-192.png"/>
+<script src="_pwa.js" defer></script>
+<title>Mantenedor</title>
+<style>
+  body{margin:0;min-height:100vh;display:flex;align-items:center;justify-content:center;
+    background:#050d1a;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;}
+  .logo-icon{width:56px;height:56px;background:linear-gradient(135deg,#1d4ed8,#7c3aed);
+    border-radius:16px;display:flex;align-items:center;justify-content:center;font-size:26px;
+    box-shadow:0 0 30px rgba(59,130,246,.3);animation:pulse 1.4s ease-in-out infinite;}
+  @keyframes pulse{0%,100%{opacity:1;}50%{opacity:.55;}}
+</style>
+</head>
+<body>
+<div class="logo-icon">⚙</div>
+<script>
+  // Ponto de entrada do app instalado (start_url do manifest.json / TWA).
+  // index.html agora é a vitrine pública (mantenedor.app.br); este arquivo
+  // é pra onde o app Android e o PWA instalado abrem direto, pulando a
+  // vitrine. Redireciona com base na sessão salva em localStorage — sem
+  // duplicar a lógica de autenticação, que continua centralizada em _shared.js.
+  (function(){
+    var raw = localStorage.getItem("mx_session");
+    var hasSession = false;
+    try{
+      var s = raw ? JSON.parse(raw) : null;
+      hasSession = !!(s && s.access_token);
+    }catch(e){ hasSession = false; }
+    window.location.replace(hasSession ? "dashboard.html" : "login.html");
+  })();
+</script>
+</body>
+</html>

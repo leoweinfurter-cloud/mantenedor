@@ -2,7 +2,7 @@
   "name": "Mantenedor — Gestão de Manutenção",
   "short_name": "Mantenedor",
   "description": "Sistema de gestão de manutenção industrial (CMMS) para PMEs: ordens de serviço, ativos, planos preventivos e indicadores.",
-  "start_url": "./index.html",
+  "start_url": "./app.html",
   "scope": "./",
   "display": "standalone",
   "orientation": "portrait-primary",

@@ -185,6 +185,14 @@ var AUTH    = SB_URL + "/auth/v1";
   }
 })();
 
+// Abre direto na aba de cadastro quando vem do CTA "Criar conta grátis" da vitrine (index.html)
+(function(){
+  var params=new URLSearchParams(window.location.search);
+  if(params.get("signup")==="1"){
+    window.addEventListener("DOMContentLoaded",function(){ setTab("signup"); });
+  }
+})();
+
 // Mensagem quando o app forçou logout por sessão sem empresa associada
 (function(){
   var params=new URLSearchParams(window.location.search);
