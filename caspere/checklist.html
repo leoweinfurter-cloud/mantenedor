@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Checklist — Caspere</title>
+<link rel="stylesheet" href="assets/caspere.css">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@600;700&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@500&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/signature_pad/4.1.7/signature_pad.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+</head>
+<body>
+  <div class="cp-topbar">
+    <div class="cp-brand"><a href="painel.html" style="text-decoration:none; color:inherit;">← Caspere</a></div>
+  </div>
+
+  <div class="cp-shell">
+    <div id="cabecalho-equip"><p>Carregando equipamento…</p></div>
+
+    <form id="form-checklist" style="display:none;">
+      <div class="cp-card">
+        <h2>Checklist de execução</h2>
+        <div id="itens-checklist"></div>
+      </div>
+
+      <div class="cp-card">
+        <h3>Peças trocadas</h3>
+        <div class="cp-field">
+          <textarea name="pecas_trocadas" placeholder="Descreva as peças substituídas durante a preventiva, se houver"></textarea>
+        </div>
+        <h3>Observações gerais</h3>
+        <div class="cp-field">
+          <textarea name="observacoes_gerais" placeholder="Outras informações importantes sobre o atendimento"></textarea>
+        </div>
+      </div>
+
+      <div class="cp-card">
+        <h2>Assinaturas</h2>
+        <div class="cp-field">
+          <label>Técnico responsável</label>
+          <input type="text" id="nome-tecnico" readonly>
+        </div>
+        <canvas id="sig-tecnico" class="cp-signature-pad"></canvas>
+        <button type="button" class="cp-btn-ghost cp-btn" style="margin-top:6px;" onclick="limparAssinatura('tecnico')">Limpar assinatura</button>
+
+        <div class="cp-field" style="margin-top:20px;">
+          <label for="nome-cliente">Nome de quem está assinando pelo cliente</label>
+          <input type="text" id="nome-cliente" required>
+        </div>
+        <canvas id="sig-cliente" class="cp-signature-pad"></canvas>
+        <button type="button" class="cp-btn-ghost cp-btn" style="margin-top:6px;" onclick="limparAssinatura('cliente')">Limpar assinatura</button>
+      </div>
+
+      <p id="erro-checklist" style="color:var(--cp-nao-conforme); display:none;"></p>
+      <button type="submit" class="cp-btn" id="btn-finalizar">Finalizar e enviar relatório</button>
+    </form>
+  </div>
+
+  <script src="_shared.js"></script>
+  <script>
+    let equipamento = null;
+    let itensModelo = [];
+    let sigPadTecnico, sigPadCliente;
+
+    function renderItem(item) {
+      return `
+        <div class="cp-field" style="border-bottom:1px solid var(--cp-border); padding-bottom:14px; margin-bottom:14px;">
+          <label style="font-size:0.95rem; color:var(--cp-ink); margin-bottom:8px;">${esc(item.descricao)}</label>
+          <div class="cp-status-group">
+            <label class="cp-status-opt conforme">
+              <input type="radio" name="item-${item.id}" value="conforme" required>
+              <span class="cp-status-tag"><span class="cp-bar"></span><span class="cp-label">Conforme</span></span>
+            </label>
+            <label class="cp-status-opt nao_conforme">
+              <input type="radio" name="item-${item.id}" value="nao_conforme" onclick="mostrarObsItem('${item.id}')">
+              <span class="cp-status-tag"><span class="cp-bar"></span><span class="cp-label">Não conforme</span></span>
+            </label>
+            <label class="cp-status-opt nao_se_aplica">
+              <input type="radio" name="item-${item.id}" value="nao_se_aplica">
+              <span class="cp-status-tag"><span class="cp-bar"></span><span class="cp-label">N/A</span></span>
+            </label>
+          </div>
+          <div id="obs-${item.id}" style="display:none; margin-top:8px;">
+            <textarea name="obs-item-${item.id}" placeholder="O que foi encontrado? (obrigatório para itens não conformes)" style="min-height:56px;"></textarea>
+          </div>
+        </div>`;
+    }
+
+    function mostrarObsItem(itemId) {
+      document.getElementById(`obs-${itemId}`).style.display = "block";
+    }
+
+    function limparAssinatura(tipo) {
+      (tipo === "tecnico" ? sigPadTecnico : sigPadCliente).clear();
+    }
+
+    function ajustarCanvas(canvas) {
+      const ratio = Math.max(window.devicePixelRatio || 1, 1);
+      canvas.width = canvas.offsetWidth * ratio;
+      canvas.height = canvas.offsetHeight * ratio;
+      canvas.getContext("2d").scale(ratio, ratio);
+    }
+
+    async function gerarPdf(relatorio, respostas, funcionario) {
+      const { jsPDF } = window.jspdf;
+      const doc = new jsPDF({ unit: "pt", format: "a4" });
+      const margin = 40;
+      let y = margin;
+
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(16);
+      doc.text("Relatório de Manutenção Preventiva", margin, y);
+      y += 26;
+
+      doc.setFontSize(10);
+      doc.setFont("helvetica", "normal");
+      doc.text(`Equipamento: ${equipamento.identificacao}`, margin, y); y += 14;
+      doc.text(`Tipo: ${CP_TIPO_EQUIP_LABEL[equipamento.tipo] || equipamento.tipo}`, margin, y); y += 14;
+      doc.text(`Cliente: ${equipamento.caspere_clientes?.razao_social || ""}`, margin, y); y += 14;
+      doc.text(`Data: ${cpFmtData(new Date().toISOString())}`, margin, y); y += 14;
+      doc.text(`Técnico: ${funcionario.nome}`, margin, y); y += 22;
+
+      doc.setFont("helvetica", "bold");
+      doc.text("Itens verificados", margin, y); y += 16;
+      doc.setFont("helvetica", "normal");
+
+      respostas.forEach(r => {
+        const label = { conforme: "Conforme", nao_conforme: "Não conforme", nao_se_aplica: "N/A" }[r.resposta];
+        const linhas = doc.splitTextToSize(`${r.descricao} — ${label}${r.observacao ? " — " + r.observacao : ""}`, 515);
+        if (y + linhas.length * 12 > 780) { doc.addPage(); y = margin; }
+        doc.text(linhas, margin, y);
+        y += linhas.length * 12 + 4;
+      });
+
+      const pecas = document.querySelector('[name="pecas_trocadas"]').value;
+      const obsGerais = document.querySelector('[name="observacoes_gerais"]').value;
+      if (pecas || obsGerais) {
+        y += 10;
+        if (pecas) {
+          doc.setFont("helvetica", "bold"); doc.text("Peças trocadas:", margin, y); y += 14;
+          doc.setFont("helvetica", "normal");
+          const l = doc.splitTextToSize(pecas, 515); doc.text(l, margin, y); y += l.length * 12 + 10;
+        }
+        if (obsGerais) {
+          doc.setFont("helvetica", "bold"); doc.text("Observações gerais:", margin, y); y += 14;
+          doc.setFont("helvetica", "normal");
+          const l = doc.splitTextToSize(obsGerais, 515); doc.text(l, margin, y); y += l.length * 12 + 10;
+        }
+      }
+
+      if (y > 650) { doc.addPage(); y = margin; }
+      y += 20;
+      doc.setFont("helvetica", "bold"); doc.text("Assinaturas", margin, y); y += 10;
+      doc.addImage(sigPadTecnico.toDataURL("image/png"), "PNG", margin, y, 180, 60);
+      doc.addImage(sigPadCliente.toDataURL("image/png"), "PNG", margin + 260, y, 180, 60);
+      y += 64;
+      doc.setFont("helvetica", "normal"); doc.setFontSize(9);
+      doc.text(`Técnico: ${funcionario.nome}`, margin, y);
+      doc.text(`Cliente: ${document.getElementById("nome-cliente").value}`, margin + 260, y);
+
+      return doc.output("datauristring").split(",")[1]; // base64
+    }
+
+    document.getElementById("form-checklist").addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const erroEl = document.getElementById("erro-checklist");
+      const btn = document.getElementById("btn-finalizar");
+      erroEl.style.display = "none";
+
+      if (sigPadTecnico.isEmpty() || sigPadCliente.isEmpty()) {
+        erroEl.textContent = "As duas assinaturas são obrigatórias.";
+        erroEl.style.display = "block";
+        return;
+      }
+
+      btn.disabled = true;
+      btn.textContent = "Enviando…";
+
+      try {
+        const funcionario = await cpFuncionarioAtual();
+        const fd = new FormData(e.target);
+
+        // 1. cria o relatório
+        const [relatorio] = await cpFetch("caspere_relatorios", {
+          method: "POST",
+          headers: { Prefer: "return=representation" },
+          body: JSON.stringify({
+            equipamento_id: equipamento.id,
+            funcionario_id: funcionario.id,
+            pecas_trocadas: fd.get("pecas_trocadas") || null,
+            observacoes_gerais: fd.get("observacoes_gerais") || null,
+            status: "finalizado",
+          }),
+        });
+
+        // 2. grava as respostas dos itens
+        const respostas = itensModelo.map(item => ({
+          relatorio_id: relatorio.id,
+          checklist_modelo_id: item.id,
+          resposta: fd.get(`item-${item.id}`),
+          observacao: fd.get(`obs-item-${item.id}`) || null,
+          descricao: item.descricao, // só pro PDF, não vai pra tabela
+        }));
+        await cpFetch("caspere_relatorio_itens", {
+          method: "POST",
+          body: JSON.stringify(respostas.map(({ descricao, ...r }) => r)),
+        });
+
+        // 3. grava as assinaturas
+        await cpFetch("caspere_assinaturas", {
+          method: "POST",
+          body: JSON.stringify([
+            { relatorio_id: relatorio.id, tipo: "tecnico", nome_assinante: funcionario.nome, imagem_base64: sigPadTecnico.toDataURL("image/png") },
+            { relatorio_id: relatorio.id, tipo: "cliente", nome_assinante: document.getElementById("nome-cliente").value, imagem_base64: sigPadCliente.toDataURL("image/png") },
+          ]),
+        });
+
+        // 4. gera o PDF e envia por e-mail via Edge Function
+        const pdfBase64 = await gerarPdf(relatorio, respostas, funcionario);
+        const session = cpGetSession();
+        const res = await fetch(`${SUPABASE_URL}/functions/v1/enviar-relatorio`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json", Authorization: `Bearer ${session.access_token}` },
+          body: JSON.stringify({ relatorio_id: relatorio.id, pdf_base64: pdfBase64 }),
+        });
+        if (!res.ok) {
+          const body = await res.json().catch(() => ({}));
+          throw new Error(body.error || "Relatório salvo, mas o e-mail não foi enviado. Tente reenviar pelo painel.");
+        }
+
+        window.location.href = `painel.html?relatorio_enviado=1`;
+      } catch (err) {
+        erroEl.textContent = err.message;
+        erroEl.style.display = "block";
+        btn.disabled = false;
+        btn.textContent = "Finalizar e enviar relatório";
+      }
+    });
+
+    (async () => {
+      cpRequireLogin();
+      const funcionario = await cpFuncionarioAtual();
+      if (!funcionario) { window.location.href = "login.html"; return; }
+      document.getElementById("nome-tecnico").value = funcionario.nome;
+
+      const params = new URLSearchParams(window.location.search);
+      const equipId = params.get("equip");
+      if (!equipId) {
+        document.getElementById("cabecalho-equip").innerHTML = `<p class="cp-empty">Nenhum equipamento informado. Escaneie o QR Code novamente.</p>`;
+        return;
+      }
+
+      try {
+        const [equip] = await cpFetch(`caspere_equipamentos?id=eq.${equipId}&select=*,caspere_clientes(razao_social)`);
+        if (!equip) throw new Error("Equipamento não encontrado.");
+        equipamento = equip;
+        document.getElementById("cabecalho-equip").innerHTML = `
+          <div class="cp-card">
+            <h3>${esc(CP_TIPO_EQUIP_LABEL[equip.tipo] || equip.tipo)}</h3>
+            <h1>${esc(equip.identificacao)}</h1>
+            <p>${esc(equip.caspere_clientes?.razao_social || "")}</p>
+          </div>`;
+
+        itensModelo = await cpFetch("caspere_checklist_modelo?ativo=eq.true&select=*&order=ordem.asc");
+        document.getElementById("itens-checklist").innerHTML = itensModelo.map(renderItem).join("");
+        document.getElementById("form-checklist").style.display = "block";
+
+        const canvasTecnico = document.getElementById("sig-tecnico");
+        const canvasCliente = document.getElementById("sig-cliente");
+        ajustarCanvas(canvasTecnico);
+        ajustarCanvas(canvasCliente);
+        sigPadTecnico = new SignaturePad(canvasTecnico);
+        sigPadCliente = new SignaturePad(canvasCliente);
+      } catch (err) {
+        document.getElementById("cabecalho-equip").innerHTML = `<p style="color:var(--cp-nao-conforme);">${esc(err.message)}</p>`;
+      }
+    })();
+  </script>
+</body>
+</html>

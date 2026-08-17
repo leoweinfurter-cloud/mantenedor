@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Equipamento — Caspere</title>
+<link rel="stylesheet" href="assets/caspere.css">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@600;700&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@500&display=swap" rel="stylesheet">
+</head>
+<body>
+  <div class="cp-topbar">
+    <div class="cp-brand">
+      <img src="assets/logo-caspere.png" alt="" onerror="this.style.display='none'">
+      Caspere
+    </div>
+    <a href="#" id="link-login" style="font-size:0.85rem; text-decoration:none;">Sou funcionário</a>
+  </div>
+
+  <div class="cp-shell" id="conteudo">
+    <p>Carregando…</p>
+  </div>
+
+  <script src="_shared.js"></script>
+  <script>
+    const params = new URLSearchParams(window.location.search);
+    const equipId = params.get("id");
+
+    // Funcionário logado que escaneou o QR: pula direto pra execução.
+    const session = cpGetSession();
+    if (session && equipId) {
+      // Confere se é mesmo funcionário (não só um cliente com
+      // sessão velha) antes de redirecionar.
+      cpFuncionarioAtual().then(f => {
+        if (f) window.location.href = `checklist.html?equip=${equipId}`;
+        else iniciarVisaoPublica();
+      });
+    } else {
+      iniciarVisaoPublica();
+    }
+
+    document.getElementById("link-login").addEventListener("click", (e) => {
+      e.preventDefault();
+      window.location.href = `login.html${equipId ? "?equip=" + equipId : ""}`;
+    });
+
+    function badgeStatus(status) {
+      const label = CP_STATUS_CHAMADO_LABEL[status] || status;
+      return `<span class="cp-badge ${status}">${esc(label)}</span>`;
+    }
+
+    async function iniciarVisaoPublica() {
+      const el = document.getElementById("conteudo");
+      if (!equipId) {
+        el.innerHTML = `<p class="cp-empty">Equipamento não informado. Escaneie o QR Code novamente.</p>`;
+        return;
+      }
+
+      try {
+        const [equip] = await cpFetch(`caspere_equipamentos?id=eq.${equipId}&select=*,caspere_clientes(razao_social)`);
+        if (!equip) throw new Error("Equipamento não encontrado.");
+
+        el.innerHTML = `
+          <div class="cp-card">
+            <h3>${esc(CP_TIPO_EQUIP_LABEL[equip.tipo] || equip.tipo)}</h3>
+            <h1>${esc(equip.identificacao)}</h1>
+            <p>${esc(equip.caspere_clientes?.razao_social || "")}</p>
+          </div>
+
+          <div class="cp-card">
+            <h2>Histórico de manutenções</h2>
+            <div id="historico"><p>Carregando…</p></div>
+          </div>
+
+          <div class="cp-card">
+            <h2>Abrir chamado</h2>
+            <p>Encontrou algum problema com este equipamento? Registre aqui e nossa equipe entra em contato.</p>
+            <form id="form-chamado">
+              <div class="cp-field">
+                <label>Seu nome</label>
+                <input type="text" name="nome_solicitante" required>
+              </div>
+              <div class="cp-field">
+                <label>Telefone ou e-mail para contato</label>
+                <input type="text" name="contato_solicitante" required>
+              </div>
+              <div class="cp-field">
+                <label>Descreva o problema</label>
+                <textarea name="descricao" required placeholder="O que está acontecendo com o equipamento?"></textarea>
+              </div>
+              <p id="erro-chamado" style="color:var(--cp-nao-conforme); display:none;"></p>
+              <p id="ok-chamado" style="color:var(--cp-conforme); display:none;">Chamado registrado! Entraremos em contato em breve.</p>
+              <button type="submit" class="cp-btn" id="btn-chamado">Enviar chamado</button>
+            </form>
+          </div>`;
+
+        carregarHistorico(equip.id);
+
+        document.getElementById("form-chamado").addEventListener("submit", async (e) => {
+          e.preventDefault();
+          const btn = document.getElementById("btn-chamado");
+          const erroEl = document.getElementById("erro-chamado");
+          erroEl.style.display = "none";
+          btn.disabled = true;
+          btn.textContent = "Enviando…";
+          try {
+            const fd = new FormData(e.target);
+            await cpFetch("caspere_chamados", {
+              method: "POST",
+              body: JSON.stringify({
+                equipamento_id: equip.id,
+                nome_solicitante: fd.get("nome_solicitante"),
+                contato_solicitante: fd.get("contato_solicitante"),
+                descricao: fd.get("descricao"),
+              }),
+            });
+            document.getElementById("ok-chamado").style.display = "block";
+            e.target.reset();
+            btn.textContent = "Enviar chamado";
+            btn.disabled = false;
+          } catch (err) {
+            erroEl.textContent = err.message;
+            erroEl.style.display = "block";
+            btn.textContent = "Enviar chamado";
+            btn.disabled = false;
+          }
+        });
+      } catch (err) {
+        el.innerHTML = `<p style="color:var(--cp-nao-conforme);">${esc(err.message)}</p>`;
+      }
+    }
+
+    async function carregarHistorico(equipId) {
+      const el = document.getElementById("historico");
+      try {
+        const relatorios = await cpFetch(
+          `caspere_relatorios?equipamento_id=eq.${equipId}&status=eq.finalizado&select=id,data_execucao,caspere_funcionarios(nome)&order=data_execucao.desc&limit=10`
+        );
+        el.innerHTML = relatorios.length
+          ? relatorios.map(r => `
+              <div class="cp-item-row">
+                <div>
+                  <div style="font-weight:600;">Manutenção preventiva</div>
+                  <div class="cp-meta">Técnico: ${esc(r.caspere_funcionarios?.nome || "")} · ${cpFmtData(r.data_execucao)}</div>
+                </div>
+                ${badgeStatus("resolvido")}
+              </div>`).join("")
+          : `<p class="cp-empty">Nenhuma manutenção registrada ainda.</p>`;
+      } catch (err) {
+        el.innerHTML = `<p style="color:var(--cp-nao-conforme);">${esc(err.message)}</p>`;
+      }
+    }
+  </script>
+</body>
+</html>

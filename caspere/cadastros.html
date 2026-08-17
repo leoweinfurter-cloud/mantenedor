@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cadastros — Caspere</title>
+<link rel="stylesheet" href="assets/caspere.css">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@600;700&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@500&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+</head>
+<body>
+  <div class="cp-topbar">
+    <div class="cp-brand"><a href="painel.html" style="text-decoration:none; color:inherit;">← Caspere</a></div>
+    <button class="cp-btn-ghost cp-btn" style="width:auto; padding:8px 14px;" onclick="cpLogout()">Sair</button>
+  </div>
+
+  <div class="cp-shell">
+    <div style="display:flex; gap:8px; margin-bottom:18px;">
+      <button class="cp-tab cp-btn-outline cp-btn" data-tipo="equipamentos" style="width:auto; flex:1;">Equipamentos</button>
+      <button class="cp-tab cp-btn-outline cp-btn" data-tipo="clientes" style="width:auto; flex:1;">Clientes</button>
+      <button class="cp-tab cp-btn-outline cp-btn" data-tipo="funcionarios" style="width:auto; flex:1;">Funcionários</button>
+    </div>
+
+    <div class="cp-card">
+      <h2 id="titulo-form">Novo item</h2>
+      <form id="form-novo"></form>
+    </div>
+
+    <div class="cp-card">
+      <h2>Cadastrados</h2>
+      <div id="lista"><p>Carregando…</p></div>
+    </div>
+  </div>
+
+  <!-- Modal simples pra exibir/imprimir o QR -->
+  <div id="modal-qr" style="display:none; position:fixed; inset:0; background:rgba(22,35,44,0.55); align-items:center; justify-content:center; z-index:50; padding:16px;">
+    <div class="cp-card" style="max-width:340px; width:100%; text-align:center;">
+      <div id="qr-print-area">
+        <img src="assets/logo-caspere.png" alt="Caspere" style="height:32px; margin-bottom:10px;" onerror="this.style.display='none'">
+        <div id="qr-canvas" style="display:flex; justify-content:center; margin:10px 0;"></div>
+        <div id="qr-nome" style="font-weight:600;"></div>
+      </div>
+      <div style="display:flex; gap:8px; margin-top:16px;" class="cp-no-print">
+        <button class="cp-btn-outline cp-btn" onclick="document.getElementById('modal-qr').style.display='none'">Fechar</button>
+        <button class="cp-btn" onclick="window.print()">Imprimir</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="_shared.js"></script>
+  <script>
+    let tipoAtual = "equipamentos";
+    let cachedClientes = [];
+
+    const CAMPOS = {
+      equipamentos: [
+        { name: "cliente_id", label: "Cliente", type: "select-cliente" },
+        { name: "tipo", label: "Tipo de equipamento", type: "select", options: [
+          ["autoclave", "Autoclave"], ["osmose_reversa", "Osmose reversa"], ["termodesinfectora", "Termodesinfectora"]
+        ]},
+        { name: "identificacao", label: "Identificação (ex: Autoclave 01 — Sala de Esterilização)", type: "text" },
+        { name: "modelo", label: "Modelo", type: "text", opcional: true },
+        { name: "numero_serie", label: "Número de série", type: "text", opcional: true },
+        { name: "local_instalacao", label: "Local de instalação", type: "text", opcional: true },
+      ],
+      clientes: [
+        { name: "razao_social", label: "Razão social", type: "text" },
+        { name: "nome_fantasia", label: "Nome fantasia", type: "text", opcional: true },
+        { name: "cnpj", label: "CNPJ", type: "text", opcional: true },
+        { name: "email_principal", label: "E-mail para envio de relatórios", type: "email" },
+        { name: "telefone", label: "Telefone", type: "text", opcional: true },
+        { name: "endereco", label: "Endereço", type: "text", opcional: true },
+      ],
+      funcionarios: [
+        { name: "nome", label: "Nome completo", type: "text" },
+        { name: "email", label: "E-mail (login)", type: "email" },
+        { name: "senha", label: "Senha provisória", type: "password" },
+        { name: "cargo", label: "Cargo", type: "text", opcional: true },
+        { name: "telefone", label: "Telefone", type: "text", opcional: true },
+      ],
+    };
+
+    function campoHtml(campo) {
+      if (campo.type === "select-cliente") {
+        const opts = cachedClientes.map(c => `<option value="${c.id}">${esc(c.razao_social)}</option>`).join("");
+        return `<div class="cp-field"><label>${campo.label}</label>
+          <select name="${campo.name}" ${campo.opcional ? "" : "required"}>
+            <option value="">Selecione…</option>${opts}
+          </select></div>`;
+      }
+      if (campo.type === "select") {
+        const opts = campo.options.map(([v, l]) => `<option value="${v}">${esc(l)}</option>`).join("");
+        return `<div class="cp-field"><label>${campo.label}</label>
+          <select name="${campo.name}" ${campo.opcional ? "" : "required"}>${opts}</select></div>`;
+      }
+      return `<div class="cp-field"><label>${campo.label}</label>
+        <input type="${campo.type}" name="${campo.name}" ${campo.opcional ? "" : "required"}></div>`;
+    }
+
+    async function montarForm() {
+      if (tipoAtual === "equipamentos" && !cachedClientes.length) {
+        cachedClientes = await cpFetch("caspere_clientes?ativo=eq.true&select=id,razao_social&order=razao_social.asc");
+      }
+      document.getElementById("titulo-form").textContent =
+        { equipamentos: "Novo equipamento", clientes: "Novo cliente", funcionarios: "Novo funcionário" }[tipoAtual];
+      const campos = CAMPOS[tipoAtual].map(campoHtml).join("");
+      document.getElementById("form-novo").innerHTML = campos +
+        `<p class="cp-erro" style="color:var(--cp-nao-conforme); font-size:0.85rem; display:none;"></p>
+         <button type="submit" class="cp-btn">Salvar</button>`;
+    }
+
+    async function carregarLista() {
+      const el = document.getElementById("lista");
+      el.innerHTML = "<p>Carregando…</p>";
+      try {
+        if (tipoAtual === "equipamentos") {
+          const rows = await cpFetch("caspere_equipamentos?ativo=eq.true&select=id,identificacao,tipo,caspere_clientes(razao_social)&order=criado_em.desc");
+          el.innerHTML = rows.length ? rows.map(r => `
+            <div class="cp-item-row">
+              <div>
+                <div style="font-weight:600;">${esc(r.identificacao)}</div>
+                <div class="cp-meta">${esc(CP_TIPO_EQUIP_LABEL[r.tipo] || r.tipo)} · ${esc(r.caspere_clientes?.razao_social || "")}</div>
+              </div>
+              <button class="cp-btn-outline cp-btn" style="width:auto; padding:6px 12px; font-size:0.82rem;" onclick="mostrarQr('${r.id}', ${JSON.stringify(r.identificacao)})">QR Code</button>
+            </div>`).join("") : `<p class="cp-empty">Nenhum equipamento cadastrado.</p>`;
+        } else if (tipoAtual === "clientes") {
+          const rows = await cpFetch("caspere_clientes?ativo=eq.true&select=id,razao_social,email_principal&order=razao_social.asc");
+          el.innerHTML = rows.length ? rows.map(r => `
+            <div class="cp-item-row">
+              <div>
+                <div style="font-weight:600;">${esc(r.razao_social)}</div>
+                <div class="cp-meta">${esc(r.email_principal)}</div>
+              </div>
+            </div>`).join("") : `<p class="cp-empty">Nenhum cliente cadastrado.</p>`;
+        } else {
+          const rows = await cpFetch("caspere_funcionarios?ativo=eq.true&select=id,nome,cargo,eh_dono&order=nome.asc");
+          el.innerHTML = rows.length ? rows.map(r => `
+            <div class="cp-item-row">
+              <div>
+                <div style="font-weight:600;">${esc(r.nome)} ${r.eh_dono ? '<span class="cp-badge finalizado">Dono</span>' : ""}</div>
+                <div class="cp-meta">${esc(r.cargo || "")}</div>
+              </div>
+            </div>`).join("") : `<p class="cp-empty">Nenhum funcionário cadastrado.</p>`;
+        }
+      } catch (err) {
+        el.innerHTML = `<p style="color:var(--cp-nao-conforme);">${esc(err.message)}</p>`;
+      }
+    }
+
+    function mostrarQr(equipId, nome) {
+      document.getElementById("qr-canvas").innerHTML = "";
+      new QRCode(document.getElementById("qr-canvas"), {
+        text: cpUrlEquipamento(equipId),
+        width: 200, height: 200,
+      });
+      document.getElementById("qr-nome").textContent = nome;
+      document.getElementById("modal-qr").style.display = "flex";
+    }
+
+    document.getElementById("form-novo").addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const form = e.target;
+      const erroEl = form.querySelector(".cp-erro");
+      erroEl.style.display = "none";
+      const fd = new FormData(form);
+      const dados = Object.fromEntries(fd.entries());
+      try {
+        if (tipoAtual === "funcionarios") {
+          // Criar login exige a Admin API do Supabase Auth
+          // (service_role), que não pode rodar no client. Isso
+          // é feito pela Edge Function "criar-funcionario"
+          // (ver /supabase/functions/criar-funcionario) — ela
+          // cria o usuário no Auth e o registro em
+          // caspere_funcionarios numa só chamada.
+          const session = cpGetSession();
+          const res = await fetch(`${SUPABASE_URL}/functions/v1/criar-funcionario`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json", "Authorization": `Bearer ${session.access_token}` },
+            body: JSON.stringify({
+              email: dados.email, senha: dados.senha,
+              nome: dados.nome, cargo: dados.cargo || null,
+              telefone: dados.telefone || null,
+            }),
+          });
+          if (!res.ok) {
+            const body = await res.json().catch(() => ({}));
+            throw new Error(body.error || `Erro ${res.status} ao criar funcionário`);
+          }
+        } else {
+          const tabela = tipoAtual === "equipamentos" ? "caspere_equipamentos" : "caspere_clientes";
+          await cpFetch(tabela, { method: "POST", body: JSON.stringify(dados) });
+        }
+        form.reset();
+        carregarLista();
+      } catch (err) {
+        erroEl.textContent = err.message;
+        erroEl.style.display = "block";
+      }
+    });
+
+    document.querySelectorAll(".cp-tab").forEach(btn => {
+      btn.addEventListener("click", () => {
+        tipoAtual = btn.dataset.tipo;
+        document.querySelectorAll(".cp-tab").forEach(b => b.style.background = "transparent");
+        btn.style.background = "var(--cp-primary-soft)";
+        montarForm();
+        carregarLista();
+      });
+    });
+
+    (async () => {
+      cpRequireLogin();
+      const funcionario = await cpRequireDono();
+      if (!funcionario) return;
+      const params = new URLSearchParams(window.location.search);
+      tipoAtual = params.get("tipo") || "equipamentos";
+      document.querySelector(`.cp-tab[data-tipo="${tipoAtual}"]`).style.background = "var(--cp-primary-soft)";
+      await montarForm();
+      await carregarLista();
+    })();
+  </script>
+</body>
+</html>

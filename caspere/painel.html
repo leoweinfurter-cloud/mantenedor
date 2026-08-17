@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Painel — Caspere</title>
+<link rel="stylesheet" href="assets/caspere.css">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@600;700&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@500&display=swap" rel="stylesheet">
+</head>
+<body>
+  <div class="cp-topbar">
+    <div class="cp-brand">
+      <img src="assets/logo-caspere.png" alt="" onerror="this.style.display='none'">
+      Caspere
+    </div>
+    <button class="cp-btn-ghost cp-btn" style="width:auto; padding:8px 14px;" onclick="cpLogout()">Sair</button>
+  </div>
+
+  <div class="cp-shell">
+    <div id="saudacao" style="margin-bottom:18px;"></div>
+
+    <div class="cp-card" style="display:flex; gap:12px; flex-wrap:wrap;">
+      <a href="cadastros.html?tipo=equipamentos" class="cp-btn" style="width:auto; flex:1; text-decoration:none;">Equipamentos</a>
+      <a href="cadastros.html?tipo=clientes" class="cp-btn-outline cp-btn" style="width:auto; flex:1; text-decoration:none;">Clientes</a>
+      <a href="cadastros.html?tipo=funcionarios" class="cp-btn-outline cp-btn" style="width:auto; flex:1; text-decoration:none;">Funcionários</a>
+    </div>
+
+    <div class="cp-card">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+        <h2>Chamados abertos</h2>
+        <a href="chamados.html" style="font-size:0.85rem;">Ver todos →</a>
+      </div>
+      <div id="lista-chamados"><p>Carregando…</p></div>
+    </div>
+
+    <div class="cp-card">
+      <h2>Últimos atendimentos</h2>
+      <div id="lista-relatorios"><p>Carregando…</p></div>
+    </div>
+  </div>
+
+  <script src="_shared.js"></script>
+  <script>
+    (async () => {
+      cpRequireLogin();
+      const funcionario = await cpRequireDono();
+      if (!funcionario) return;
+
+      document.getElementById("saudacao").innerHTML =
+        `<h1>Olá, ${esc(funcionario.nome.split(" ")[0])}</h1><p>Visão geral do Caspere</p>`;
+
+      // Chamados em aberto
+      try {
+        const chamados = await cpFetch(
+          "caspere_chamados?status=eq.aberto&select=id,descricao,criado_em,caspere_equipamentos(identificacao,caspere_clientes(razao_social))&order=criado_em.desc&limit=5"
+        );
+        const el = document.getElementById("lista-chamados");
+        if (!chamados.length) {
+          el.innerHTML = `<p class="cp-empty" style="padding:16px 0;">Nenhum chamado em aberto.</p>`;
+        } else {
+          el.innerHTML = chamados.map(c => `
+            <div class="cp-item-row">
+              <div>
+                <div style="font-weight:600;">${esc(c.caspere_equipamentos?.identificacao || "Equipamento")}</div>
+                <div class="cp-meta">${esc(c.caspere_equipamentos?.caspere_clientes?.razao_social || "")} · ${cpFmtData(c.criado_em)}</div>
+              </div>
+              <span class="cp-badge aberto">Aberto</span>
+            </div>
+          `).join("");
+        }
+      } catch (err) {
+        document.getElementById("lista-chamados").innerHTML =
+          `<p style="color:var(--cp-nao-conforme);">${esc(err.message)}</p>`;
+      }
+
+      // Últimos relatórios finalizados
+      try {
+        const relatorios = await cpFetch(
+          "caspere_relatorios?status=eq.finalizado&select=id,data_execucao,caspere_equipamentos(identificacao),caspere_funcionarios(nome)&order=data_execucao.desc&limit=5"
+        );
+        const el = document.getElementById("lista-relatorios");
+        if (!relatorios.length) {
+          el.innerHTML = `<p class="cp-empty" style="padding:16px 0;">Nenhum atendimento registrado ainda.</p>`;
+        } else {
+          el.innerHTML = relatorios.map(r => `
+            <div class="cp-item-row">
+              <div>
+                <div style="font-weight:600;">${esc(r.caspere_equipamentos?.identificacao || "Equipamento")}</div>
+                <div class="cp-meta">${esc(r.caspere_funcionarios?.nome || "")} · ${cpFmtData(r.data_execucao)}</div>
+              </div>
+              <span class="cp-badge finalizado">Finalizado</span>
+            </div>
+          `).join("");
+        }
+      } catch (err) {
+        document.getElementById("lista-relatorios").innerHTML =
+          `<p style="color:var(--cp-nao-conforme);">${esc(err.message)}</p>`;
+      }
+    })();
+  </script>
+</body>
+</html>

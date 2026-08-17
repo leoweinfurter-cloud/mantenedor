@@ -1,0 +1,288 @@
+/* ============================================================
+   CASPERE — Design tokens
+   Inspiração: painel de instrumentos de autoclave + fita
+   indicadora de esterilização (a referência de cor para os
+   status do checklist vem daí — é o objeto real que o técnico
+   já reconhece em campo).
+   ============================================================ */
+
+:root {
+  /* Cor */
+  --cp-bg: #F5F7F7;
+  --cp-surface: #FFFFFF;
+  --cp-ink: #16232C;
+  --cp-ink-soft: #4A5A61;
+  --cp-muted: #7C8B90;
+  --cp-border: #DCE3E4;
+
+  --cp-primary: #0E5C67;
+  --cp-primary-ink: #FFFFFF;
+  --cp-primary-soft: #E3EEEE;
+
+  --cp-conforme: #3F7D5C;
+  --cp-conforme-bg: #E7F1EA;
+  --cp-nao-conforme: #B5482A;
+  --cp-nao-conforme-bg: #FBEAE4;
+  --cp-nao-aplica: #8A8F93;
+  --cp-nao-aplica-bg: #EDEEEE;
+
+  --cp-amber: #C67F00;
+  --cp-amber-bg: #FBF1DE;
+
+  /* Tipografia */
+  --cp-font-display: 'Space Grotesk', 'IBM Plex Sans', system-ui, sans-serif;
+  --cp-font-body: 'Inter', system-ui, -apple-system, sans-serif;
+  --cp-font-mono: 'IBM Plex Mono', 'SFMono-Regular', monospace;
+
+  /* Layout */
+  --cp-radius: 10px;
+  --cp-radius-sm: 6px;
+  --cp-shadow: 0 1px 2px rgba(22, 35, 44, 0.06), 0 4px 12px rgba(22, 35, 44, 0.05);
+  --cp-max-width: 720px;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  background: var(--cp-bg);
+  color: var(--cp-ink);
+  font-family: var(--cp-font-body);
+  font-size: 16px;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+}
+
+h1, h2, h3 {
+  font-family: var(--cp-font-display);
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  margin: 0 0 4px;
+  color: var(--cp-ink);
+}
+
+h1 { font-size: 1.5rem; }
+h2 { font-size: 1.15rem; }
+h3 { font-size: 0.95rem; text-transform: uppercase; letter-spacing: 0.04em; color: var(--cp-ink-soft); }
+
+p { margin: 0 0 12px; color: var(--cp-ink-soft); }
+
+a { color: var(--cp-primary); }
+
+.cp-shell {
+  max-width: var(--cp-max-width);
+  margin: 0 auto;
+  padding: 20px 16px 48px;
+}
+
+.cp-topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 16px;
+  background: var(--cp-surface);
+  border-bottom: 1px solid var(--cp-border);
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.cp-brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-family: var(--cp-font-display);
+  font-weight: 700;
+  font-size: 1.05rem;
+  color: var(--cp-primary);
+}
+
+.cp-brand img { height: 28px; display: block; }
+
+.cp-card {
+  background: var(--cp-surface);
+  border: 1px solid var(--cp-border);
+  border-radius: var(--cp-radius);
+  padding: 18px;
+  margin-bottom: 14px;
+  box-shadow: var(--cp-shadow);
+}
+
+.cp-field { margin-bottom: 14px; }
+
+.cp-field label {
+  display: block;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--cp-ink-soft);
+  margin-bottom: 5px;
+}
+
+.cp-field input,
+.cp-field select,
+.cp-field textarea {
+  width: 100%;
+  padding: 11px 12px;
+  border: 1px solid var(--cp-border);
+  border-radius: var(--cp-radius-sm);
+  font-family: var(--cp-font-body);
+  font-size: 1rem;
+  background: var(--cp-surface);
+  color: var(--cp-ink);
+}
+
+.cp-field input:focus,
+.cp-field select:focus,
+.cp-field textarea:focus {
+  outline: 2px solid var(--cp-primary);
+  outline-offset: 1px;
+  border-color: var(--cp-primary);
+}
+
+.cp-field textarea { resize: vertical; min-height: 72px; }
+
+.cp-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 12px 20px;
+  border-radius: var(--cp-radius-sm);
+  border: none;
+  font-family: var(--cp-font-body);
+  font-weight: 600;
+  font-size: 0.95rem;
+  cursor: pointer;
+  background: var(--cp-primary);
+  color: var(--cp-primary-ink);
+  width: 100%;
+}
+
+.cp-btn:active { transform: translateY(1px); }
+.cp-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+.cp-btn-outline {
+  background: transparent;
+  color: var(--cp-primary);
+  border: 1.5px solid var(--cp-primary);
+}
+
+.cp-btn-ghost {
+  background: transparent;
+  color: var(--cp-ink-soft);
+  border: 1px solid var(--cp-border);
+}
+
+/* -------- Status: réplica visual da fita indicadora -------- */
+.cp-status-group {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+}
+
+.cp-status-opt {
+  position: relative;
+}
+
+.cp-status-opt input {
+  position: absolute;
+  opacity: 0;
+  inset: 0;
+  cursor: pointer;
+}
+
+.cp-status-opt .cp-status-tag {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding: 12px 6px;
+  border-radius: var(--cp-radius-sm);
+  border: 1.5px solid var(--cp-border);
+  background: var(--cp-surface);
+  text-align: center;
+}
+
+.cp-status-tag .cp-bar {
+  width: 100%;
+  height: 5px;
+  border-radius: 3px;
+  background: var(--cp-border);
+}
+
+.cp-status-tag .cp-label {
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--cp-ink-soft);
+}
+
+.cp-status-opt input:checked + .cp-status-tag {
+  border-color: currentColor;
+}
+
+.cp-status-opt.conforme { color: var(--cp-conforme); }
+.cp-status-opt.conforme input:checked + .cp-status-tag { background: var(--cp-conforme-bg); }
+.cp-status-opt.conforme input:checked + .cp-status-tag .cp-bar { background: var(--cp-conforme); }
+.cp-status-opt.conforme input:checked + .cp-status-tag .cp-label { color: var(--cp-conforme); }
+
+.cp-status-opt.nao_conforme { color: var(--cp-nao-conforme); }
+.cp-status-opt.nao_conforme input:checked + .cp-status-tag { background: var(--cp-nao-conforme-bg); }
+.cp-status-opt.nao_conforme input:checked + .cp-status-tag .cp-bar { background: var(--cp-nao-conforme); }
+.cp-status-opt.nao_conforme input:checked + .cp-status-tag .cp-label { color: var(--cp-nao-conforme); }
+
+.cp-status-opt.nao_se_aplica { color: var(--cp-nao-aplica); }
+.cp-status-opt.nao_se_aplica input:checked + .cp-status-tag { background: var(--cp-nao-aplica-bg); }
+.cp-status-opt.nao_se_aplica input:checked + .cp-status-tag .cp-bar { background: var(--cp-nao-aplica); }
+.cp-status-opt.nao_se_aplica input:checked + .cp-status-tag .cp-label { color: var(--cp-nao-aplica); }
+
+/* -------- Badges de status geral (chamados, relatórios) -------- */
+.cp-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 3px 10px;
+  border-radius: 20px;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.cp-badge.aberto { background: var(--cp-amber-bg); color: var(--cp-amber); }
+.cp-badge.em_andamento { background: var(--cp-primary-soft); color: var(--cp-primary); }
+.cp-badge.resolvido, .cp-badge.finalizado { background: var(--cp-conforme-bg); color: var(--cp-conforme); }
+
+.cp-item-row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  padding: 12px 0;
+  border-bottom: 1px solid var(--cp-border);
+}
+
+.cp-item-row:last-child { border-bottom: none; }
+
+.cp-meta {
+  font-family: var(--cp-font-mono);
+  font-size: 0.78rem;
+  color: var(--cp-muted);
+}
+
+.cp-empty {
+  text-align: center;
+  padding: 40px 16px;
+  color: var(--cp-muted);
+}
+
+.cp-signature-pad {
+  border: 1.5px dashed var(--cp-border);
+  border-radius: var(--cp-radius-sm);
+  background: var(--cp-surface);
+  touch-action: none;
+  width: 100%;
+  height: 160px;
+  display: block;
+}
+
+@media print {
+  .cp-topbar, .cp-no-print { display: none !important; }
+  body { background: #fff; }
+}

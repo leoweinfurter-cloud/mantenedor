@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Chamados — Caspere</title>
+<link rel="stylesheet" href="assets/caspere.css">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@600;700&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@500&display=swap" rel="stylesheet">
+</head>
+<body>
+  <div class="cp-topbar">
+    <div class="cp-brand"><a href="painel.html" style="text-decoration:none; color:inherit;">← Caspere</a></div>
+    <button class="cp-btn-ghost cp-btn" style="width:auto; padding:8px 14px;" onclick="cpLogout()">Sair</button>
+  </div>
+
+  <div class="cp-shell">
+    <h1>Chamados</h1>
+    <div style="display:flex; gap:8px; margin:14px 0;">
+      <button class="cp-tab cp-btn-outline cp-btn" data-status="aberto" style="width:auto;">Abertos</button>
+      <button class="cp-tab cp-btn-outline cp-btn" data-status="em_andamento" style="width:auto;">Em andamento</button>
+      <button class="cp-tab cp-btn-outline cp-btn" data-status="resolvido" style="width:auto;">Resolvidos</button>
+    </div>
+    <div id="lista"><p>Carregando…</p></div>
+  </div>
+
+  <script src="_shared.js"></script>
+  <script>
+    let statusAtual = "aberto";
+
+    async function carregar() {
+      const el = document.getElementById("lista");
+      el.innerHTML = "<p>Carregando…</p>";
+      try {
+        const chamados = await cpFetch(
+          `caspere_chamados?status=eq.${statusAtual}&select=*,caspere_equipamentos(identificacao,caspere_clientes(razao_social))&order=criado_em.desc`
+        );
+        el.innerHTML = chamados.length ? chamados.map(c => `
+          <div class="cp-card">
+            <div style="display:flex; justify-content:space-between; align-items:start;">
+              <div>
+                <div style="font-weight:600;">${esc(c.caspere_equipamentos?.identificacao || "")}</div>
+                <div class="cp-meta">${esc(c.caspere_equipamentos?.caspere_clientes?.razao_social || "")} · ${cpFmtData(c.criado_em)}</div>
+              </div>
+              <span class="cp-badge ${c.status}">${esc(CP_STATUS_CHAMADO_LABEL[c.status])}</span>
+            </div>
+            <p style="margin-top:10px;">${esc(c.descricao)}</p>
+            <p class="cp-meta">Solicitante: ${esc(c.nome_solicitante || "—")} · ${esc(c.contato_solicitante || "—")}</p>
+            ${statusAtual !== "resolvido" ? `
+              <div style="display:flex; gap:8px; margin-top:10px;">
+                ${statusAtual === "aberto" ? `<button class="cp-btn-outline cp-btn" style="width:auto;" onclick="mudarStatus('${c.id}','em_andamento')">Marcar em andamento</button>` : ""}
+                <button class="cp-btn cp-btn" style="width:auto;" onclick="mudarStatus('${c.id}','resolvido')">Marcar resolvido</button>
+              </div>` : ""}
+          </div>
+        `).join("") : `<p class="cp-empty">Nenhum chamado ${statusAtual === "aberto" ? "aberto" : statusAtual === "em_andamento" ? "em andamento" : "resolvido"}.</p>`;
+      } catch (err) {
+        el.innerHTML = `<p style="color:var(--cp-nao-conforme);">${esc(err.message)}</p>`;
+      }
+    }
+
+    async function mudarStatus(id, novoStatus) {
+      try {
+        await cpFetch(`caspere_chamados?id=eq.${id}`, {
+          method: "PATCH",
+          body: JSON.stringify({ status: novoStatus, atualizado_em: new Date().toISOString() }),
+        });
+        carregar();
+      } catch (err) {
+        alert(err.message);
+      }
+    }
+
+    document.querySelectorAll(".cp-tab").forEach(btn => {
+      btn.addEventListener("click", () => {
+        statusAtual = btn.dataset.status;
+        document.querySelectorAll(".cp-tab").forEach(b => b.style.background = "transparent");
+        btn.style.background = "var(--cp-primary-soft)";
+        carregar();
+      });
+    });
+
+    (async () => {
+      cpRequireLogin();
+      const funcionario = await cpRequireDono();
+      if (!funcionario) return;
+      document.querySelector('.cp-tab[data-status="aberto"]').style.background = "var(--cp-primary-soft)";
+      carregar();
+    })();
+  </script>
+</body>
+</html>
