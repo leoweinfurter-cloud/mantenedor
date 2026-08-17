@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Entrar — Caspere</title>
+<link rel="stylesheet" href="assets/caspere.css">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@600;700&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@500&display=swap" rel="stylesheet">
+</head>
+<body>
+  <div class="cp-shell" style="max-width:400px; padding-top:64px;">
+    <div style="text-align:center; margin-bottom:28px;">
+      <img src="assets/logo-caspere.png" alt="Caspere" style="height:44px;" onerror="this.style.display='none'">
+      <h1 style="margin-top:14px;">Caspere</h1>
+      <p style="margin:0;">Manutenção contratual de equipamentos</p>
+    </div>
+
+    <form id="form-login" class="cp-card">
+      <div class="cp-field">
+        <label for="email">E-mail</label>
+        <input type="email" id="email" required autocomplete="username">
+      </div>
+      <div class="cp-field">
+        <label for="senha">Senha</label>
+        <input type="password" id="senha" required autocomplete="current-password">
+      </div>
+      <p id="erro-login" style="color:var(--cp-nao-conforme); font-size:0.85rem; display:none;"></p>
+      <button type="submit" class="cp-btn" id="btn-entrar">Entrar</button>
+    </form>
+  </div>
+
+  <script src="_shared.js"></script>
+  <script>
+    document.getElementById("form-login").addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const btn = document.getElementById("btn-entrar");
+      const erroEl = document.getElementById("erro-login");
+      erroEl.style.display = "none";
+      btn.disabled = true;
+      btn.textContent = "Entrando…";
+      try {
+        await cpLogin(
+          document.getElementById("email").value.trim(),
+          document.getElementById("senha").value
+        );
+        // Se veio de um QR Code (equip=ID na URL), volta pra
+        // execução daquele equipamento direto após o login.
+        const params = new URLSearchParams(window.location.search);
+        const equipId = params.get("equip");
+        window.location.href = equipId
+          ? `checklist.html?equip=${equipId}`
+          : "painel.html";
+      } catch (err) {
+        erroEl.textContent = err.message === "Invalid login credentials"
+          ? "E-mail ou senha incorretos."
+          : err.message;
+        erroEl.style.display = "block";
+        btn.disabled = false;
+        btn.textContent = "Entrar";
+      }
+    });
+
+    // Já logado? pula direto.
+    if (cpGetSession()) {
+      const params = new URLSearchParams(window.location.search);
+      const equipId = params.get("equip");
+      window.location.href = equipId ? `checklist.html?equip=${equipId}` : "painel.html";
+    }
+  </script>
+</body>
+</html>
