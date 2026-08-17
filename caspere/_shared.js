@@ -84,15 +84,37 @@ async function cpFuncionarioAtual() {
     `${SUPABASE_URL}/rest/v1/caspere_funcionarios?auth_user_id=eq.${session.user.id}&select=*`,
     { headers: cpAuthHeaders() }
   );
-  if (!res.ok) return null;
+  if (!res.ok) {
+    let msg = `Erro ${res.status} ao consultar caspere_funcionarios`;
+    try {
+      const body = await res.json();
+      msg = body.message || msg;
+    } catch { /* corpo sem JSON */ }
+    throw new Error(msg);
+  }
   const rows = await res.json();
-  return rows[0] || null;
+  return rows[0] || null; // null = autenticado, mas sem registro em caspere_funcionarios
 }
 
 async function cpRequireDono() {
-  const funcionario = await cpFuncionarioAtual();
-  if (!funcionario || !funcionario.eh_dono) {
-    window.location.href = "painel.html";
+  let funcionario;
+  try {
+    funcionario = await cpFuncionarioAtual();
+  } catch (err) {
+    alert("Erro ao verificar seu acesso: " + err.message);
+    cpClearSession();
+    window.location.href = "login.html";
+    return null;
+  }
+  if (!funcionario) {
+    alert("Seu login não está vinculado a um funcionário cadastrado no Caspere. Verifique se o registro em caspere_funcionarios foi criado para este usuário.");
+    cpClearSession();
+    window.location.href = "login.html";
+    return null;
+  }
+  if (!funcionario.eh_dono) {
+    alert("Esta área é restrita ao dono. Você está logado como funcionário.");
+    window.location.href = "checklist.html";
     return null;
   }
   return funcionario;
