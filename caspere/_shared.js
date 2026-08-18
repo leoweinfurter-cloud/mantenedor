@@ -140,7 +140,9 @@ async function cpFetch(path, options = {}) {
     throw new Error(msg);
   }
   if (res.status === 204) return null;
-  return res.json();
+  const texto = await res.text();
+  if (!texto) return null; // corpo vazio (ex: POST/PATCH sem Prefer: return=representation)
+  return JSON.parse(texto);
 }
 
 // ------------------------------------------------------------
