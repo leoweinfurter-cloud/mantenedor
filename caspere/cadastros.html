@@ -51,7 +51,11 @@
   <script>
     let tipoAtual = "equipamentos";
     let cachedClientes = [];
+    let editandoId = null; // null = criando novo; senão, id do registro em edição
 
+    // Campos de cadastro. Campos com "somenteNovo: true" só
+    // aparecem ao criar (ex: senha do funcionário) — editar
+    // login/senha é um fluxo separado, não feito aqui.
     const CAMPOS = {
       equipamentos: [
         { name: "cliente_id", label: "Cliente", type: "select-cliente" },
@@ -73,40 +77,83 @@
       ],
       funcionarios: [
         { name: "nome", label: "Nome completo", type: "text" },
-        { name: "email", label: "E-mail (login)", type: "email" },
-        { name: "senha", label: "Senha provisória", type: "password" },
+        { name: "email", label: "E-mail (login)", type: "email", somenteNovo: true },
+        { name: "senha", label: "Senha provisória", type: "password", somenteNovo: true },
         { name: "cargo", label: "Cargo", type: "text", opcional: true },
         { name: "telefone", label: "Telefone", type: "text", opcional: true },
       ],
     };
 
-    function campoHtml(campo) {
+    function campoHtml(campo, valores) {
+      if (editandoId && campo.somenteNovo) return ""; // não mostra e-mail/senha ao editar
+      const valorAtual = valores?.[campo.name] ?? "";
       if (campo.type === "select-cliente") {
-        const opts = cachedClientes.map(c => `<option value="${c.id}">${esc(c.razao_social)}</option>`).join("");
+        const opts = cachedClientes.map(c => `<option value="${c.id}" ${c.id === valorAtual ? "selected" : ""}>${esc(c.razao_social)}</option>`).join("");
         return `<div class="cp-field"><label>${campo.label}</label>
           <select name="${campo.name}" ${campo.opcional ? "" : "required"}>
             <option value="">Selecione…</option>${opts}
           </select></div>`;
       }
       if (campo.type === "select") {
-        const opts = campo.options.map(([v, l]) => `<option value="${v}">${esc(l)}</option>`).join("");
+        const opts = campo.options.map(([v, l]) => `<option value="${v}" ${v === valorAtual ? "selected" : ""}>${esc(l)}</option>`).join("");
         return `<div class="cp-field"><label>${campo.label}</label>
           <select name="${campo.name}" ${campo.opcional ? "" : "required"}>${opts}</select></div>`;
       }
       return `<div class="cp-field"><label>${campo.label}</label>
-        <input type="${campo.type}" name="${campo.name}" ${campo.opcional ? "" : "required"}></div>`;
+        <input type="${campo.type}" name="${campo.name}" value="${esc(valorAtual)}" ${campo.opcional ? "" : "required"}></div>`;
     }
 
-    async function montarForm() {
+    async function montarForm(valores) {
       if (tipoAtual === "equipamentos" && !cachedClientes.length) {
         cachedClientes = await cpFetch("caspere_clientes?ativo=eq.true&select=id,razao_social&order=razao_social.asc");
       }
-      document.getElementById("titulo-form").textContent =
-        { equipamentos: "Novo equipamento", clientes: "Novo cliente", funcionarios: "Novo funcionário" }[tipoAtual];
-      const campos = CAMPOS[tipoAtual].map(campoHtml).join("");
-      document.getElementById("form-novo").innerHTML = campos +
+      const tituloNovo = { equipamentos: "Novo equipamento", clientes: "Novo cliente", funcionarios: "Novo funcionário" }[tipoAtual];
+      const tituloEdicao = { equipamentos: "Editar equipamento", clientes: "Editar cliente", funcionarios: "Editar funcionário" }[tipoAtual];
+      document.getElementById("titulo-form").textContent = editandoId ? tituloEdicao : tituloNovo;
+
+      const campos = CAMPOS[tipoAtual].map(c => campoHtml(c, valores)).join("");
+      const avisoFuncionarioEdicao = (tipoAtual === "funcionarios" && editandoId)
+        ? `<p style="font-size:0.8rem; color:var(--cp-muted); margin-top:-6px;">E-mail e senha não são editados aqui. Para redefinir a senha, use a opção "Esqueci minha senha" na tela de login.</p>` : "";
+
+      document.getElementById("form-novo").innerHTML = campos + avisoFuncionarioEdicao +
         `<p class="cp-erro" style="color:var(--cp-nao-conforme); font-size:0.85rem; display:none;"></p>
-         <button type="submit" class="cp-btn">Salvar</button>`;
+         <div style="display:flex; gap:8px;">
+           <button type="submit" class="cp-btn">${editandoId ? "Salvar alterações" : "Salvar"}</button>
+           ${editandoId ? `<button type="button" class="cp-btn-ghost cp-btn" style="width:auto;" onclick="cancelarEdicao()">Cancelar</button>` : ""}
+         </div>`;
+    }
+
+    function cancelarEdicao() {
+      editandoId = null;
+      montarForm();
+    }
+
+    async function iniciarEdicao(tipo, id) {
+      tipoAtual = tipo;
+      document.querySelectorAll(".cp-tab").forEach(b => b.style.background = "transparent");
+      document.querySelector(`.cp-tab[data-tipo="${tipo}"]`).style.background = "var(--cp-primary-soft)";
+      const tabela = { equipamentos: "caspere_equipamentos", clientes: "caspere_clientes", funcionarios: "caspere_funcionarios" }[tipo];
+      try {
+        const [registro] = await cpFetch(`${tabela}?id=eq.${id}&select=*`);
+        if (!registro) throw new Error("Registro não encontrado.");
+        editandoId = id;
+        await montarForm(registro);
+        document.getElementById("form-novo").scrollIntoView({ behavior: "smooth", block: "start" });
+      } catch (err) {
+        alert(err.message);
+      }
+    }
+
+    async function desativar(tipo, id, nome) {
+      if (!confirm(`Desativar "${nome}"? Isso não apaga o histórico já registrado, só remove da lista de ativos.`)) return;
+      const tabela = { equipamentos: "caspere_equipamentos", clientes: "caspere_clientes", funcionarios: "caspere_funcionarios" }[tipo];
+      try {
+        await cpFetch(`${tabela}?id=eq.${id}`, { method: "PATCH", body: JSON.stringify({ ativo: false }) });
+        if (editandoId === id) cancelarEdicao();
+        carregarLista();
+      } catch (err) {
+        alert(err.message);
+      }
     }
 
     async function carregarLista() {
@@ -121,7 +168,11 @@
                 <div style="font-weight:600;">${esc(r.identificacao)}</div>
                 <div class="cp-meta">${esc(CP_TIPO_EQUIP_LABEL[r.tipo] || r.tipo)} · ${esc(r.caspere_clientes?.razao_social || "")}</div>
               </div>
-              <button class="cp-btn-outline cp-btn" style="width:auto; padding:6px 12px; font-size:0.82rem;" onclick="mostrarQr('${r.id}', ${JSON.stringify(r.identificacao)})">QR Code</button>
+              <div style="display:flex; gap:6px; flex-wrap:wrap; justify-content:flex-end;">
+                <button class="cp-btn-outline cp-btn" style="width:auto; padding:6px 12px; font-size:0.82rem;" onclick="mostrarQr('${r.id}', ${JSON.stringify(r.identificacao)})">QR Code</button>
+                <button class="cp-btn-outline cp-btn" style="width:auto; padding:6px 12px; font-size:0.82rem;" onclick="iniciarEdicao('equipamentos','${r.id}')">Editar</button>
+                <button class="cp-btn-ghost cp-btn" style="width:auto; padding:6px 12px; font-size:0.82rem; color:var(--cp-nao-conforme);" onclick="desativar('equipamentos','${r.id}', ${JSON.stringify(r.identificacao)})">Desativar</button>
+              </div>
             </div>`).join("") : `<p class="cp-empty">Nenhum equipamento cadastrado.</p>`;
         } else if (tipoAtual === "clientes") {
           const rows = await cpFetch("caspere_clientes?ativo=eq.true&select=id,razao_social,email_principal&order=razao_social.asc");
@@ -131,6 +182,10 @@
                 <div style="font-weight:600;">${esc(r.razao_social)}</div>
                 <div class="cp-meta">${esc(r.email_principal)}</div>
               </div>
+              <div style="display:flex; gap:6px; flex-wrap:wrap; justify-content:flex-end;">
+                <button class="cp-btn-outline cp-btn" style="width:auto; padding:6px 12px; font-size:0.82rem;" onclick="iniciarEdicao('clientes','${r.id}')">Editar</button>
+                <button class="cp-btn-ghost cp-btn" style="width:auto; padding:6px 12px; font-size:0.82rem; color:var(--cp-nao-conforme);" onclick="desativar('clientes','${r.id}', ${JSON.stringify(r.razao_social)})">Desativar</button>
+              </div>
             </div>`).join("") : `<p class="cp-empty">Nenhum cliente cadastrado.</p>`;
         } else {
           const rows = await cpFetch("caspere_funcionarios?ativo=eq.true&select=id,nome,cargo,eh_dono&order=nome.asc");
@@ -139,6 +194,10 @@
               <div>
                 <div style="font-weight:600;">${esc(r.nome)} ${r.eh_dono ? '<span class="cp-badge finalizado">Dono</span>' : ""}</div>
                 <div class="cp-meta">${esc(r.cargo || "")}</div>
+              </div>
+              <div style="display:flex; gap:6px; flex-wrap:wrap; justify-content:flex-end;">
+                <button class="cp-btn-outline cp-btn" style="width:auto; padding:6px 12px; font-size:0.82rem;" onclick="iniciarEdicao('funcionarios','${r.id}')">Editar</button>
+                ${!r.eh_dono ? `<button class="cp-btn-ghost cp-btn" style="width:auto; padding:6px 12px; font-size:0.82rem; color:var(--cp-nao-conforme);" onclick="desativar('funcionarios','${r.id}', ${JSON.stringify(r.nome)})">Desativar</button>` : ""}
               </div>
             </div>`).join("") : `<p class="cp-empty">Nenhum funcionário cadastrado.</p>`;
         }
@@ -166,35 +225,47 @@
       const dados = Object.fromEntries(fd.entries());
       try {
         if (tipoAtual === "funcionarios") {
-          // Criar login exige a Admin API do Supabase Auth
-          // (service_role), que não pode rodar no client. Isso
-          // é feito pela Edge Function "criar-funcionario"
-          // (ver /supabase/functions/criar-funcionario) — ela
-          // cria o usuário no Auth e o registro em
-          // caspere_funcionarios numa só chamada.
-          const session = cpGetSession();
-          const res = await fetch(`${SUPABASE_URL}/functions/v1/criar-funcionario`, {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-              "apikey": SUPABASE_ANON_KEY,
-              "Authorization": `Bearer ${session.access_token}`,
-            },
-            body: JSON.stringify({
-              email: dados.email, senha: dados.senha,
-              nome: dados.nome, cargo: dados.cargo || null,
-              telefone: dados.telefone || null,
-            }),
-          });
-          if (!res.ok) {
-            const body = await res.json().catch(() => ({}));
-            throw new Error(body.error || `Erro ${res.status} ao criar funcionário`);
+          if (editandoId) {
+            // Edição só toca nome/cargo/telefone — e-mail/senha
+            // não fazem parte deste formulário quando editando.
+            await cpFetch(`caspere_funcionarios?id=eq.${editandoId}`, {
+              method: "PATCH",
+              body: JSON.stringify({ nome: dados.nome, cargo: dados.cargo || null, telefone: dados.telefone || null }),
+            });
+          } else {
+            // Criar login exige a Admin API do Supabase Auth
+            // (service_role), que não pode rodar no client. Isso
+            // é feito pela Edge Function "criar-funcionario".
+            const session = cpGetSession();
+            const res = await fetch(`${SUPABASE_URL}/functions/v1/criar-funcionario`, {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+                "apikey": SUPABASE_ANON_KEY,
+                "Authorization": `Bearer ${session.access_token}`,
+              },
+              body: JSON.stringify({
+                email: dados.email, senha: dados.senha,
+                nome: dados.nome, cargo: dados.cargo || null,
+                telefone: dados.telefone || null,
+              }),
+            });
+            if (!res.ok) {
+              const body = await res.json().catch(() => ({}));
+              throw new Error(body.error || `Erro ${res.status} ao criar funcionário`);
+            }
           }
         } else {
           const tabela = tipoAtual === "equipamentos" ? "caspere_equipamentos" : "caspere_clientes";
-          await cpFetch(tabela, { method: "POST", body: JSON.stringify(dados) });
+          if (editandoId) {
+            await cpFetch(`${tabela}?id=eq.${editandoId}`, { method: "PATCH", body: JSON.stringify(dados) });
+          } else {
+            await cpFetch(tabela, { method: "POST", body: JSON.stringify(dados) });
+          }
         }
+        editandoId = null;
         form.reset();
+        montarForm();
         carregarLista();
       } catch (err) {
         erroEl.textContent = err.message;
@@ -205,6 +276,7 @@
     document.querySelectorAll(".cp-tab").forEach(btn => {
       btn.addEventListener("click", () => {
         tipoAtual = btn.dataset.tipo;
+        editandoId = null;
         document.querySelectorAll(".cp-tab").forEach(b => b.style.background = "transparent");
         btn.style.background = "var(--cp-primary-soft)";
         montarForm();
