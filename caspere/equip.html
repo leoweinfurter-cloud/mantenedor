@@ -29,11 +29,18 @@
     const session = cpGetSession();
     if (session && equipId) {
       // Confere se é mesmo funcionário (não só um cliente com
-      // sessão velha) antes de redirecionar.
-      cpFuncionarioAtual().then(f => {
-        if (f) window.location.href = `checklist.html?equip=${equipId}`;
-        else iniciarVisaoPublica();
-      });
+      // sessão velha) antes de redirecionar. Se a checagem
+      // falhar (ex: token expirado), não deixa a página travada
+      // — limpa a sessão inválida e cai na visão pública normal.
+      cpFuncionarioAtual()
+        .then(f => {
+          if (f) window.location.href = `checklist.html?equip=${equipId}`;
+          else iniciarVisaoPublica();
+        })
+        .catch(() => {
+          cpClearSession();
+          iniciarVisaoPublica();
+        });
     } else {
       iniciarVisaoPublica();
     }
@@ -64,6 +71,7 @@
             <h3>${esc(CP_TIPO_EQUIP_LABEL[equip.tipo] || equip.tipo)}</h3>
             <h1>${esc(equip.identificacao)}</h1>
             <p>${esc(equip.caspere_clientes?.razao_social || "")}</p>
+            <button type="button" class="cp-btn-outline cp-btn" onclick="window.location.href='login.html?equip=${equip.id}'">Sou técnico — fazer login para executar o checklist</button>
           </div>
 
           <div class="cp-card">
