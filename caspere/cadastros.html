@@ -169,9 +169,9 @@
                 <div class="cp-meta">${esc(CP_TIPO_EQUIP_LABEL[r.tipo] || r.tipo)} · ${esc(r.caspere_clientes?.razao_social || "")}</div>
               </div>
               <div style="display:flex; gap:6px; flex-wrap:wrap; justify-content:flex-end;">
-                <button class="cp-btn-outline cp-btn" style="width:auto; padding:6px 12px; font-size:0.82rem;" onclick="mostrarQr('${r.id}', ${JSON.stringify(r.identificacao)})">QR Code</button>
+                <button class="cp-btn-outline cp-btn" style="width:auto; padding:6px 12px; font-size:0.82rem;" onclick="mostrarQr('${r.id}', ${jsStr(r.identificacao)})">QR Code</button>
                 <button class="cp-btn-outline cp-btn" style="width:auto; padding:6px 12px; font-size:0.82rem;" onclick="iniciarEdicao('equipamentos','${r.id}')">Editar</button>
-                <button class="cp-btn-ghost cp-btn" style="width:auto; padding:6px 12px; font-size:0.82rem; color:var(--cp-nao-conforme);" onclick="desativar('equipamentos','${r.id}', ${JSON.stringify(r.identificacao)})">Desativar</button>
+                <button class="cp-btn-ghost cp-btn" style="width:auto; padding:6px 12px; font-size:0.82rem; color:var(--cp-nao-conforme);" onclick="desativar('equipamentos','${r.id}', ${jsStr(r.identificacao)})">Desativar</button>
               </div>
             </div>`).join("") : `<p class="cp-empty">Nenhum equipamento cadastrado.</p>`;
         } else if (tipoAtual === "clientes") {
@@ -184,7 +184,7 @@
               </div>
               <div style="display:flex; gap:6px; flex-wrap:wrap; justify-content:flex-end;">
                 <button class="cp-btn-outline cp-btn" style="width:auto; padding:6px 12px; font-size:0.82rem;" onclick="iniciarEdicao('clientes','${r.id}')">Editar</button>
-                <button class="cp-btn-ghost cp-btn" style="width:auto; padding:6px 12px; font-size:0.82rem; color:var(--cp-nao-conforme);" onclick="desativar('clientes','${r.id}', ${JSON.stringify(r.razao_social)})">Desativar</button>
+                <button class="cp-btn-ghost cp-btn" style="width:auto; padding:6px 12px; font-size:0.82rem; color:var(--cp-nao-conforme);" onclick="desativar('clientes','${r.id}', ${jsStr(r.razao_social)})">Desativar</button>
               </div>
             </div>`).join("") : `<p class="cp-empty">Nenhum cliente cadastrado.</p>`;
         } else {
@@ -197,7 +197,7 @@
               </div>
               <div style="display:flex; gap:6px; flex-wrap:wrap; justify-content:flex-end;">
                 <button class="cp-btn-outline cp-btn" style="width:auto; padding:6px 12px; font-size:0.82rem;" onclick="iniciarEdicao('funcionarios','${r.id}')">Editar</button>
-                ${!r.eh_dono ? `<button class="cp-btn-ghost cp-btn" style="width:auto; padding:6px 12px; font-size:0.82rem; color:var(--cp-nao-conforme);" onclick="desativar('funcionarios','${r.id}', ${JSON.stringify(r.nome)})">Desativar</button>` : ""}
+                ${!r.eh_dono ? `<button class="cp-btn-ghost cp-btn" style="width:auto; padding:6px 12px; font-size:0.82rem; color:var(--cp-nao-conforme);" onclick="desativar('funcionarios','${r.id}', ${jsStr(r.nome)})">Desativar</button>` : ""}
               </div>
             </div>`).join("") : `<p class="cp-empty">Nenhum funcionário cadastrado.</p>`;
         }

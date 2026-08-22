@@ -160,6 +160,24 @@ function esc(str) {
 }
 
 // ------------------------------------------------------------
+// Gera um literal de string JS seguro pra embutir dentro de um
+// atributo onclick="..." (evita quebra por aspas conflitantes
+// — ex: onclick="minhaFuncao(${jsStr(nomeComAspas)})").
+// A ordem importa: primeiro escapa pra virar um literal JS
+// válido (aspas simples, barras, quebras de linha), depois
+// escapa o resultado pra HTML (já que vai dentro de um
+// atributo delimitado por aspas duplas).
+// ------------------------------------------------------------
+function jsStr(str) {
+  const literal = "'" + String(str ?? "")
+    .replaceAll("\\", "\\\\")
+    .replaceAll("'", "\\'")
+    .replaceAll("\n", "\\n")
+    .replaceAll("\r", "") + "'";
+  return esc(literal);
+}
+
+// ------------------------------------------------------------
 // Rótulos amigáveis
 // ------------------------------------------------------------
 const CP_TIPO_EQUIP_LABEL = {
