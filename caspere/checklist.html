@@ -19,14 +19,53 @@
 
     <form id="form-checklist" style="display:none;">
       <div class="cp-card">
+        <h2>Dados do atendimento</h2>
+        <div class="cp-field">
+          <label>Tipo de manutenção</label>
+          <div style="display:flex; gap:16px; margin-top:4px;">
+            <label style="display:flex; align-items:center; gap:6px; font-weight:normal;">
+              <input type="radio" name="tipo_manutencao" value="preventiva" checked style="width:auto;"> Preventiva
+            </label>
+            <label style="display:flex; align-items:center; gap:6px; font-weight:normal;">
+              <input type="radio" name="tipo_manutencao" value="corretiva" style="width:auto;"> Corretiva
+            </label>
+          </div>
+        </div>
+        <div class="cp-field">
+          <label for="solicitado-por">Solicitado por</label>
+          <input type="text" id="solicitado-por" name="solicitado_por" placeholder="Nome de quem solicitou o atendimento">
+        </div>
+        <div style="display:flex; gap:12px;">
+          <div class="cp-field" style="flex:1;">
+            <label for="horario-inicio">Horário início</label>
+            <input type="time" id="horario-inicio" name="horario_inicio">
+          </div>
+          <div class="cp-field" style="flex:1;">
+            <label for="horario-termino">Horário término</label>
+            <input type="time" id="horario-termino" name="horario_termino">
+          </div>
+        </div>
+        <div class="cp-field">
+          <label for="numero-ciclos">Execução de ciclo completo com cronometragem dos tempos (nº de ciclos, se aplicável)</label>
+          <input type="text" id="numero-ciclos" name="numero_ciclos" placeholder="Ex: 02">
+        </div>
+      </div>
+
+      <div class="cp-card">
         <h2>Checklist de execução</h2>
         <div id="itens-checklist"></div>
       </div>
 
       <div class="cp-card">
-        <h3>Peças trocadas</h3>
+        <h2>Peças substituídas</h2>
+        <div id="pecas-tabela"></div>
+        <button type="button" class="cp-btn-outline cp-btn" style="margin-top:8px;" onclick="adicionarLinhaPeca()">+ Adicionar peça</button>
+      </div>
+
+      <div class="cp-card">
+        <h3>Lacre(s) nº(s)</h3>
         <div class="cp-field">
-          <textarea name="pecas_trocadas" placeholder="Descreva as peças substituídas durante a preventiva, se houver"></textarea>
+          <input type="text" name="lacres" placeholder="Números dos lacres aplicados, se houver">
         </div>
         <h3>Observações gerais</h3>
         <div class="cp-field">
@@ -61,6 +100,7 @@
     let equipamento = null;
     let itensModelo = [];
     let sigPadTecnico, sigPadCliente;
+    let pecaIdCounter = 0;
 
     function renderItem(item) {
       return `
@@ -90,6 +130,36 @@
       document.getElementById(`obs-${itemId}`).style.display = "block";
     }
 
+    // -------- Peças substituídas (tabela dinâmica) --------
+    function linhaPecaHtml(id) {
+      return `
+        <div class="peca-linha" data-id="${id}" style="display:flex; gap:8px; align-items:center; margin-bottom:8px;">
+          <input type="text" placeholder="Qtde" style="width:60px;" data-campo="qtde">
+          <input type="text" placeholder="Peça/componente" style="flex:1;" data-campo="peca">
+          <label style="display:flex; align-items:center; gap:4px; font-weight:normal; font-size:0.8rem; white-space:nowrap;">
+            <input type="checkbox" style="width:auto;" data-campo="substituida" checked> Substituída
+          </label>
+          <button type="button" class="cp-btn-ghost cp-btn" style="width:auto; padding:6px 10px;" onclick="removerLinhaPeca(${id})">✕</button>
+        </div>`;
+    }
+
+    function adicionarLinhaPeca() {
+      pecaIdCounter++;
+      document.getElementById("pecas-tabela").insertAdjacentHTML("beforeend", linhaPecaHtml(pecaIdCounter));
+    }
+
+    function removerLinhaPeca(id) {
+      document.querySelector(`.peca-linha[data-id="${id}"]`)?.remove();
+    }
+
+    function coletarPecas() {
+      return Array.from(document.querySelectorAll(".peca-linha")).map(linha => ({
+        qtde: linha.querySelector('[data-campo="qtde"]').value,
+        peca: linha.querySelector('[data-campo="peca"]').value,
+        substituida: linha.querySelector('[data-campo="substituida"]').checked,
+      })).filter(p => p.peca.trim() !== "");
+    }
+
     function limparAssinatura(tipo) {
       (tipo === "tecnico" ? sigPadTecnico : sigPadCliente).clear();
     }
@@ -101,62 +171,161 @@
       canvas.getContext("2d").scale(ratio, ratio);
     }
 
-    async function gerarPdf(relatorio, respostas, funcionario) {
+    // -------- Geração do PDF, no formato do relatório em papel --------
+    function checkbox(doc, x, y, marcado) {
+      doc.rect(x, y - 8, 9, 9);
+      if (marcado) {
+        doc.setFont("helvetica", "bold");
+        doc.text("X", x + 1.5, y - 1);
+        doc.setFont("helvetica", "normal");
+      }
+    }
+
+    async function gerarPdf(relatorio, respostas, funcionario, dadosForm) {
       const { jsPDF } = window.jspdf;
       const doc = new jsPDF({ unit: "pt", format: "a4" });
       const margin = 40;
+      const pageWidth = 515;
       let y = margin;
 
+      // Cabeçalho — nome da empresa
       doc.setFont("helvetica", "bold");
-      doc.setFontSize(16);
-      doc.text("Relatório de Manutenção Preventiva", margin, y);
-      y += 26;
+      doc.setFontSize(15);
+      doc.text("CASPERE ASSISTÊNCIA TÉCNICA EM", margin, y); y += 16;
+      doc.text("EQUIPAMENTOS HOSPITALARES LTDA", margin, y); y += 20;
+      doc.setDrawColor(20, 30, 35);
+      doc.line(margin, y, margin + pageWidth, y); y += 18;
 
-      doc.setFontSize(10);
-      doc.setFont("helvetica", "normal");
-      doc.text(`Equipamento: ${equipamento.identificacao}`, margin, y); y += 14;
-      doc.text(`Tipo: ${CP_TIPO_EQUIP_LABEL[equipamento.tipo] || equipamento.tipo}`, margin, y); y += 14;
-      doc.text(`Cliente: ${equipamento.caspere_clientes?.razao_social || ""}`, margin, y); y += 14;
-      doc.text(`Data: ${cpFmtData(new Date().toISOString())}`, margin, y); y += 14;
-      doc.text(`Técnico: ${funcionario.nome}`, margin, y); y += 22;
+      doc.setFontSize(12);
+      const tituloTipo = { autoclave: "AUTOCLAVE", osmose_reversa: "OSMOSE REVERSA", termodesinfectora: "TERMODESINFECTORA" }[equipamento.tipo] || "";
+      doc.text(`RELATÓRIO TÉCNICO / ${tituloTipo}`, margin, y);
+      doc.text(`DATA: ${new Date().toLocaleDateString("pt-BR")}`, margin + 340, y);
+      y += 18;
+      doc.line(margin, y, margin + pageWidth, y); y += 16;
 
+      // Dados do cliente
+      const cliente = equipamento.caspere_clientes || {};
+      doc.setFontSize(9);
+      const campo = (label, valor) => {
+        doc.setFont("helvetica", "bold"); doc.text(label, margin, y);
+        doc.setFont("helvetica", "normal"); doc.text(valor || "—", margin + 100, y);
+        y += 13;
+      };
+      campo("CLIENTE:", cliente.razao_social);
+      campo("SOLICITADO POR:", dadosForm.solicitado_por);
+      campo("FONE/FAX:", cliente.telefone);
+      campo("ENDEREÇO:", cliente.endereco);
+      campo("BAIRRO:", cliente.bairro);
+      campo("CIDADE:", `${cliente.cidade || ""}${cliente.uf ? " / " + cliente.uf : ""}`);
+      campo("CEP:", cliente.cep);
+      campo("CNPJ:", cliente.cnpj);
+      campo("INSCR. EST.:", cliente.inscricao_estadual);
+      campo("EQUIPAMENTO:", equipamento.identificacao);
+      campo("MOD.:", equipamento.modelo);
+      campo("FABRI.:", equipamento.fabricante);
+      campo("HORÁRIO INÍCIO:", dadosForm.horario_inicio);
+      campo("HORÁRIO TÉRMINO:", dadosForm.horario_termino);
+      y += 4;
+      doc.line(margin, y, margin + pageWidth, y); y += 16;
+
+      // Tipo de manutenção
       doc.setFont("helvetica", "bold");
-      doc.text("Itens verificados", margin, y); y += 16;
+      doc.text("PROTOCOLO DE MANUTENÇÃO", margin, y); y += 18;
       doc.setFont("helvetica", "normal");
+      checkbox(doc, margin, y, dadosForm.tipo_manutencao === "corretiva");
+      doc.text("CORRETIVA", margin + 14, y);
+      checkbox(doc, margin + 100, y, dadosForm.tipo_manutencao === "preventiva");
+      doc.text("PREVENTIVA", margin + 114, y);
+      y += 20;
 
-      respostas.forEach(r => {
-        const label = { conforme: "Conforme", nao_conforme: "Não conforme", nao_se_aplica: "N/A" }[r.resposta];
-        const linhas = doc.splitTextToSize(`${r.descricao} — ${label}${r.observacao ? " — " + r.observacao : ""}`, 515);
-        if (y + linhas.length * 12 > 780) { doc.addPage(); y = margin; }
-        doc.text(linhas, margin, y);
-        y += linhas.length * 12 + 4;
-      });
-
-      const pecas = document.querySelector('[name="pecas_trocadas"]').value;
-      const obsGerais = document.querySelector('[name="observacoes_gerais"]').value;
-      if (pecas || obsGerais) {
-        y += 10;
-        if (pecas) {
-          doc.setFont("helvetica", "bold"); doc.text("Peças trocadas:", margin, y); y += 14;
-          doc.setFont("helvetica", "normal");
-          const l = doc.splitTextToSize(pecas, 515); doc.text(l, margin, y); y += l.length * 12 + 10;
-        }
-        if (obsGerais) {
-          doc.setFont("helvetica", "bold"); doc.text("Observações gerais:", margin, y); y += 14;
-          doc.setFont("helvetica", "normal");
-          const l = doc.splitTextToSize(obsGerais, 515); doc.text(l, margin, y); y += l.length * 12 + 10;
-        }
+      if (dadosForm.numero_ciclos) {
+        checkbox(doc, margin, y, true);
+        doc.text(`EXECUÇÃO DE ${dadosForm.numero_ciclos} CICLO(S) COMPLETO(S) COM CRONOMETRAGEM DOS TEMPOS`, margin + 14, y);
+        y += 18;
       }
 
+      // Itens do checklist
+      respostas.forEach(r => {
+        if (y > 760) { doc.addPage(); y = margin; }
+        const marcado = r.resposta === "conforme";
+        checkbox(doc, margin, y, marcado);
+        if (r.resposta === "nao_conforme") {
+          doc.setTextColor(180, 40, 20);
+        } else if (r.resposta === "nao_se_aplica") {
+          doc.setTextColor(140, 140, 140);
+        }
+        const linhas = doc.splitTextToSize(r.descricao.toUpperCase(), pageWidth - 20);
+        doc.text(linhas, margin + 14, y);
+        y += linhas.length * 11;
+        if (r.resposta === "nao_conforme" && r.observacao) {
+          doc.setFont("helvetica", "italic");
+          const obsLinhas = doc.splitTextToSize(`Obs.: ${r.observacao}`, pageWidth - 30);
+          doc.text(obsLinhas, margin + 24, y);
+          y += obsLinhas.length * 11;
+          doc.setFont("helvetica", "normal");
+        }
+        doc.setTextColor(0, 0, 0);
+        y += 4;
+      });
+      y += 8;
+
+      // Observações gerais / caixa de texto livre
+      if (dadosForm.observacoes_gerais) {
+        if (y > 700) { doc.addPage(); y = margin; }
+        doc.rect(margin, y, pageWidth, 60);
+        const obsLinhas = doc.splitTextToSize(dadosForm.observacoes_gerais, pageWidth - 16);
+        doc.text(obsLinhas, margin + 8, y + 14);
+        y += 70;
+      }
+
+      // Tabela de peças substituídas
+      const pecas = dadosForm.pecas || [];
+      if (pecas.length) {
+        if (y > 680) { doc.addPage(); y = margin; }
+        doc.setFont("helvetica", "bold");
+        doc.text("QTDE.", margin, y);
+        doc.text("PEÇA/COMPONENTE", margin + 60, y);
+        doc.text("SUBST.", margin + 400, y);
+        doc.text("À SUBST.", margin + 460, y);
+        y += 4;
+        doc.line(margin, y, margin + pageWidth, y); y += 14;
+        doc.setFont("helvetica", "normal");
+        pecas.forEach(p => {
+          if (y > 780) { doc.addPage(); y = margin; }
+          doc.text(p.qtde || "", margin, y);
+          doc.text(p.peca || "", margin + 60, y);
+          checkbox(doc, margin + 400, y, p.substituida);
+          checkbox(doc, margin + 460, y, !p.substituida);
+          y += 16;
+        });
+        y += 6;
+      }
+
+      if (dadosForm.lacres) {
+        campo2(doc, margin, y, "LACRE(S) Nº(S):", dadosForm.lacres);
+        y += 16;
+      }
+      function campo2(doc, x, yy, label, valor) {
+        doc.setFont("helvetica", "bold"); doc.text(label, x, yy);
+        doc.setFont("helvetica", "normal"); doc.text(valor, x + 100, yy);
+      }
+
+      // Assinaturas
       if (y > 650) { doc.addPage(); y = margin; }
       y += 20;
-      doc.setFont("helvetica", "bold"); doc.text("Assinaturas", margin, y); y += 10;
       doc.addImage(sigPadTecnico.toDataURL("image/png"), "PNG", margin, y, 180, 60);
       doc.addImage(sigPadCliente.toDataURL("image/png"), "PNG", margin + 260, y, 180, 60);
-      y += 64;
+      y += 62;
+      doc.line(margin, y, margin + 180, y);
+      doc.line(margin + 260, y, margin + 440, y);
+      y += 12;
       doc.setFont("helvetica", "normal"); doc.setFontSize(9);
-      doc.text(`Técnico: ${funcionario.nome}`, margin, y);
-      doc.text(`Cliente: ${document.getElementById("nome-cliente").value}`, margin + 260, y);
+      doc.text("NOME E ASSINATURA DO(S) TÉCNICO(S)", margin, y);
+      doc.text("NOME E ASSINATURA DO CLIENTE", margin + 260, y);
+      y += 4;
+      doc.setFontSize(8); doc.setTextColor(100, 100, 100);
+      doc.text(funcionario.nome, margin, y + 10);
+      doc.text(document.getElementById("nome-cliente").value, margin + 260, y + 10);
 
       return doc.output("datauristring").split(",")[1]; // base64
     }
@@ -179,6 +348,18 @@
       try {
         const funcionario = await cpFuncionarioAtual();
         const fd = new FormData(e.target);
+        const pecas = coletarPecas();
+
+        const dadosForm = {
+          tipo_manutencao: fd.get("tipo_manutencao"),
+          solicitado_por: fd.get("solicitado_por") || null,
+          horario_inicio: fd.get("horario_inicio") || null,
+          horario_termino: fd.get("horario_termino") || null,
+          numero_ciclos: fd.get("numero_ciclos") || null,
+          lacres: fd.get("lacres") || null,
+          observacoes_gerais: fd.get("observacoes_gerais") || null,
+          pecas,
+        };
 
         // 1. cria o relatório
         const [relatorio] = await cpFetch("caspere_relatorios", {
@@ -187,8 +368,14 @@
           body: JSON.stringify({
             equipamento_id: equipamento.id,
             funcionario_id: funcionario.id,
-            pecas_trocadas: fd.get("pecas_trocadas") || null,
-            observacoes_gerais: fd.get("observacoes_gerais") || null,
+            tipo_manutencao: dadosForm.tipo_manutencao,
+            horario_inicio: dadosForm.horario_inicio,
+            horario_termino: dadosForm.horario_termino,
+            solicitado_por: dadosForm.solicitado_por,
+            numero_ciclos: dadosForm.numero_ciclos,
+            lacres: dadosForm.lacres,
+            pecas_json: pecas,
+            observacoes_gerais: dadosForm.observacoes_gerais,
             status: "finalizado",
           }),
         });
@@ -216,7 +403,7 @@
         });
 
         // 4. gera o PDF e envia por e-mail via Edge Function
-        const pdfBase64 = await gerarPdf(relatorio, respostas, funcionario);
+        const pdfBase64 = await gerarPdf(relatorio, respostas, funcionario, dadosForm);
         const session = cpGetSession();
         const res = await fetch(`${SUPABASE_URL}/functions/v1/enviar-relatorio`, {
           method: "POST",
@@ -255,7 +442,7 @@
       }
 
       try {
-        const [equip] = await cpFetch(`caspere_equipamentos?id=eq.${equipId}&select=*,caspere_clientes(razao_social)`);
+        const [equip] = await cpFetch(`caspere_equipamentos?id=eq.${equipId}&select=*,caspere_clientes(*)`);
         if (!equip) throw new Error("Equipamento não encontrado.");
         equipamento = equip;
         document.getElementById("cabecalho-equip").innerHTML = `
@@ -268,6 +455,7 @@
         itensModelo = await cpFetch("caspere_checklist_modelo?ativo=eq.true&select=*&order=ordem.asc");
         document.getElementById("itens-checklist").innerHTML = itensModelo.map(renderItem).join("");
         document.getElementById("form-checklist").style.display = "block";
+        adicionarLinhaPeca(); // já deixa uma linha em branco pronta
 
         const canvasTecnico = document.getElementById("sig-tecnico");
         const canvasCliente = document.getElementById("sig-cliente");
