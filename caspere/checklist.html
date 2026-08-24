@@ -402,8 +402,35 @@
           ]),
         });
 
-        // 4. gera o PDF e envia por e-mail via Edge Function
+        // 4. gera o PDF
         const pdfBase64 = await gerarPdf(relatorio, respostas, funcionario, dadosForm);
+
+        // 5. sobe o PDF pro Storage (não trava a finalização se
+        // falhar — o e-mail com o PDF anexado já é enviado de
+        // qualquer forma no próximo passo).
+        try {
+          const pdfBytes = Uint8Array.from(atob(pdfBase64), c => c.charCodeAt(0));
+          const caminhoPdf = `relatorio-${relatorio.id}.pdf`;
+          const session2 = cpGetSession();
+          const uploadRes = await fetch(`${SUPABASE_URL}/storage/v1/object/caspere-relatorios/${caminhoPdf}`, {
+            method: "POST",
+            headers: {
+              "apikey": SUPABASE_ANON_KEY,
+              "Authorization": `Bearer ${session2.access_token}`,
+              "Content-Type": "application/pdf",
+            },
+            body: pdfBytes,
+          });
+          if (uploadRes.ok) {
+            const pdfUrl = `${SUPABASE_URL}/storage/v1/object/public/caspere-relatorios/${caminhoPdf}`;
+            await cpFetch(`caspere_relatorios?id=eq.${relatorio.id}`, {
+              method: "PATCH",
+              body: JSON.stringify({ pdf_url: pdfUrl }),
+            });
+          }
+        } catch { /* upload é um extra — não interrompe o fluxo principal */ }
+
+        // 6. envia por e-mail via Edge Function
         const session = cpGetSession();
         const res = await fetch(`${SUPABASE_URL}/functions/v1/enviar-relatorio`, {
           method: "POST",

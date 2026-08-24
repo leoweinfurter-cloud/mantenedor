@@ -76,7 +76,7 @@
       // Últimos relatórios finalizados
       try {
         const relatorios = await cpFetch(
-          "caspere_relatorios?status=eq.finalizado&select=id,data_execucao,caspere_equipamentos(identificacao),caspere_funcionarios(nome)&order=data_execucao.desc&limit=5"
+          "caspere_relatorios?status=eq.finalizado&select=id,data_execucao,pdf_url,caspere_equipamentos(identificacao),caspere_funcionarios(nome)&order=data_execucao.desc&limit=5"
         );
         const el = document.getElementById("lista-relatorios");
         if (!relatorios.length) {
@@ -88,7 +88,10 @@
                 <div style="font-weight:600;">${esc(r.caspere_equipamentos?.identificacao || "Equipamento")}</div>
                 <div class="cp-meta">${esc(r.caspere_funcionarios?.nome || "")} · ${cpFmtData(r.data_execucao)}</div>
               </div>
-              <span class="cp-badge finalizado">Finalizado</span>
+              <div style="display:flex; align-items:center; gap:8px;">
+                <span class="cp-badge finalizado">Finalizado</span>
+                ${r.pdf_url ? `<a href="${esc(r.pdf_url)}" target="_blank" rel="noopener" style="font-size:0.8rem;">PDF</a>` : ""}
+              </div>
             </div>
           `).join("");
         }

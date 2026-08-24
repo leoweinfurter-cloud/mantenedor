@@ -141,16 +141,21 @@
       const el = document.getElementById("historico");
       try {
         const relatorios = await cpFetch(
-          `caspere_relatorios?equipamento_id=eq.${equipId}&status=eq.finalizado&select=id,data_execucao,caspere_funcionarios(nome)&order=data_execucao.desc&limit=10`
+          `caspere_relatorios?equipamento_id=eq.${equipId}&status=eq.finalizado&select=id,data_execucao,tipo_manutencao,pdf_url,caspere_funcionarios(nome)&order=data_execucao.desc&limit=10`
         );
         el.innerHTML = relatorios.length
           ? relatorios.map(r => `
-              <div class="cp-item-row">
+              <div class="cp-item-row" style="flex-wrap:wrap;">
                 <div>
-                  <div style="font-weight:600;">Manutenção preventiva</div>
+                  <div style="font-weight:600;">Manutenção ${r.tipo_manutencao === "corretiva" ? "corretiva" : "preventiva"}</div>
                   <div class="cp-meta">Técnico: ${esc(r.caspere_funcionarios?.nome || "")} · ${cpFmtData(r.data_execucao)}</div>
                 </div>
-                ${badgeStatus("resolvido")}
+                <div style="display:flex; align-items:center; gap:8px;">
+                  ${badgeStatus("resolvido")}
+                  ${r.pdf_url
+                    ? `<a href="${esc(r.pdf_url)}" target="_blank" rel="noopener" class="cp-btn-outline cp-btn" style="width:auto; padding:6px 12px; font-size:0.8rem; text-decoration:none;">Ver relatório (PDF)</a>`
+                    : `<span class="cp-meta">PDF indisponível</span>`}
+                </div>
               </div>`).join("")
           : `<p class="cp-empty">Nenhuma manutenção registrada ainda.</p>`;
       } catch (err) {
