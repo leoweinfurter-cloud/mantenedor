@@ -79,14 +79,24 @@
           <label>Técnico responsável</label>
           <input type="text" id="nome-tecnico" readonly>
         </div>
-        <canvas id="sig-tecnico" class="cp-signature-pad"></canvas>
+        <div class="cp-sig-wrap" style="position:relative;">
+          <canvas id="sig-tecnico" class="cp-signature-pad"></canvas>
+          <div class="cp-sig-overlay" id="overlay-tecnico" onclick="ativarAssinatura('tecnico')">
+            <span>Toque para assinar</span>
+          </div>
+        </div>
         <button type="button" class="cp-btn-ghost cp-btn" style="margin-top:6px;" onclick="limparAssinatura('tecnico')">Limpar assinatura</button>
 
         <div class="cp-field" style="margin-top:20px;">
           <label for="nome-cliente">Nome de quem está assinando pelo cliente</label>
           <input type="text" id="nome-cliente" required>
         </div>
-        <canvas id="sig-cliente" class="cp-signature-pad"></canvas>
+        <div class="cp-sig-wrap" style="position:relative;">
+          <canvas id="sig-cliente" class="cp-signature-pad"></canvas>
+          <div class="cp-sig-overlay" id="overlay-cliente" onclick="ativarAssinatura('cliente')">
+            <span>Toque para assinar</span>
+          </div>
+        </div>
         <button type="button" class="cp-btn-ghost cp-btn" style="margin-top:6px;" onclick="limparAssinatura('cliente')">Limpar assinatura</button>
       </div>
 
@@ -162,6 +172,13 @@
 
     function limparAssinatura(tipo) {
       (tipo === "tecnico" ? sigPadTecnico : sigPadCliente).clear();
+      // Limpar também trava de novo — evita ficar aberto pra
+      // marcar sem querer enquanto rola a tela até o próximo campo.
+      document.getElementById(`overlay-${tipo}`).style.display = "flex";
+    }
+
+    function ativarAssinatura(tipo) {
+      document.getElementById(`overlay-${tipo}`).style.display = "none";
     }
 
     function ajustarCanvas(canvas) {
