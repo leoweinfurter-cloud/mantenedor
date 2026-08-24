@@ -304,3 +304,21 @@ a { color: var(--cp-primary); }
   .cp-topbar, .cp-no-print { display: none !important; }
   body { background: #fff; }
 }
+
+/* Ao imprimir a etiqueta de equipamento, esconde todo o resto
+   da página (formulário, lista) e mostra só o conteúdo do
+   modal, sem overlay/fundo escuro. */
+body.cp-printing-label > *:not(#modal-qr) {
+  display: none !important;
+}
+body.cp-printing-label #modal-qr {
+  position: static !important;
+  background: none !important;
+  display: block !important;
+  padding: 0 !important;
+}
+body.cp-printing-label #modal-qr .cp-card {
+  box-shadow: none !important;
+  border: none !important;
+  max-width: 100% !important;
+}
