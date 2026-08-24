@@ -32,17 +32,26 @@
     </div>
   </div>
 
-  <!-- Modal simples pra exibir/imprimir o QR -->
+  <!-- Modal com a etiqueta completa (logo + dados + QR) pra imprimir -->
   <div id="modal-qr" style="display:none; position:fixed; inset:0; background:rgba(22,35,44,0.55); align-items:center; justify-content:center; z-index:50; padding:16px;">
-    <div class="cp-card" style="max-width:340px; width:100%; text-align:center;">
-      <div id="qr-print-area">
-        <img src="assets/logo-caspere.png" alt="Caspere" style="height:32px; margin-bottom:10px;" onerror="this.style.display='none'">
+    <div class="cp-card" style="max-width:360px; width:100%;">
+      <div id="etiqueta-print-area" style="text-align:center;">
+        <img src="assets/logo-caspere.png" alt="Caspere" style="width:100%; max-width:280px; margin-bottom:14px;" onerror="this.style.display='none'">
+        <div style="border-top:2px solid var(--cp-primary); margin-bottom:16px;"></div>
+        <div style="text-align:left;">
+          <div id="etq-tipo" style="font-weight:700; font-size:0.85rem; letter-spacing:0.04em; color:var(--cp-primary); text-transform:uppercase; margin-bottom:6px;"></div>
+          <div id="etq-identificacao" style="font-weight:700; font-size:1.5rem; color:var(--cp-ink); line-height:1.15;"></div>
+          <div id="etq-local" style="font-size:1rem; color:var(--cp-ink); margin-top:2px;"></div>
+          <div id="etq-cliente" style="font-size:0.9rem; color:var(--cp-muted); margin-top:8px;"></div>
+        </div>
+        <div style="border-top:1px solid var(--cp-border); margin:16px 0;"></div>
         <div id="qr-canvas" style="display:flex; justify-content:center; margin:10px 0;"></div>
-        <div id="qr-nome" style="font-weight:600;"></div>
+        <p style="font-size:0.82rem; color:var(--cp-muted); margin:14px 0 4px;">Aponte a câmera para executar o checklist ou consultar o histórico</p>
+        <p id="etq-id" class="cp-meta" style="margin-top:8px;"></p>
       </div>
       <div style="display:flex; gap:8px; margin-top:16px;" class="cp-no-print">
         <button class="cp-btn-outline cp-btn" onclick="document.getElementById('modal-qr').style.display='none'">Fechar</button>
-        <button class="cp-btn" onclick="window.print()">Imprimir</button>
+        <button class="cp-btn" onclick="imprimirEtiqueta()">Imprimir</button>
       </div>
     </div>
   </div>
@@ -51,6 +60,7 @@
   <script>
     let tipoAtual = "equipamentos";
     let cachedClientes = [];
+    let cachedEquipamentos = [];
     let editandoId = null; // null = criando novo; senão, id do registro em edição
 
     // Campos de cadastro. Campos com "somenteNovo: true" só
@@ -167,7 +177,8 @@
       el.innerHTML = "<p>Carregando…</p>";
       try {
         if (tipoAtual === "equipamentos") {
-          const rows = await cpFetch("caspere_equipamentos?ativo=eq.true&select=id,identificacao,tipo,caspere_clientes(razao_social)&order=criado_em.desc");
+          const rows = await cpFetch("caspere_equipamentos?ativo=eq.true&select=id,identificacao,tipo,local_instalacao,caspere_clientes(razao_social)&order=criado_em.desc");
+          cachedEquipamentos = rows;
           el.innerHTML = rows.length ? rows.map(r => `
             <div class="cp-item-row">
               <div>
@@ -175,7 +186,7 @@
                 <div class="cp-meta">${esc(CP_TIPO_EQUIP_LABEL[r.tipo] || r.tipo)} · ${esc(r.caspere_clientes?.razao_social || "")}</div>
               </div>
               <div style="display:flex; gap:6px; flex-wrap:wrap; justify-content:flex-end;">
-                <button class="cp-btn-outline cp-btn" style="width:auto; padding:6px 12px; font-size:0.82rem;" onclick="mostrarQr('${r.id}', ${jsStr(r.identificacao)})">QR Code</button>
+                <button class="cp-btn-outline cp-btn" style="width:auto; padding:6px 12px; font-size:0.82rem;" onclick="mostrarQr('${r.id}')">QR Code</button>
                 <button class="cp-btn-outline cp-btn" style="width:auto; padding:6px 12px; font-size:0.82rem;" onclick="iniciarEdicao('equipamentos','${r.id}')">Editar</button>
                 <button class="cp-btn-ghost cp-btn" style="width:auto; padding:6px 12px; font-size:0.82rem; color:var(--cp-nao-conforme);" onclick="desativar('equipamentos','${r.id}', ${jsStr(r.identificacao)})">Desativar</button>
               </div>
@@ -212,15 +223,32 @@
       }
     }
 
-    function mostrarQr(equipId, nome) {
+    function mostrarQr(equipId) {
+      const equip = cachedEquipamentos.find(e => e.id === equipId);
+      if (!equip) return;
+
+      document.getElementById("etq-tipo").textContent = CP_TIPO_EQUIP_LABEL[equip.tipo] || equip.tipo;
+      document.getElementById("etq-identificacao").textContent = equip.identificacao;
+      document.getElementById("etq-local").textContent = equip.local_instalacao || "";
+      document.getElementById("etq-local").style.display = equip.local_instalacao ? "block" : "none";
+      document.getElementById("etq-cliente").textContent = equip.caspere_clientes?.razao_social || "";
+      document.getElementById("etq-id").textContent = `ID: ${equip.id}`;
+
       document.getElementById("qr-canvas").innerHTML = "";
       new QRCode(document.getElementById("qr-canvas"), {
-        text: cpUrlEquipamento(equipId),
-        width: 200, height: 200,
+        text: cpUrlEquipamento(equip.id),
+        width: 220, height: 220,
       });
-      document.getElementById("qr-nome").textContent = nome;
       document.getElementById("modal-qr").style.display = "flex";
     }
+
+    function imprimirEtiqueta() {
+      document.body.classList.add("cp-printing-label");
+      window.print();
+    }
+    window.addEventListener("afterprint", () => {
+      document.body.classList.remove("cp-printing-label");
+    });
 
     document.getElementById("form-novo").addEventListener("submit", async (e) => {
       e.preventDefault();
