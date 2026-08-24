@@ -282,6 +282,24 @@ a { color: var(--cp-primary); }
   display: block;
 }
 
+.cp-sig-wrap { width: 100%; }
+
+.cp-sig-overlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--cp-bg);
+  border: 1.5px dashed var(--cp-border);
+  border-radius: var(--cp-radius-sm);
+  color: var(--cp-muted);
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  user-select: none;
+}
+
 @media print {
   .cp-topbar, .cp-no-print { display: none !important; }
   body { background: #fff; }
