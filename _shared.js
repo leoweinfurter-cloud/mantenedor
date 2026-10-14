@@ -294,6 +294,28 @@ function syncChildTable(table,parentField,parentValue,rows){
   });
 }
 
+// ── QR CODE DOS ATIVOS ────────────────────────────────────────────────
+// O QR guarda só um link com o token aleatório do ativo (ativos.qr_token),
+// nunca o id sequencial — ver migracao_qrcode_ativos.sql.
+// Gere a etiqueta sempre a partir de mantenedor.app.br: o link usa a origem
+// da página atual, então em localhost o QR apontaria para lá.
+var QR_ORIGEM_OFICIAL="https://mantenedor.app.br";
+function mxUrlQrAtivo(token,origem){
+  var base=origem||((typeof window!=="undefined"&&window.location&&window.location.origin)||QR_ORIGEM_OFICIAL);
+  return base+"/qr.html?t="+encodeURIComponent(token);
+}
+function mxOrigemQrOficial(origem){
+  var o=origem||((typeof window!=="undefined"&&window.location&&window.location.origin)||"");
+  return o===QR_ORIGEM_OFICIAL;
+}
+// Valida o destino "?next=" do login: só aceita nome de página do próprio app
+// (ex.: qr.html?t=...). Sem barra, sem esquema, sem "//": evita redirecionamento
+// aberto para outro site.
+function mxProximoSeguro(next){
+  if(typeof next!=="string") return "";
+  return /^[A-Za-z0-9_-]+\.html(\?[A-Za-z0-9=&%_.-]*)?$/.test(next)?next:"";
+}
+
 // ── NEXT ID ───────────────────────────────────────────────────────────
 function nextId(){
   var n=parseInt(localStorage.getItem("mx_nextid")||"700");

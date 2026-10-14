@@ -176,11 +176,20 @@ var SB_KEY  = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJl
 var REST    = SB_URL + "/rest/v1";
 var AUTH    = SB_URL + "/auth/v1";
 
+// Destino depois do login. Vem de ?next= (ex.: quem leu o QR de um ativo volta
+// para qr.html?t=...). Só aceita nome de página do próprio app — sem barra,
+// sem esquema, sem "//" — para não virar redirecionamento aberto.
+// Mesma regra de mxProximoSeguro() em _shared.js (esta página não carrega _shared.js).
+function destinoPosLogin(){
+  var next = new URLSearchParams(window.location.search).get("next") || "";
+  return /^[A-Za-z0-9_-]+\.html(\?[A-Za-z0-9=&%_.-]*)?$/.test(next) ? next : "dashboard.html";
+}
+
 // Check if already logged in
 (function(){
   var s = localStorage.getItem("mx_session");
   if(s){
-    try{ var sess=JSON.parse(s); if(sess.access_token) window.location.href="dashboard.html"; }
+    try{ var sess=JSON.parse(s); if(sess.access_token) window.location.href=destinoPosLogin(); }
     catch(e){}
   }
 })();
@@ -304,7 +313,7 @@ function doAceitarConvite(){
         nome: linha.nome, plano: linha.plano || "free", tenantNome: linha.tenant_nome || ""
       }));
       showMsg(t("lg_msg_criada"),"success");
-      setTimeout(function(){ window.location.href="dashboard.html"; }, 1000);
+      setTimeout(function(){ window.location.href=destinoPosLogin(); }, 1000);
     }).catch(function(){
       showMsg(t("lg_msg_vinc_erro"),"error");
       setLoading("btn-convite", false);
@@ -388,7 +397,7 @@ function loadTenantInfo(token, userId){
       sess.plano      = tenant.plano||"free";
       sess.tenantNome = tenant.nome||"";
       localStorage.setItem("mx_session",JSON.stringify(sess));
-      window.location.href="dashboard.html";
+      window.location.href=destinoPosLogin();
     });
   }).catch(function(){
     showMsg(t("lg_msg_carregar"),"error");
@@ -459,7 +468,7 @@ function doSignup(){
         nome: nome, plano: tenant.plano||"free", tenantNome: tenant.nome||empresa
       }));
       showMsg(t("lg_msg_criada"),"success");
-      setTimeout(function(){window.location.href="dashboard.html";},1200);
+      setTimeout(function(){window.location.href=destinoPosLogin();},1200);
     }).catch(function(e){
       showMsg(t("lg_msg_conexao"),"error");
       setLoading("btn-signup",false);

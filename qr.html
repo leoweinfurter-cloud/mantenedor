@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<meta name="theme-color" content="#1d4ed8"/>
+<meta name="robots" content="noindex,nofollow"/>
+<meta name="referrer" content="no-referrer"/>
+<link rel="manifest" href="manifest.json"/>
+<link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png"/>
+<link rel="apple-touch-icon" href="icons/icon-192.png"/>
+<script src="_pwa.js" defer></script>
+<title>Mantenedor — QR Code</title>
+<link rel="stylesheet" href="_style.css" id="theme-link"/>
+<style>
+#qr-wrap{max-width:640px;margin:0 auto;width:100%}
+.qr-tipo{font-size:11px;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px}
+.qr-nome{font-size:22px;font-weight:800;color:#f1f5f9;line-height:1.2;margin-bottom:6px}
+.qr-meta{font-size:13px;color:#94a3b8;line-height:1.6}
+.qr-os{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;background:#060b12;border:1px solid #1e3a5f;border-radius:10px;padding:10px 12px;margin-bottom:8px}
+.qr-os-num{font-size:11px;font-weight:700;color:#64748b;letter-spacing:.03em}
+.qr-os-tit{font-size:14px;font-weight:600;color:#e2e8f0}
+.qr-os-meta{font-size:12px;color:#64748b}
+.qr-empty{color:#64748b;text-align:center;padding:16px;font-size:13px}
+.qr-msg-erro{color:#f87171;font-size:13px;margin:8px 0}
+.qr-msg-ok{color:#4ade80;font-size:13px;margin:8px 0}
+.qr-badge{font-size:10px;font-weight:700;padding:3px 8px;border-radius:10px;text-transform:uppercase;letter-spacing:.05em;border:1px solid #1e3a5f;color:#94a3b8}
+.qr-badge.ok{color:#4ade80;border-color:#4ade8040;background:#4ade8012}
+.qr-badge.warn{color:#fbbf24;border-color:#fbbf2440;background:#fbbf2412}
+.qr-badge.bad{color:#f87171;border-color:#f8717140;background:#f8717112}
+.qr-badge.info{color:#60a5fa;border-color:#60a5fa40;background:#60a5fa12}
+</style>
+</head>
+<body>
+<div id="app">
+  <div id="main">
+    <div id="topbar">
+      <div id="topbar-left">
+        <a class="topbar-logo" href="index.html">&#9881;</a>
+        <div><div id="tt">Mantenedor</div></div>
+      </div>
+      <div id="topbar-right"></div>
+    </div>
+    <div id="ct"><div id="qr-wrap"><p class="qr-empty" data-i18n="qr_carregando">Carregando…</p></div></div>
+  </div>
+</div>
+
+<script src="_lang.js"></script>
+<script src="_shared.js"></script>
+<script>
+// ═══════════════════════════════════════════════════════════════════════
+// qr.html — destino do QR Code de cada ativo.
+// O QR guarda só um link com um token aleatório (ativos.qr_token); nada do
+// ativo vai dentro do QR. Roteamento:
+//   token inválido ............................ mensagem de erro
+//   logado e o ativo é do seu tenant .......... visão da equipe (OS em aberto)
+//   qualquer outro caso (sem login, sessão
+//   vencida, ativo de outro tenant) ........... visão pública enxuta
+// A visão pública NÃO lê tabelas: usa as funções qr_ativo_publico e
+// qr_abrir_solicitacao (SECURITY DEFINER), que devolvem só o mínimo.
+// ═══════════════════════════════════════════════════════════════════════
+var UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+var qrToken = (new URLSearchParams(window.location.search).get("t") || "").trim();
+var state = {fase: "carregando"};   // carregando | erro | equipe | publico
+var wrap = document.getElementById("qr-wrap");
+
+function mostrarErro(chave){ state = {fase: "erro", chave: chave}; render(); }
+
+function statusClasse(s){
+  if(s === "Operacional" || s === "Concluida") return "ok";
+  if(s === "Em Manutencao" || s === "Em Andamento" || s === "Aberta") return "warn";
+  if(s === "Parado" || s === "Desativado") return "bad";
+  return "info";
+}
+function badge(s){ return '<span class="qr-badge ' + statusClasse(s) + '">' + esc(mxLabel(s)) + '</span>'; }
+
+// Chamada anônima às funções públicas (sempre com a chave anon, nunca com
+// o token do usuário — que pode estar vencido e faria a chamada falhar).
+function rpcPublico(nome, corpo){
+  return fetch(REST + "/rpc/" + nome, {
+    method: "POST",
+    headers: {"apikey": SB_KEY, "Authorization": "Bearer " + SB_KEY, "Content-Type": "application/json"},
+    body: JSON.stringify(corpo)
+  }).then(function(r){
+    if(!r.ok) throw new Error("HTTP " + r.status);
+    return r.json();
+  });
+}
+
+// ── RENDER ───────────────────────────────────────────────────────────────
+function render(){
+  if(state.fase === "carregando"){
+    wrap.innerHTML = '<p class="qr-empty">' + esc(t("qr_carregando")) + '</p>';
+  } else if(state.fase === "erro"){
+    wrap.innerHTML = '<div class="card"><p class="qr-msg-erro">' + esc(t(state.chave)) + '</p></div>';
+  } else if(state.fase === "equipe"){
+    renderEquipe();
+  } else if(state.fase === "publico"){
+    renderPublico();
+  }
+}
+
+function renderEquipe(){
+  var a = state.ativo, os = state.os;
+  var coord = isCoordenador(), eu = meuNome();
+  var meta = [a.tag, a.localizacao, a.unidade, a.empresa].filter(Boolean).map(esc).join(" &bull; ");
+
+  var lista = os.length
+    ? os.map(function(o){
+        var pode = coord || !o.tecnico || o.tecnico === eu;
+        var rotulo = o.status === "Aberta" ? t("qr_executar") : t("qr_continuar");
+        return '<div class="qr-os">'
+          + '<div style="min-width:0">'
+          +   '<div class="qr-os-num">' + esc(o.numero_os || "") + ' &bull; ' + esc(mxLabel(o.tipo)) + '</div>'
+          +   '<div class="qr-os-tit">' + esc(o.titulo || "") + '</div>'
+          +   '<div class="qr-os-meta">' + (o.tecnico ? esc(o.tecnico) + ' &bull; ' : '') + (o.prazo ? esc(t("qr_prazo")) + ' ' + esc(o.prazo) : '') + '</div>'
+          + '</div>'
+          + '<div style="display:flex;align-items:center;gap:8px">'
+          +   badge(o.status)
+          +   '<a class="btn bx bsm" style="font-size:11px" href="' + esc(ordensDetailUrl(o)) + '">' + esc(t("qr_ver")) + '</a>'
+          +   (pode ? '<a class="btn bp bsm" style="font-size:11px" href="ordens.html?exec=' + encodeURIComponent(o.id) + '">&#9654; ' + esc(rotulo) + '</a>' : '')
+          + '</div>'
+          + '</div>';
+      }).join("")
+    : '<p class="qr-empty">' + esc(t("qr_nenhuma_aberta")) + '</p>';
+
+  wrap.innerHTML =
+    '<div class="card">'
+    + '<div class="qr-tipo">' + esc(a.categoria || "") + '</div>'
+    + '<div style="display:flex;align-items:flex-start;justify-content:space-between;gap:10px">'
+    +   '<div class="qr-nome">' + esc(a.nome) + '</div>' + badge(a.status)
+    + '</div>'
+    + '<div class="qr-meta">' + meta + '</div>'
+    + '</div>'
+    + '<div class="card">'
+    +   '<div style="display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:12px;flex-wrap:wrap">'
+    +     '<div style="font-size:14px;font-weight:700">' + esc(t("qr_os_abertas")) + '</div>'
+    +     (coord ? '<a class="btn bp bsm" style="font-size:12px" href="ordens.html?nova=' + encodeURIComponent(a.id) + '">' + esc(t("qr_nova_corretiva")) + '</a>' : '')
+    +   '</div>'
+    +   lista
+    + '</div>';
+}
+
+function renderPublico(){
+  var a = state.ativo, concl = a.ultimas_os || [];
+  var meta = [a.tag, a.localizacao, a.unidade, a.empresa].filter(Boolean).map(esc).join(" &bull; ");
+  var logado = !!(getSession() && getSession().access_token);
+
+  var hist = concl.length
+    ? concl.map(function(o){
+        return '<div class="qr-os"><div>'
+          + '<div class="qr-os-num">' + esc(o.numero_os || "") + '</div>'
+          + '<div class="qr-os-tit">' + esc(mxLabel(o.tipo)) + '</div>'
+          + '<div class="qr-os-meta">' + esc(o.abertura || "") + '</div>'
+          + '</div>' + badge("Concluida") + '</div>';
+      }).join("")
+    : '<p class="qr-empty">' + esc(t("qr_nenhuma_os")) + '</p>';
+
+  wrap.innerHTML =
+    '<div class="card">'
+    + '<div class="qr-tipo">' + esc(a.categoria || "") + '</div>'
+    + '<div style="display:flex;align-items:flex-start;justify-content:space-between;gap:10px">'
+    +   '<div class="qr-nome">' + esc(a.nome) + '</div>' + badge(a.status)
+    + '</div>'
+    + '<div class="qr-meta">' + meta + '</div>'
+    + (logado ? '' : '<div style="margin-top:14px"><a class="btn bx" style="width:100%" id="link-equipe" href="#">' + esc(t("qr_sou_equipe")) + '</a></div>')
+    + '</div>'
+
+    + '<div class="card">'
+    +   '<div style="font-size:14px;font-weight:700;margin-bottom:12px">' + esc(t("qr_ultimas_os")) + '</div>'
+    +   hist
+    + '</div>'
+
+    + '<div class="card">'
+    +   '<div style="font-size:14px;font-weight:700;margin-bottom:6px">' + esc(t("qr_abrir_solic")) + '</div>'
+    +   '<p style="font-size:13px;color:#94a3b8;margin-bottom:14px">' + esc(t("qr_solic_intro")) + '</p>'
+    +   '<form id="form-solic" autocomplete="off">'
+    +     '<div class="fg"><label class="lbl">' + esc(t("qr_f_nome")) + '</label><input name="nome" maxlength="120" required/></div>'
+    +     '<div class="fg"><label class="lbl">' + esc(t("qr_f_contato")) + '</label><input name="contato" maxlength="120" required/></div>'
+    +     '<div class="fg"><label class="lbl">' + esc(t("qr_f_desc")) + '</label><textarea name="descricao" rows="4" maxlength="2000" required></textarea></div>'
+    +     '<p id="solic-erro" class="qr-msg-erro" style="display:none"></p>'
+    +     '<p id="solic-ok" class="qr-msg-ok" style="display:none">' + esc(t("qr_solic_ok")) + '</p>'
+    +     '<button type="submit" class="btn bp" style="width:100%" id="btn-solic">' + esc(t("qr_enviar")) + '</button>'
+    +   '</form>'
+    + '</div>';
+
+  var link = document.getElementById("link-equipe");
+  if(link){
+    link.addEventListener("click", function(e){
+      e.preventDefault();
+      window.location.href = "login.html?next=" + encodeURIComponent("qr.html?t=" + qrToken);
+    });
+  }
+  document.getElementById("form-solic").addEventListener("submit", enviarSolicitacao);
+}
+
+function enviarSolicitacao(e){
+  e.preventDefault();
+  var form = e.target;
+  var btn = document.getElementById("btn-solic");
+  var erro = document.getElementById("solic-erro");
+  var ok = document.getElementById("solic-ok");
+  erro.style.display = "none"; ok.style.display = "none";
+  btn.disabled = true; btn.textContent = t("qr_enviando");
+
+  var fd = new FormData(form);
+  rpcPublico("qr_abrir_solicitacao", {
+    p_token: qrToken,
+    p_nome: fd.get("nome"),
+    p_contato: fd.get("contato"),
+    p_descricao: fd.get("descricao")
+  }).then(function(res){
+    if(res === "ok"){
+      ok.style.display = "block";
+      form.reset();
+    } else {
+      var chave = res === "limite" ? "qr_solic_limite" : res === "nao_encontrado" ? "qr_nao_encontrado" : "qr_solic_invalido";
+      erro.textContent = t(chave); erro.style.display = "block";
+    }
+  }).catch(function(){
+    erro.textContent = t("qr_erro_rede"); erro.style.display = "block";
+  }).then(function(){
+    btn.disabled = false; btn.textContent = t("qr_enviar");
+  });
+}
+
+// ── CARREGAMENTO ─────────────────────────────────────────────────────────
+function carregarPublico(){
+  return rpcPublico("qr_ativo_publico", {p_token: qrToken}).then(function(dados){
+    if(!dados){ mostrarErro("qr_nao_encontrado"); return; }
+    state = {fase: "publico", ativo: dados};
+    render();
+  }).catch(function(){ mostrarErro("qr_erro_rede"); });
+}
+
+function carregarEquipe(){
+  // Respeita o RLS: só devolve linha se o ativo for do tenant de quem está logado.
+  return sbFetch("ativos?qr_token=eq." + qrToken + "&select=id,nome,categoria,empresa,unidade,localizacao,tag,status")
+    .then(function(r){
+      if(r.status === 401){ localStorage.removeItem("mx_session"); return null; }
+      if(!r.ok) return null;
+      return r.json();
+    })
+    .then(function(rows){
+      if(!rows || !rows.length) return null;
+      var ativo = rows[0];
+      var filtro = "ativo_id=eq." + ativo.id + "&status=in.(Aberta," + encodeURIComponent('"Em Andamento"') + ")";
+      return sbFetch("ordens?" + filtro + "&select=id,numero_os,titulo,tipo,prioridade,status,tecnico,origem,prazo&order=abertura.desc")
+        .then(function(r){ return r.ok ? r.json() : []; })
+        .then(function(os){ return {ativo: ativo, os: os}; });
+    })
+    .catch(function(){ return null; });
+}
+
+function iniciar(){
+  if(!UUID_RE.test(qrToken)){ mostrarErro("qr_sem_token"); return; }
+  var s = getSession();
+  if(s && s.access_token && s.tenant_id){
+    carregarEquipe().then(function(res){
+      if(res){ state = {fase: "equipe", ativo: res.ativo, os: res.os}; render(); }
+      else carregarPublico();
+    });
+  } else {
+    carregarPublico();
+  }
+}
+
+window.addEventListener("langchange", function(){ LANG.applyStatic(); render(); });
+iniciar();
+</script>
+<script src="_theme.js"></script>
+</body>
+</html>

@@ -1,0 +1,1580 @@
+diff --git a/_lang.js b/_lang.js
+index 461f420..e52a1ce 100644
+--- a/_lang.js
++++ b/_lang.js
+@@ -5,6 +5,49 @@ var TRANSLATIONS = {
+ 
+ // ── PORTUGUES (padrão) ──────────────────────────────────────────────────
+ pt: {
++  // QR Code dos ativos
++  qr_btn: "QR Code",
++  qr_titulo_modal: "Etiqueta QR Code",
++  qr_fechar: "Fechar",
++  qr_imprimir: "Imprimir",
++  qr_legenda: "Aponte a câmera para ver as OS ou solicitar manutenção",
++  qr_aviso_origem: "Atenção: gere a etiqueta a partir de mantenedor.app.br. Em outro endereço o QR aponta para lá e não funcionará em campo.",
++  qr_erro_lib: "Não foi possível carregar o gerador de QR Code. Verifique a conexão e tente novamente.",
++  qr_erro_token: "Não foi possível obter o QR Code deste ativo. Confirme que a migração do banco foi aplicada.",
++  qr_carregando: "Carregando…",
++  qr_sem_token: "QR Code inválido. Escaneie a etiqueta novamente.",
++  qr_nao_encontrado: "Equipamento não encontrado ou QR Code desativado.",
++  qr_erro_rede: "Sem conexão. Tente novamente em instantes.",
++  qr_sou_equipe: "Sou da equipe — entrar para ver e executar OS",
++  qr_ultimas_os: "Últimas ordens de serviço concluídas",
++  qr_nenhuma_os: "Nenhuma OS concluída ainda.",
++  qr_abrir_solic: "Solicitar manutenção",
++  qr_solic_intro: "Encontrou algum problema com este equipamento? Descreva abaixo e a equipe será avisada.",
++  qr_f_nome: "Seu nome",
++  qr_f_contato: "Telefone ou e-mail para contato",
++  qr_f_desc: "Descreva o problema",
++  qr_enviar: "Enviar solicitação",
++  qr_enviando: "Enviando…",
++  qr_solic_ok: "Solicitação enviada! A equipe entrará em contato.",
++  qr_solic_invalido: "Confira os campos: informe nome, contato e uma descrição do problema.",
++  qr_solic_limite: "Muitas solicitações recentes para este equipamento. Tente novamente mais tarde.",
++  qr_executar: "Executar",
++  qr_continuar: "Continuar",
++  qr_ver: "Ver",
++  qr_prazo: "Prazo",
++  qr_os_abertas: "OS em aberto neste ativo",
++  qr_nenhuma_aberta: "Nenhuma OS em aberto neste ativo.",
++  qr_nova_corretiva: "+ Nova OS Corretiva",
++  qr_sem_permissao: "Esta OS está atribuída a outro técnico.",
++  qr_sol_titulo: "Solicitações via QR Code",
++  qr_sol_criar_os: "Criar OS",
++  qr_sol_descartar: "Descartar",
++  qr_sol_conf_descartar: "Descartar esta solicitação?",
++  qr_sol_titulo_os: "Solicitação via QR — {ativo}",
++  qr_sol_de: "Solicitante",
++  qr_sol_erro: "Não foi possível atualizar a solicitação. Tente novamente.",
++  qr_sol_erro_marcar: "A OS foi criada, mas não foi possível marcar a solicitação como convertida. Descarte-a manualmente para não duplicar.",
++
+   // Navegação
+   nav_dashboard:    "Dashboard",
+   nav_ordens:       "Ordens de Servico",
+@@ -727,6 +770,49 @@ pt: {
+ 
+ // ── ENGLISH ────────────────────────────────────────────────────────────────
+ en: {
++  // Asset QR Code
++  qr_btn: "QR Code",
++  qr_titulo_modal: "QR Code label",
++  qr_fechar: "Close",
++  qr_imprimir: "Print",
++  qr_legenda: "Point your camera to see work orders or request maintenance",
++  qr_aviso_origem: "Warning: generate the label from mantenedor.app.br. On any other address the QR points there and will not work in the field.",
++  qr_erro_lib: "Could not load the QR Code generator. Check your connection and try again.",
++  qr_erro_token: "Could not get this asset's QR Code. Make sure the database migration was applied.",
++  qr_carregando: "Loading…",
++  qr_sem_token: "Invalid QR Code. Please scan the label again.",
++  qr_nao_encontrado: "Equipment not found or QR Code disabled.",
++  qr_erro_rede: "No connection. Please try again shortly.",
++  qr_sou_equipe: "I'm on the team — sign in to view and run work orders",
++  qr_ultimas_os: "Latest completed work orders",
++  qr_nenhuma_os: "No completed work orders yet.",
++  qr_abrir_solic: "Request maintenance",
++  qr_solic_intro: "Found a problem with this equipment? Describe it below and the team will be notified.",
++  qr_f_nome: "Your name",
++  qr_f_contato: "Phone or e-mail for contact",
++  qr_f_desc: "Describe the problem",
++  qr_enviar: "Send request",
++  qr_enviando: "Sending…",
++  qr_solic_ok: "Request sent! The team will get in touch.",
++  qr_solic_invalido: "Check the fields: enter your name, a contact and a description of the problem.",
++  qr_solic_limite: "Too many recent requests for this equipment. Please try again later.",
++  qr_executar: "Execute",
++  qr_continuar: "Continue",
++  qr_ver: "View",
++  qr_prazo: "Due",
++  qr_os_abertas: "Open work orders on this asset",
++  qr_nenhuma_aberta: "No open work orders on this asset.",
++  qr_nova_corretiva: "+ New Corrective WO",
++  qr_sem_permissao: "This work order is assigned to another technician.",
++  qr_sol_titulo: "QR Code requests",
++  qr_sol_criar_os: "Create WO",
++  qr_sol_descartar: "Dismiss",
++  qr_sol_conf_descartar: "Dismiss this request?",
++  qr_sol_titulo_os: "QR request — {ativo}",
++  qr_sol_de: "Requester",
++  qr_sol_erro: "Could not update the request. Please try again.",
++  qr_sol_erro_marcar: "The work order was created, but the request could not be marked as converted. Dismiss it manually to avoid a duplicate.",
++
+   nav_dashboard:    "Dashboard",
+   nav_ordens:       "Work Orders",
+   nav_ativos:       "Asset Management",
+@@ -1396,6 +1482,49 @@ en: {
+ 
+ // ── ESPAÑOL ────────────────────────────────────────────────────────────────
+ es: {
++  // QR Code de los activos
++  qr_btn: "QR Code",
++  qr_titulo_modal: "Etiqueta QR Code",
++  qr_fechar: "Cerrar",
++  qr_imprimir: "Imprimir",
++  qr_legenda: "Apunte la cámara para ver las OT o solicitar mantenimiento",
++  qr_aviso_origem: "Atención: genere la etiqueta desde mantenedor.app.br. En otra dirección el QR apunta allí y no funcionará en campo.",
++  qr_erro_lib: "No se pudo cargar el generador de QR Code. Verifique la conexión e intente de nuevo.",
++  qr_erro_token: "No se pudo obtener el QR Code de este activo. Confirme que la migración de la base fue aplicada.",
++  qr_carregando: "Cargando…",
++  qr_sem_token: "QR Code inválido. Escanee la etiqueta nuevamente.",
++  qr_nao_encontrado: "Equipo no encontrado o QR Code desactivado.",
++  qr_erro_rede: "Sin conexión. Intente de nuevo en unos instantes.",
++  qr_sou_equipe: "Soy del equipo — iniciar sesión para ver y ejecutar OT",
++  qr_ultimas_os: "Últimas órdenes de trabajo completadas",
++  qr_nenhuma_os: "Aún no hay OT completadas.",
++  qr_abrir_solic: "Solicitar mantenimiento",
++  qr_solic_intro: "¿Encontró algún problema con este equipo? Descríbalo abajo y se avisará al equipo.",
++  qr_f_nome: "Su nombre",
++  qr_f_contato: "Teléfono o e-mail de contacto",
++  qr_f_desc: "Describa el problema",
++  qr_enviar: "Enviar solicitud",
++  qr_enviando: "Enviando…",
++  qr_solic_ok: "¡Solicitud enviada! El equipo se pondrá en contacto.",
++  qr_solic_invalido: "Revise los campos: indique nombre, contacto y una descripción del problema.",
++  qr_solic_limite: "Demasiadas solicitudes recientes para este equipo. Intente más tarde.",
++  qr_executar: "Ejecutar",
++  qr_continuar: "Continuar",
++  qr_ver: "Ver",
++  qr_prazo: "Plazo",
++  qr_os_abertas: "OT abiertas en este activo",
++  qr_nenhuma_aberta: "No hay OT abiertas en este activo.",
++  qr_nova_corretiva: "+ Nueva OT Correctiva",
++  qr_sem_permissao: "Esta OT está asignada a otro técnico.",
++  qr_sol_titulo: "Solicitudes por QR Code",
++  qr_sol_criar_os: "Crear OT",
++  qr_sol_descartar: "Descartar",
++  qr_sol_conf_descartar: "¿Descartar esta solicitud?",
++  qr_sol_titulo_os: "Solicitud por QR — {ativo}",
++  qr_sol_de: "Solicitante",
++  qr_sol_erro: "No se pudo actualizar la solicitud. Intente de nuevo.",
++  qr_sol_erro_marcar: "La OT fue creada, pero no se pudo marcar la solicitud como convertida. Descártela manualmente para no duplicar.",
++
+   nav_dashboard:    "Panel",
+   nav_ordens:       "Ordenes de Trabajo",
+   nav_ativos:       "Gestion de Activos",
+diff --git a/_shared.js b/_shared.js
+index 0207695..3c4878a 100644
+--- a/_shared.js
++++ b/_shared.js
+@@ -294,6 +294,28 @@ function syncChildTable(table,parentField,parentValue,rows){
+   });
+ }
+ 
++// ── QR CODE DOS ATIVOS ────────────────────────────────────────────────
++// O QR guarda só um link com o token aleatório do ativo (ativos.qr_token),
++// nunca o id sequencial — ver migracao_qrcode_ativos.sql.
++// Gere a etiqueta sempre a partir de mantenedor.app.br: o link usa a origem
++// da página atual, então em localhost o QR apontaria para lá.
++var QR_ORIGEM_OFICIAL="https://mantenedor.app.br";
++function mxUrlQrAtivo(token,origem){
++  var base=origem||((typeof window!=="undefined"&&window.location&&window.location.origin)||QR_ORIGEM_OFICIAL);
++  return base+"/qr.html?t="+encodeURIComponent(token);
++}
++function mxOrigemQrOficial(origem){
++  var o=origem||((typeof window!=="undefined"&&window.location&&window.location.origin)||"");
++  return o===QR_ORIGEM_OFICIAL;
++}
++// Valida o destino "?next=" do login: só aceita nome de página do próprio app
++// (ex.: qr.html?t=...). Sem barra, sem esquema, sem "//": evita redirecionamento
++// aberto para outro site.
++function mxProximoSeguro(next){
++  if(typeof next!=="string") return "";
++  return /^[A-Za-z0-9_-]+\.html(\?[A-Za-z0-9=&%_.-]*)?$/.test(next)?next:"";
++}
++
+ // ── NEXT ID ───────────────────────────────────────────────────────────
+ function nextId(){
+   var n=parseInt(localStorage.getItem("mx_nextid")||"700");
+diff --git a/ativos.html b/ativos.html
+index 5540a00..fcd6318 100644
+--- a/ativos.html
++++ b/ativos.html
+@@ -10,7 +10,29 @@
+ <script src="_pwa.js" defer></script>
+ <title>Mantenedor — Ativos</title>
+ <link rel="stylesheet" href="_style.css" id="theme-link"/>
++<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js" defer></script>
+ <style>
++/* ── ETIQUETA QR (sempre fundo branco: sai igual no tema claro/escuro e na impressão) ── */
++#qr-etiqueta{background:#fff;color:#111827;border-radius:12px;padding:18px 16px;text-align:center;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif}
++#qr-etiqueta .qe-marca{display:flex;align-items:center;justify-content:center;gap:8px;font-size:15px;font-weight:800;letter-spacing:.02em;padding-bottom:8px;border-bottom:3px solid #1d4ed8;margin-bottom:10px}
++#qr-etiqueta .qe-marca img{width:28px;height:28px;border-radius:6px}
++#qr-etiqueta .qe-cat{font-size:11px;font-weight:700;color:#4b5563;text-transform:uppercase;letter-spacing:.08em}
++#qr-etiqueta .qe-nome{font-size:22px;font-weight:800;line-height:1.2;margin:2px 0 4px;word-break:break-word}
++#qr-etiqueta .qe-linha{font-size:13px;color:#374151;line-height:1.5}
++#qr-canvas{display:flex;justify-content:center;margin:12px 0 8px}
++#qr-etiqueta .qe-legenda{font-size:12px;color:#374151}
++#qr-etiqueta .qe-rodape{font-size:10px;color:#6b7280;margin-top:8px;font-family:ui-monospace,Menlo,Consolas,monospace}
++#qr-aviso{display:none;background:rgba(251,191,36,.1);border:1px solid rgba(251,191,36,.35);color:#fbbf24;border-radius:10px;padding:10px 12px;font-size:12px;margin-bottom:12px}
++@media print{
++  body.mx-printing-label #app,
++  body.mx-printing-label #bottom-nav,
++  body.mx-printing-label .modal:not(#modal-qr),
++  body.mx-printing-label .qr-no-print{display:none!important}
++  body.mx-printing-label{background:#fff!important}
++  body.mx-printing-label #modal-qr{position:static!important;display:block!important;background:none!important;padding:0!important}
++  body.mx-printing-label #modal-qr .mc{border:none!important;box-shadow:none!important;background:none!important;padding:0!important;max-width:none!important;max-height:none!important;overflow:visible!important;width:80mm;margin:0}
++  body.mx-printing-label #qr-etiqueta{border-radius:0}
++}
+ /* ── PLAN MODAL ACTIONS ── */
+ .pl-acao-row{background:var(--inner-bg,#060b12);border:1px solid var(--border,#1e3a5f);border-radius:10px;padding:10px 12px;margin-bottom:6px}
+ .pl-acao-type{font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.05em;padding:2px 7px;border-radius:8px;margin-bottom:6px;display:inline-block}
+@@ -81,6 +103,26 @@
+   <div class="mf"><button class="btn bx" onclick="closeModal('modal-ativo')"><span data-i18n="btn_cancelar">Cancelar</span></button><button class="btn bp" id="at-save-btn" onclick="saveAtivo()"><span data-i18n="btn_cadastrar">Cadastrar</span></button></div>
+ </div></div>
+ 
++<!-- Modal Etiqueta QR Code -->
++<div class="modal" id="modal-qr"><div class="mc" onclick="event.stopPropagation()">
++  <div class="mt2 qr-no-print" data-i18n="qr_titulo_modal">Etiqueta QR Code</div>
++  <div id="qr-aviso" class="qr-no-print"></div>
++  <div id="qr-etiqueta">
++    <div class="qe-marca"><img src="icons/icon-192.png" alt="" onerror="this.style.display='none'"/><span>Mantenedor</span></div>
++    <div class="qe-cat" id="qe-cat"></div>
++    <div class="qe-nome" id="qe-nome"></div>
++    <div class="qe-linha" id="qe-local"></div>
++    <div class="qe-linha" id="qe-empresa"></div>
++    <div id="qr-canvas"></div>
++    <div class="qe-legenda" id="qe-legenda"></div>
++    <div class="qe-rodape" id="qe-rodape"></div>
++  </div>
++  <div class="mf qr-no-print">
++    <button class="btn bx" onclick="closeModal('modal-qr')"><span data-i18n="qr_fechar">Fechar</span></button>
++    <button class="btn bp" onclick="imprimirEtiqueta()"><span data-i18n="qr_imprimir">Imprimir</span></button>
++  </div>
++</div></div>
++
+ <!-- Modal Registrar Manutencao -->
+ <div class="modal" id="modal-hist"><div class="mc" onclick="event.stopPropagation()">
+   <div class="mt2" data-i18n="at_reg_manut">Registrar Manutencao</div>
+@@ -980,6 +1022,7 @@ function renderFicha(){
+   else if(fichaTab=="criticidade")content=tabCrit(a,f);
+   return'<div style="display:flex;align-items:center;gap:10px;margin-bottom:16px">'
+     +'<button class="btn bx" onclick="selAtivo=null;render()">&#8592; Voltar</button>'
++    +'<button class="btn bx bsm" onclick="mostrarQr('+selAtivo.id+')" style="font-size:11px">&#9638; '+t("qr_btn")+'</button>'
+     +(!isCoordenador() ? '' : '<button class="btn bx bsm" onclick="editAtivo('+selAtivo.id+')" style="font-size:11px">'+t("btn_editar")+'</button>')
+     +(!isCoordenador() ? '' : selAtivo.status!=="Desativado"
+       ?'<button class="btn bsm" onclick="abrirDesativarAtivo()" style="font-size:11px;background:#7f1d1d30;color:#f87171;border:1px solid #f8717140">'+t("at_desativar")+'</button>'
+@@ -1288,6 +1331,55 @@ function setCrit(aid,criterio,val){
+   }
+ })();
+ 
++// ── ETIQUETA QR CODE DO ATIVO ─────────────────────────────────────────
++// O QR guarda só o link /qr.html?t=<token>. O token fica em ativos.qr_token
++// (gerado no banco) e é buscado na hora de montar a etiqueta — não vai para
++// o localStorage nem para o array local de ativos.
++function mostrarQr(ativoId){
++  var a=ativos.find(function(x){return x.id==ativoId;});
++  if(!a) return;
++  if(typeof QRCode==="undefined"){mxToast(t("qr_erro_lib"),"error");return;}
++  sbFetch("ativos?id=eq."+encodeURIComponent(ativoId)+"&select=qr_token")
++    .then(function(r){
++      if(!r.ok) throw new Error("HTTP "+r.status);
++      return r.json();
++    })
++    .then(function(rows){
++      var token=rows&&rows[0]&&rows[0].qr_token;
++      if(!token) throw new Error("ativo sem qr_token");
++      preencherEtiquetaQr(a,token);
++    })
++    .catch(function(e){
++      console.error("[QR] falha ao obter o token do ativo",e);
++      mxToast(t("qr_erro_token"),"error");
++    });
++}
++
++function preencherEtiquetaQr(a,token){
++  var set=function(id,txt){document.getElementById(id).textContent=txt||"";};
++  set("qe-cat",a.categoria);
++  set("qe-nome",a.nome);
++  set("qe-local",[a.tag,a.localizacao].filter(Boolean).join(" • "));
++  set("qe-empresa",[a.empresa,a.unidade].filter(Boolean).join(" • "));
++  set("qe-legenda",t("qr_legenda"));
++  set("qe-rodape","ID: "+a.id);
++
++  var aviso=document.getElementById("qr-aviso");
++  if(mxOrigemQrOficial()){aviso.style.display="none";}
++  else{aviso.textContent=t("qr_aviso_origem");aviso.style.display="block";}
++
++  var el=document.getElementById("qr-canvas");
++  el.innerHTML="";
++  new QRCode(el,{text:mxUrlQrAtivo(token),width:220,height:220});
++  openModal("modal-qr");
++}
++
++function imprimirEtiqueta(){
++  document.body.classList.add("mx-printing-label");
++  window.print();
++}
++window.addEventListener("afterprint",function(){document.body.classList.remove("mx-printing-label");});
++
+ initApp(render);
+ </script>
+ <nav id="bottom-nav">
+diff --git a/login.html b/login.html
+index 83b6547..3c58812 100644
+--- a/login.html
++++ b/login.html
+@@ -176,11 +176,20 @@ var SB_KEY  = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJl
+ var REST    = SB_URL + "/rest/v1";
+ var AUTH    = SB_URL + "/auth/v1";
+ 
++// Destino depois do login. Vem de ?next= (ex.: quem leu o QR de um ativo volta
++// para qr.html?t=...). Só aceita nome de página do próprio app — sem barra,
++// sem esquema, sem "//" — para não virar redirecionamento aberto.
++// Mesma regra de mxProximoSeguro() em _shared.js (esta página não carrega _shared.js).
++function destinoPosLogin(){
++  var next = new URLSearchParams(window.location.search).get("next") || "";
++  return /^[A-Za-z0-9_-]+\.html(\?[A-Za-z0-9=&%_.-]*)?$/.test(next) ? next : "dashboard.html";
++}
++
+ // Check if already logged in
+ (function(){
+   var s = localStorage.getItem("mx_session");
+   if(s){
+-    try{ var sess=JSON.parse(s); if(sess.access_token) window.location.href="dashboard.html"; }
++    try{ var sess=JSON.parse(s); if(sess.access_token) window.location.href=destinoPosLogin(); }
+     catch(e){}
+   }
+ })();
+@@ -304,7 +313,7 @@ function doAceitarConvite(){
+         nome: linha.nome, plano: linha.plano || "free", tenantNome: linha.tenant_nome || ""
+       }));
+       showMsg(t("lg_msg_criada"),"success");
+-      setTimeout(function(){ window.location.href="dashboard.html"; }, 1000);
++      setTimeout(function(){ window.location.href=destinoPosLogin(); }, 1000);
+     }).catch(function(){
+       showMsg(t("lg_msg_vinc_erro"),"error");
+       setLoading("btn-convite", false);
+@@ -388,7 +397,7 @@ function loadTenantInfo(token, userId){
+       sess.plano      = tenant.plano||"free";
+       sess.tenantNome = tenant.nome||"";
+       localStorage.setItem("mx_session",JSON.stringify(sess));
+-      window.location.href="dashboard.html";
++      window.location.href=destinoPosLogin();
+     });
+   }).catch(function(){
+     showMsg(t("lg_msg_carregar"),"error");
+@@ -459,7 +468,7 @@ function doSignup(){
+         nome: nome, plano: tenant.plano||"free", tenantNome: tenant.nome||empresa
+       }));
+       showMsg(t("lg_msg_criada"),"success");
+-      setTimeout(function(){window.location.href="dashboard.html";},1200);
++      setTimeout(function(){window.location.href=destinoPosLogin();},1200);
+     }).catch(function(e){
+       showMsg(t("lg_msg_conexao"),"error");
+       setLoading("btn-signup",false);
+diff --git a/migracao_qrcode_ativos.sql b/migracao_qrcode_ativos.sql
+new file mode 100644
+index 0000000..00ec62e
+--- /dev/null
++++ b/migracao_qrcode_ativos.sql
+@@ -0,0 +1,153 @@
++-- ═══════════════════════════════════════════════════════════════════════
++--  Mantenedor — QR Code por ativo (acesso às OS + solicitação pública)
++--  Rodar no SQL Editor do Supabase. Idempotente: pode rodar mais de uma vez.
++--
++--  Diferença para o Caspere: aqui os IDs são inteiros sequenciais e os dados
++--  são multi-tenant. Por isso o QR NÃO carrega o id do ativo e NÃO existe
++--  leitura pública por RLS. O QR carrega um token aleatório (uuid) e o acesso
++--  sem login passa por funções SECURITY DEFINER que devolvem só o mínimo.
++-- ═══════════════════════════════════════════════════════════════════════
++
++-- 1) Token do QR em cada ativo ───────────────────────────────────────────
++-- ADD COLUMN com default volátil gera um valor diferente para cada linha
++-- já existente (backfill automático).
++ALTER TABLE public.ativos
++  ADD COLUMN IF NOT EXISTS qr_token uuid NOT NULL DEFAULT gen_random_uuid();
++
++CREATE UNIQUE INDEX IF NOT EXISTS ativos_qr_token_key ON public.ativos (qr_token);
++
++-- 2) Solicitações abertas por quem leu o QR (sem login) ──────────────────
++CREATE TABLE IF NOT EXISTS public.solicitacoes_qr (
++  id                  uuid PRIMARY KEY DEFAULT gen_random_uuid(),
++  tenant_id           uuid NOT NULL REFERENCES public.tenants(id) ON DELETE CASCADE,
++  ativo_id            integer NOT NULL REFERENCES public.ativos(id) ON DELETE CASCADE,
++  nome_solicitante    text NOT NULL,
++  contato_solicitante text NOT NULL,
++  descricao           text NOT NULL,
++  status              text NOT NULL DEFAULT 'Pendente'
++                      CHECK (status IN ('Pendente','Convertida','Descartada')),
++  os_id               bigint,
++  criado_em           timestamptz NOT NULL DEFAULT now()
++);
++
++CREATE INDEX IF NOT EXISTS solicitacoes_qr_tenant_status_idx
++  ON public.solicitacoes_qr (tenant_id, status, criado_em DESC);
++
++ALTER TABLE public.solicitacoes_qr ENABLE ROW LEVEL SECURITY;
++
++-- Equipe logada só enxerga/atualiza as solicitações do próprio tenant.
++-- NÃO há policy de INSERT para anon: a criação só acontece pela função abaixo.
++DROP POLICY IF EXISTS tenant ON public.solicitacoes_qr;
++CREATE POLICY tenant ON public.solicitacoes_qr
++  FOR ALL
++  USING (tenant_id = get_tenant_id())
++  WITH CHECK (tenant_id = get_tenant_id());
++
++-- 3) Visão pública enxuta ────────────────────────────────────────────────
++-- Devolve só: identificação do ativo e as últimas 10 OS concluídas
++-- (sem custos, sem descrição, sem técnico). Token inexistente → NULL.
++DROP FUNCTION IF EXISTS public.qr_ativo_publico(uuid);
++CREATE FUNCTION public.qr_ativo_publico(p_token uuid)
++RETURNS jsonb
++LANGUAGE plpgsql
++STABLE
++SECURITY DEFINER
++SET search_path = public
++AS $func$
++DECLARE
++  v_ativo public.ativos%ROWTYPE;
++  v_os    jsonb;
++BEGIN
++  IF p_token IS NULL THEN
++    RETURN NULL;
++  END IF;
++
++  SELECT * INTO v_ativo FROM public.ativos WHERE qr_token = p_token;
++  IF NOT FOUND THEN
++    RETURN NULL;
++  END IF;
++
++  SELECT COALESCE(jsonb_agg(x ORDER BY x->>'abertura' DESC), '[]'::jsonb)
++    INTO v_os
++    FROM (
++      SELECT jsonb_build_object(
++               'numero_os', o.numero_os,
++               'tipo',      o.tipo,
++               'abertura',  o.abertura
++             ) AS x
++        FROM public.ordens o
++       WHERE o.ativo_id = v_ativo.id
++         AND o.tenant_id = v_ativo.tenant_id
++         AND o.status = 'Concluida'
++       ORDER BY o.abertura DESC NULLS LAST, o.id DESC
++       LIMIT 10
++    ) s;
++
++  RETURN jsonb_build_object(
++    'nome',        v_ativo.nome,
++    'categoria',   v_ativo.categoria,
++    'empresa',     v_ativo.empresa,
++    'unidade',     v_ativo.unidade,
++    'localizacao', v_ativo.localizacao,
++    'tag',         v_ativo.tag,
++    'status',      v_ativo.status,
++    'ultimas_os',  v_os
++  );
++END;
++$func$;
++
++-- 4) Abrir solicitação sem login ─────────────────────────────────────────
++-- Valida tamanhos e limita abuso (máx. 10 pendentes por ativo na última hora).
++-- Retorna 'ok' | 'invalido' | 'nao_encontrado' | 'limite'.
++DROP FUNCTION IF EXISTS public.qr_abrir_solicitacao(uuid, text, text, text);
++CREATE FUNCTION public.qr_abrir_solicitacao(
++  p_token     uuid,
++  p_nome      text,
++  p_contato   text,
++  p_descricao text
++)
++RETURNS text
++LANGUAGE plpgsql
++VOLATILE
++SECURITY DEFINER
++SET search_path = public
++AS $func$
++DECLARE
++  v_ativo public.ativos%ROWTYPE;
++  v_nome  text := btrim(coalesce(p_nome, ''));
++  v_cont  text := btrim(coalesce(p_contato, ''));
++  v_desc  text := btrim(coalesce(p_descricao, ''));
++BEGIN
++  IF p_token IS NULL
++     OR char_length(v_nome) NOT BETWEEN 2 AND 120
++     OR char_length(v_cont) NOT BETWEEN 3 AND 120
++     OR char_length(v_desc) NOT BETWEEN 5 AND 2000 THEN
++    RETURN 'invalido';
++  END IF;
++
++  SELECT * INTO v_ativo FROM public.ativos WHERE qr_token = p_token;
++  IF NOT FOUND THEN
++    RETURN 'nao_encontrado';
++  END IF;
++
++  IF (SELECT count(*) FROM public.solicitacoes_qr
++       WHERE ativo_id = v_ativo.id
++         AND status = 'Pendente'
++         AND criado_em > now() - interval '1 hour') >= 10 THEN
++    RETURN 'limite';
++  END IF;
++
++  INSERT INTO public.solicitacoes_qr
++    (tenant_id, ativo_id, nome_solicitante, contato_solicitante, descricao)
++  VALUES
++    (v_ativo.tenant_id, v_ativo.id, v_nome, v_cont, v_desc);
++
++  RETURN 'ok';
++END;
++$func$;
++
++-- 5) Permissões: só estas duas funções ficam acessíveis sem login ────────
++REVOKE ALL ON FUNCTION public.qr_ativo_publico(uuid) FROM PUBLIC;
++REVOKE ALL ON FUNCTION public.qr_abrir_solicitacao(uuid, text, text, text) FROM PUBLIC;
++GRANT EXECUTE ON FUNCTION public.qr_ativo_publico(uuid) TO anon, authenticated;
++GRANT EXECUTE ON FUNCTION public.qr_abrir_solicitacao(uuid, text, text, text) TO anon, authenticated;
+diff --git a/ordens.html b/ordens.html
+index ef8528f..77e9f41 100644
+--- a/ordens.html
++++ b/ordens.html
+@@ -301,7 +301,7 @@ function renderList(){
+       +'<button class="btn bx" onclick="openNewOSProgramada()">+ Nova Prev./Predit.</button>'
+       +'<button class="btn bp" onclick="openNewOSCorretiva()">+ Nova OS Corretiva</button>'
+       +'</div>':'';
+-  return summary+'<div class="fr"><div class="fb">'+fb+'</div>'+acoes+'</div>'+cards;
++  return renderSolicitacoes()+summary+'<div class="fr"><div class="fb">'+fb+'</div>'+acoes+'</div>'+cards;
+ }
+ 
+ // (Seletor de perfil removido — cada pessoa usa sua própria conta agora.)
+@@ -322,7 +322,108 @@ function renderList(){
+   }
+ })();
+ 
+-initApp(render);
++// ── QR CODE: parametros de entrada (?exec=ID | ?nova=ATIVO_ID) ───────────
++// qr.html leva a equipe para ca; a logica de "Executar" (Aberta → Em Andamento)
++// e a de nova OS corretiva continuam sendo as mesmas desta pagina.
++function tratarParamsQr(){
++  var p=new URLSearchParams(window.location.search);
++  var exec=p.get("exec"), nova=p.get("nova");
++  if(!exec&&!nova) return;
++  // Limpa a URL para nao repetir a acao ao voltar/recarregar.
++  try{ history.replaceState(null,"",window.location.pathname); }catch(e){}
++  if(exec){
++    var o=ordens.find(function(x){return String(x.id)===String(exec);});
++    if(!o){ mxToast(t("os_nao_encontrada")+" "+exec,"error"); return; }
++    var pode=isCoordenador()||!o.tecnico||o.tecnico===meuNomeAtivo();
++    if(!pode){ mxToast(t("qr_sem_permissao"),"error"); return; }
++    if(o.status=="Aberta"||o.status=="Em Andamento") executarOS(o.id);
++    else window.location.href=ordensDetailUrl(o);
++  } else if(isCoordenador()){
++    var ativoId=parseInt(nova,10);
++    if(!ativos.some(function(a){return a.id===ativoId;})){ mxToast(t("os_ativo_invalido"),"error"); return; }
++    openNewOSCorretiva();
++    document.getElementById("oc-ativo").value=String(ativoId);
++  }
++}
++
++// ── QR CODE: solicitacoes abertas por quem leu o QR sem login ────────────
++// Chegam em solicitacoes_qr (via funcao publica qr_abrir_solicitacao) e
++// aparecem so para o Coordenador, que cria a OS corretiva ou descarta.
++var solicitacoes=[];
++function carregarSolicitacoes(){
++  if(!isCoordenador()) return Promise.resolve();
++  return sbFetch("solicitacoes_qr?status=eq.Pendente&select=*&order=criado_em.desc")
++    .then(function(r){ return r.ok?r.json():[]; })
++    .then(function(rows){ solicitacoes=Array.isArray(rows)?rows:[]; render(); })
++    .catch(function(e){ console.warn("[QR] solicitacoes",e); });
++}
++function renderSolicitacoes(){
++  if(!isCoordenador()||!solicitacoes.length) return "";
++  var itens=solicitacoes.map(function(s){
++    var a=ativos.find(function(x){return x.id===s.ativo_id;});
++    return'<div class="os-card" style="cursor:default">'
++      +'<div class="os-card-title">'+esc(a?a.nome:"#"+s.ativo_id)+'</div>'
++      +'<div class="os-desc-preview" style="white-space:pre-wrap">'+esc(s.descricao)+'</div>'
++      +'<div class="os-card-meta" style="margin-top:6px">'
++      +'<span>&#128100; '+esc(s.nome_solicitante)+'</span>'
++      +'<span>&#9742; '+esc(s.contato_solicitante)+'</span>'
++      +'<span>&#128336; '+esc(String(s.criado_em||"").slice(0,10))+'</span>'
++      +'</div>'
++      +'<div style="margin-top:8px;display:flex;gap:8px;justify-content:flex-end">'
++      +'<button class="btn bx bsm" style="font-size:11px" onclick="descartarSolicitacao(\''+esc(s.id)+'\')">'+esc(t("qr_sol_descartar"))+'</button>'
++      +'<button class="btn bp bsm" style="font-size:11px" onclick="converterSolicitacao(\''+esc(s.id)+'\')">'+esc(t("qr_sol_criar_os"))+'</button>'
++      +'</div></div>';
++  }).join("");
++  return'<div class="card" style="border-color:#fbbf2440;margin-bottom:16px">'
++    +'<div class="st" style="margin-bottom:12px">&#9783; '+esc(t("qr_sol_titulo"))+' ('+solicitacoes.length+')</div>'
++    +itens+'</div>';
++}
++function atualizarSolicitacao(id,campos){
++  return sbFetch("solicitacoes_qr?id=eq."+encodeURIComponent(id),{method:"PATCH",body:JSON.stringify(campos)})
++    .then(function(r){ if(!r.ok) throw new Error("HTTP "+r.status); });
++}
++function descartarSolicitacao(id){
++  if(!confirm(t("qr_sol_conf_descartar"))) return;
++  atualizarSolicitacao(id,{status:"Descartada"}).then(function(){
++    solicitacoes=solicitacoes.filter(function(s){return s.id!==id;});
++    render();
++  }).catch(function(e){ console.error("[QR] descartar",e); mxToast(t("qr_sol_erro"),"error"); });
++}
++async function converterSolicitacao(id){
++  var s=solicitacoes.find(function(x){return x.id===id;});
++  if(!s) return;
++  var a=ativos.find(function(x){return x.id===s.ativo_id;});
++  if(!a){ mxToast(t("os_ativo_invalido"),"error"); return; }
++  var desc=s.descricao+"\n\n"+t("qr_sol_de")+": "+s.nome_solicitante+" ("+s.contato_solicitante+")";
++  var nova={id:nextId(),numero_os:nextNumeroOS("Corretiva",ordens),
++    titulo:t("qr_sol_titulo_os").replace("{ativo}",a.nome),ativo:a.nome,ativo_id:a.id,
++    tipo:"Corretiva",prioridade:"Normal",tecnico:"",prazo:"",descricao:desc,status:"Aberta",
++    abertura:new Date().toISOString().split("T")[0],origem:"qr",execLog:[]};
++  var antes=ordens;
++  ordens=[nova].concat(ordens);
++  try{
++    await saveOrdens(ordens);                 // sbUpsert ja avisa por toast se falhar
++  }catch(e){
++    console.error("[QR] converter: OS nao foi salva",e);
++    ordens=antes;                             // nada foi criado: desfaz o estado local
++    mxToast(t("qr_sol_erro"),"error");
++    render();
++    return;
++  }
++  // A OS ja existe no banco. Se so a marcacao da solicitacao falhar, a OS nao pode
++  // ser desfeita: avisa e tira a solicitacao da tela para nao gerar OS duplicada
++  // por clique repetido (ela reaparece no proximo carregamento — descartar la).
++  try{
++    await atualizarSolicitacao(id,{status:"Convertida",os_id:nova.id});
++  }catch(e){
++    console.error("[QR] converter: OS criada, solicitacao nao marcada",e);
++    mxToast(t("qr_sol_erro_marcar"),"warn");
++  }
++  solicitacoes=solicitacoes.filter(function(x){return x.id!==id;});
++  render();
++}
++
++initApp(function(){ render(); tratarParamsQr(); carregarSolicitacoes(); });
+ </script>
+ <script>
+ window.addEventListener("langchange", function(){
+diff --git a/qr.html b/qr.html
+new file mode 100644
+index 0000000..38c10e9
+--- /dev/null
++++ b/qr.html
+@@ -0,0 +1,273 @@
++<!DOCTYPE html>
++<html lang="pt-BR">
++<head>
++<meta charset="UTF-8"/>
++<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
++<meta name="theme-color" content="#1d4ed8"/>
++<meta name="robots" content="noindex,nofollow"/>
++<meta name="referrer" content="no-referrer"/>
++<link rel="manifest" href="manifest.json"/>
++<link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png"/>
++<link rel="apple-touch-icon" href="icons/icon-192.png"/>
++<script src="_pwa.js" defer></script>
++<title>Mantenedor — QR Code</title>
++<link rel="stylesheet" href="_style.css" id="theme-link"/>
++<style>
++#qr-wrap{max-width:640px;margin:0 auto;width:100%}
++.qr-tipo{font-size:11px;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px}
++.qr-nome{font-size:22px;font-weight:800;color:#f1f5f9;line-height:1.2;margin-bottom:6px}
++.qr-meta{font-size:13px;color:#94a3b8;line-height:1.6}
++.qr-os{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;background:#060b12;border:1px solid #1e3a5f;border-radius:10px;padding:10px 12px;margin-bottom:8px}
++.qr-os-num{font-size:11px;font-weight:700;color:#64748b;letter-spacing:.03em}
++.qr-os-tit{font-size:14px;font-weight:600;color:#e2e8f0}
++.qr-os-meta{font-size:12px;color:#64748b}
++.qr-empty{color:#64748b;text-align:center;padding:16px;font-size:13px}
++.qr-msg-erro{color:#f87171;font-size:13px;margin:8px 0}
++.qr-msg-ok{color:#4ade80;font-size:13px;margin:8px 0}
++.qr-badge{font-size:10px;font-weight:700;padding:3px 8px;border-radius:10px;text-transform:uppercase;letter-spacing:.05em;border:1px solid #1e3a5f;color:#94a3b8}
++.qr-badge.ok{color:#4ade80;border-color:#4ade8040;background:#4ade8012}
++.qr-badge.warn{color:#fbbf24;border-color:#fbbf2440;background:#fbbf2412}
++.qr-badge.bad{color:#f87171;border-color:#f8717140;background:#f8717112}
++.qr-badge.info{color:#60a5fa;border-color:#60a5fa40;background:#60a5fa12}
++</style>
++</head>
++<body>
++<div id="app">
++  <div id="main">
++    <div id="topbar">
++      <div id="topbar-left">
++        <a class="topbar-logo" href="index.html">&#9881;</a>
++        <div><div id="tt">Mantenedor</div></div>
++      </div>
++      <div id="topbar-right"></div>
++    </div>
++    <div id="ct"><div id="qr-wrap"><p class="qr-empty" data-i18n="qr_carregando">Carregando…</p></div></div>
++  </div>
++</div>
++
++<script src="_lang.js"></script>
++<script src="_shared.js"></script>
++<script>
++// ═══════════════════════════════════════════════════════════════════════
++// qr.html — destino do QR Code de cada ativo.
++// O QR guarda só um link com um token aleatório (ativos.qr_token); nada do
++// ativo vai dentro do QR. Roteamento:
++//   token inválido ............................ mensagem de erro
++//   logado e o ativo é do seu tenant .......... visão da equipe (OS em aberto)
++//   qualquer outro caso (sem login, sessão
++//   vencida, ativo de outro tenant) ........... visão pública enxuta
++// A visão pública NÃO lê tabelas: usa as funções qr_ativo_publico e
++// qr_abrir_solicitacao (SECURITY DEFINER), que devolvem só o mínimo.
++// ═══════════════════════════════════════════════════════════════════════
++var UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
++var qrToken = (new URLSearchParams(window.location.search).get("t") || "").trim();
++var state = {fase: "carregando"};   // carregando | erro | equipe | publico
++var wrap = document.getElementById("qr-wrap");
++
++function mostrarErro(chave){ state = {fase: "erro", chave: chave}; render(); }
++
++function statusClasse(s){
++  if(s === "Operacional" || s === "Concluida") return "ok";
++  if(s === "Em Manutencao" || s === "Em Andamento" || s === "Aberta") return "warn";
++  if(s === "Parado" || s === "Desativado") return "bad";
++  return "info";
++}
++function badge(s){ return '<span class="qr-badge ' + statusClasse(s) + '">' + esc(mxLabel(s)) + '</span>'; }
++
++// Chamada anônima às funções públicas (sempre com a chave anon, nunca com
++// o token do usuário — que pode estar vencido e faria a chamada falhar).
++function rpcPublico(nome, corpo){
++  return fetch(REST + "/rpc/" + nome, {
++    method: "POST",
++    headers: {"apikey": SB_KEY, "Authorization": "Bearer " + SB_KEY, "Content-Type": "application/json"},
++    body: JSON.stringify(corpo)
++  }).then(function(r){
++    if(!r.ok) throw new Error("HTTP " + r.status);
++    return r.json();
++  });
++}
++
++// ── RENDER ───────────────────────────────────────────────────────────────
++function render(){
++  if(state.fase === "carregando"){
++    wrap.innerHTML = '<p class="qr-empty">' + esc(t("qr_carregando")) + '</p>';
++  } else if(state.fase === "erro"){
++    wrap.innerHTML = '<div class="card"><p class="qr-msg-erro">' + esc(t(state.chave)) + '</p></div>';
++  } else if(state.fase === "equipe"){
++    renderEquipe();
++  } else if(state.fase === "publico"){
++    renderPublico();
++  }
++}
++
++function renderEquipe(){
++  var a = state.ativo, os = state.os;
++  var coord = isCoordenador(), eu = meuNome();
++  var meta = [a.tag, a.localizacao, a.unidade, a.empresa].filter(Boolean).map(esc).join(" &bull; ");
++
++  var lista = os.length
++    ? os.map(function(o){
++        var pode = coord || !o.tecnico || o.tecnico === eu;
++        var rotulo = o.status === "Aberta" ? t("qr_executar") : t("qr_continuar");
++        return '<div class="qr-os">'
++          + '<div style="min-width:0">'
++          +   '<div class="qr-os-num">' + esc(o.numero_os || "") + ' &bull; ' + esc(mxLabel(o.tipo)) + '</div>'
++          +   '<div class="qr-os-tit">' + esc(o.titulo || "") + '</div>'
++          +   '<div class="qr-os-meta">' + (o.tecnico ? esc(o.tecnico) + ' &bull; ' : '') + (o.prazo ? esc(t("qr_prazo")) + ' ' + esc(o.prazo) : '') + '</div>'
++          + '</div>'
++          + '<div style="display:flex;align-items:center;gap:8px">'
++          +   badge(o.status)
++          +   '<a class="btn bx bsm" style="font-size:11px" href="' + esc(ordensDetailUrl(o)) + '">' + esc(t("qr_ver")) + '</a>'
++          +   (pode ? '<a class="btn bp bsm" style="font-size:11px" href="ordens.html?exec=' + encodeURIComponent(o.id) + '">&#9654; ' + esc(rotulo) + '</a>' : '')
++          + '</div>'
++          + '</div>';
++      }).join("")
++    : '<p class="qr-empty">' + esc(t("qr_nenhuma_aberta")) + '</p>';
++
++  wrap.innerHTML =
++    '<div class="card">'
++    + '<div class="qr-tipo">' + esc(a.categoria || "") + '</div>'
++    + '<div style="display:flex;align-items:flex-start;justify-content:space-between;gap:10px">'
++    +   '<div class="qr-nome">' + esc(a.nome) + '</div>' + badge(a.status)
++    + '</div>'
++    + '<div class="qr-meta">' + meta + '</div>'
++    + '</div>'
++    + '<div class="card">'
++    +   '<div style="display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:12px;flex-wrap:wrap">'
++    +     '<div style="font-size:14px;font-weight:700">' + esc(t("qr_os_abertas")) + '</div>'
++    +     (coord ? '<a class="btn bp bsm" style="font-size:12px" href="ordens.html?nova=' + encodeURIComponent(a.id) + '">' + esc(t("qr_nova_corretiva")) + '</a>' : '')
++    +   '</div>'
++    +   lista
++    + '</div>';
++}
++
++function renderPublico(){
++  var a = state.ativo, concl = a.ultimas_os || [];
++  var meta = [a.tag, a.localizacao, a.unidade, a.empresa].filter(Boolean).map(esc).join(" &bull; ");
++  var logado = !!(getSession() && getSession().access_token);
++
++  var hist = concl.length
++    ? concl.map(function(o){
++        return '<div class="qr-os"><div>'
++          + '<div class="qr-os-num">' + esc(o.numero_os || "") + '</div>'
++          + '<div class="qr-os-tit">' + esc(mxLabel(o.tipo)) + '</div>'
++          + '<div class="qr-os-meta">' + esc(o.abertura || "") + '</div>'
++          + '</div>' + badge("Concluida") + '</div>';
++      }).join("")
++    : '<p class="qr-empty">' + esc(t("qr_nenhuma_os")) + '</p>';
++
++  wrap.innerHTML =
++    '<div class="card">'
++    + '<div class="qr-tipo">' + esc(a.categoria || "") + '</div>'
++    + '<div style="display:flex;align-items:flex-start;justify-content:space-between;gap:10px">'
++    +   '<div class="qr-nome">' + esc(a.nome) + '</div>' + badge(a.status)
++    + '</div>'
++    + '<div class="qr-meta">' + meta + '</div>'
++    + (logado ? '' : '<div style="margin-top:14px"><a class="btn bx" style="width:100%" id="link-equipe" href="#">' + esc(t("qr_sou_equipe")) + '</a></div>')
++    + '</div>'
++
++    + '<div class="card">'
++    +   '<div style="font-size:14px;font-weight:700;margin-bottom:12px">' + esc(t("qr_ultimas_os")) + '</div>'
++    +   hist
++    + '</div>'
++
++    + '<div class="card">'
++    +   '<div style="font-size:14px;font-weight:700;margin-bottom:6px">' + esc(t("qr_abrir_solic")) + '</div>'
++    +   '<p style="font-size:13px;color:#94a3b8;margin-bottom:14px">' + esc(t("qr_solic_intro")) + '</p>'
++    +   '<form id="form-solic" autocomplete="off">'
++    +     '<div class="fg"><label class="lbl">' + esc(t("qr_f_nome")) + '</label><input name="nome" maxlength="120" required/></div>'
++    +     '<div class="fg"><label class="lbl">' + esc(t("qr_f_contato")) + '</label><input name="contato" maxlength="120" required/></div>'
++    +     '<div class="fg"><label class="lbl">' + esc(t("qr_f_desc")) + '</label><textarea name="descricao" rows="4" maxlength="2000" required></textarea></div>'
++    +     '<p id="solic-erro" class="qr-msg-erro" style="display:none"></p>'
++    +     '<p id="solic-ok" class="qr-msg-ok" style="display:none">' + esc(t("qr_solic_ok")) + '</p>'
++    +     '<button type="submit" class="btn bp" style="width:100%" id="btn-solic">' + esc(t("qr_enviar")) + '</button>'
++    +   '</form>'
++    + '</div>';
++
++  var link = document.getElementById("link-equipe");
++  if(link){
++    link.addEventListener("click", function(e){
++      e.preventDefault();
++      window.location.href = "login.html?next=" + encodeURIComponent("qr.html?t=" + qrToken);
++    });
++  }
++  document.getElementById("form-solic").addEventListener("submit", enviarSolicitacao);
++}
++
++function enviarSolicitacao(e){
++  e.preventDefault();
++  var form = e.target;
++  var btn = document.getElementById("btn-solic");
++  var erro = document.getElementById("solic-erro");
++  var ok = document.getElementById("solic-ok");
++  erro.style.display = "none"; ok.style.display = "none";
++  btn.disabled = true; btn.textContent = t("qr_enviando");
++
++  var fd = new FormData(form);
++  rpcPublico("qr_abrir_solicitacao", {
++    p_token: qrToken,
++    p_nome: fd.get("nome"),
++    p_contato: fd.get("contato"),
++    p_descricao: fd.get("descricao")
++  }).then(function(res){
++    if(res === "ok"){
++      ok.style.display = "block";
++      form.reset();
++    } else {
++      var chave = res === "limite" ? "qr_solic_limite" : res === "nao_encontrado" ? "qr_nao_encontrado" : "qr_solic_invalido";
++      erro.textContent = t(chave); erro.style.display = "block";
++    }
++  }).catch(function(){
++    erro.textContent = t("qr_erro_rede"); erro.style.display = "block";
++  }).then(function(){
++    btn.disabled = false; btn.textContent = t("qr_enviar");
++  });
++}
++
++// ── CARREGAMENTO ─────────────────────────────────────────────────────────
++function carregarPublico(){
++  return rpcPublico("qr_ativo_publico", {p_token: qrToken}).then(function(dados){
++    if(!dados){ mostrarErro("qr_nao_encontrado"); return; }
++    state = {fase: "publico", ativo: dados};
++    render();
++  }).catch(function(){ mostrarErro("qr_erro_rede"); });
++}
++
++function carregarEquipe(){
++  // Respeita o RLS: só devolve linha se o ativo for do tenant de quem está logado.
++  return sbFetch("ativos?qr_token=eq." + qrToken + "&select=id,nome,categoria,empresa,unidade,localizacao,tag,status")
++    .then(function(r){
++      if(r.status === 401){ localStorage.removeItem("mx_session"); return null; }
++      if(!r.ok) return null;
++      return r.json();
++    })
++    .then(function(rows){
++      if(!rows || !rows.length) return null;
++      var ativo = rows[0];
++      var filtro = "ativo_id=eq." + ativo.id + "&status=in.(Aberta," + encodeURIComponent('"Em Andamento"') + ")";
++      return sbFetch("ordens?" + filtro + "&select=id,numero_os,titulo,tipo,prioridade,status,tecnico,origem,prazo&order=abertura.desc")
++        .then(function(r){ return r.ok ? r.json() : []; })
++        .then(function(os){ return {ativo: ativo, os: os}; });
++    })
++    .catch(function(){ return null; });
++}
++
++function iniciar(){
++  if(!UUID_RE.test(qrToken)){ mostrarErro("qr_sem_token"); return; }
++  var s = getSession();
++  if(s && s.access_token && s.tenant_id){
++    carregarEquipe().then(function(res){
++      if(res){ state = {fase: "equipe", ativo: res.ativo, os: res.os}; render(); }
++      else carregarPublico();
++    });
++  } else {
++    carregarPublico();
++  }
++}
++
++window.addEventListener("langchange", function(){ LANG.applyStatic(); render(); });
++iniciar();
++</script>
++<script src="_theme.js"></script>
++</body>
++</html>
+diff --git a/qrcode-mantenedor.md b/qrcode-mantenedor.md
+new file mode 100644
+index 0000000..d90b252
+--- /dev/null
++++ b/qrcode-mantenedor.md
+@@ -0,0 +1,158 @@
++# Mantenedor — Geração e leitura de QR Codes dos ativos
++
++Documenta como o QR Code de cada ativo é gerado, impresso e lido no Mantenedor (`mantenedor.app.br`). Segue o mesmo modelo do Caspere, com as adaptações necessárias para o app multi-empresa.
++
++---
++
++## 1. Visão geral
++
++Cada ativo tem um **QR Code único**, impresso numa etiqueta colada na máquina. O QR não guarda dados do ativo: ele guarda **apenas um link** com um **token aleatório**. Todo o resto (nome, OS, histórico) é buscado no Supabase no momento da leitura.
++
++```
++Etiqueta (QR) ──► câmera do celular ──► qr.html?t=<token> ──┬─► equipe logada (ativo do seu tenant) → OS em aberto do ativo
++                                                            └─► sem login / outro caso               → visão pública enxuta
++```
++
++### Diferença para o Caspere
++
++| | Caspere | Mantenedor |
++|---|---|---|
++| Identificador no QR | UUID do equipamento | `ativos.qr_token` (UUID próprio, separado do `id`) |
++| Por que | `id` já é UUID | `ativos.id` é inteiro sequencial (1, 2, 3…): se fosse no QR, daria para varrer ativos de todas as empresas |
++| Leitura sem login | Tabelas com leitura pública por RLS | **Nenhuma tabela pública.** Só duas funções `SECURITY DEFINER` |
++| Multi-empresa | Não (uma empresa) | Sim — o isolamento por tenant continua valendo para a equipe logada |
++
++---
++
++## 2. Geração do QR Code
++
++**Onde:** `ativos.html` → ficha do ativo → botão **QR Code** (ao lado de "Voltar").
++
++**Biblioteca:** `qrcodejs 1.0.0` via cdnjs (a mesma do Caspere). Roda 100% no navegador.
++
++**Conteúdo do QR** — montado por `mxUrlQrAtivo()` em `_shared.js`:
++
++```js
++function mxUrlQrAtivo(token, origem){
++  var base = origem || window.location.origin;
++  return base + "/qr.html?t=" + encodeURIComponent(token);
++}
++```
++
++Exemplo: `https://mantenedor.app.br/qr.html?t=0f3c9a1e-5b7d-4c2a-9e8f-1a2b3c4d5e6f`
++
++**Fluxo ao clicar em "QR Code":**
++
++1. `mostrarQr(id)` busca `qr_token` do ativo no Supabase (`ativos?id=eq.<id>&select=qr_token`). O token **não** é guardado no `localStorage` nem no array local de ativos.
++2. `preencherEtiquetaQr()` preenche a etiqueta e gera o QR (220 px).
++3. Abre o modal da etiqueta.
++
++> **Atenção:** o QR usa `window.location.origin`. Gere a etiqueta **a partir de `mantenedor.app.br`**. Em `localhost` ou outro domínio o QR aponta para lá. Nesses casos o modal mostra um aviso amarelo.
++
++---
++
++## 3. Layout da etiqueta
++
++| Bloco | Conteúdo |
++|---|---|
++| Cabeçalho | Ícone + "Mantenedor" (linha azul abaixo) |
++| Categoria | Categoria do ativo |
++| Nome | Nome do ativo, grande e em negrito |
++| Local | Tag • Localização |
++| Empresa | Empresa • Unidade |
++| QR Code | Centralizado, 220 px |
++| Legenda | "Aponte a câmera para ver as OS ou solicitar manutenção" |
++| Rodapé | `ID: <id do ativo>` (útil para suporte) |
++
++A etiqueta tem **fundo branco fixo**, igual nos temas claro e escuro e na impressão.
++
++---
++
++## 4. Impressão
++
++- Botão **Imprimir** chama `imprimirEtiqueta()`, que adiciona `mx-printing-label` ao `<body>` e executa `window.print()`.
++- O CSS `@media print` em `ativos.html` esconde tudo menos `#modal-qr` (e os botões `.qr-no-print`); a etiqueta sai com 80 mm de largura.
++- O evento `afterprint` remove a classe.
++
++---
++
++## 5. Leitura do QR Code
++
++Não há leitor dentro do sistema: o QR é lido pela **câmera nativa do celular**, que abre o link no navegador. Tudo passa por `qr.html`.
++
++### 5.1 Roteamento em `qr.html`
++
++```
++Abriu qr.html?t=...
++ ├─ token ausente ou fora do formato UUID ........ "QR Code inválido" (sem consultar o banco)
++ ├─ sem sessão ................................... visão pública
++ └─ com sessão
++     ├─ ativo encontrado pelo RLS (é do seu tenant) → visão da equipe
++     ├─ não encontrado (ativo de outro tenant) ..... visão pública
++     └─ 401 (token de sessão vencido) .............. limpa a sessão e mostra a visão pública
++```
++
++### 5.2 Visão da equipe (logado)
++
++- Dados do ativo e **OS em aberto** (Aberta / Em Andamento) do ativo.
++- **Executar / Continuar** → `ordens.html?exec=<id>`. A página de OS move a OS para "Em Andamento" e abre a execução (mesma lógica do botão da lista). Coordenador executa qualquer OS; técnico, só as suas ou as sem responsável.
++- **Ver** → detalhe da OS.
++- **+ Nova OS Corretiva** (só Coordenador) → `ordens.html?nova=<ativo_id>`, abrindo o modal já com o ativo escolhido.
++
++### 5.3 Visão pública (sem login)
++
++- Nome, categoria, tag, local, empresa/unidade e status do ativo.
++- Últimas 10 OS **concluídas** (só número, tipo e data — sem título, descrição, técnico ou custos).
++- Formulário **Solicitar manutenção** (nome, contato, descrição). Cria uma linha em `solicitacoes_qr`.
++- Botão **"Sou da equipe"** → `login.html?next=qr.html?t=<token>`; depois do login volta para o mesmo ativo.
++
++### 5.4 Solicitações (para o Coordenador)
++
++`ordens.html` mostra, só para o Coordenador, o painel **Solicitações via QR Code** com as pendentes:
++
++- **Criar OS** → OS corretiva (prioridade Normal, `origem = "qr"`), com a descrição e os dados do solicitante; a solicitação vira `Convertida` e guarda o `os_id`.
++- **Descartar** → vira `Descartada`.
++
++Se a OS for salva mas a marcação da solicitação falhar, a OS permanece, aparece um aviso e a solicitação sai da tela (para não gerar OS duplicada por clique repetido). Ela reaparece no próximo carregamento: descarte-a manualmente.
++
++---
++
++## 6. Segurança e limites
++
++- O token é um **UUID v4** gerado no banco (`gen_random_uuid()`), único (índice `ativos_qr_token_key`). Quem **não** tem o QR não consegue adivinhar nem enumerar.
++- **Não existe leitura pública por RLS.** Sem login, só duas funções são executáveis: `qr_ativo_publico(token)` e `qr_abrir_solicitacao(token, nome, contato, descricao)`. Ambas são `SECURITY DEFINER` com `search_path` fixo e `REVOKE ALL FROM PUBLIC` + `GRANT` explícito para `anon` e `authenticated`.
++- `solicitacoes_qr` tem RLS por tenant (`get_tenant_id()`) e **nenhuma policy de INSERT para `anon`**: a criação só acontece pela função, que valida tamanhos e limita abuso (máx. 10 solicitações pendentes por ativo na última hora).
++- Quem tem o QR vê o que a visão pública mostra. Se uma etiqueta vazar, **rotacione o token** (invalida a etiqueta antiga; é preciso imprimir a nova):
++
++  ```sql
++  update ativos set qr_token = gen_random_uuid() where id = <id do ativo>;
++  ```
++- O parâmetro `?next=` do login só aceita **nomes de página do próprio app** (`^[A-Za-z0-9_-]+\.html(\?[A-Za-z0-9=&%_.-]*)?$`): sem barra, esquema ou `//`, para não virar redirecionamento aberto. A regra existe em `_shared.js` (`mxProximoSeguro`) e, duplicada, em `login.html` (`destinoPosLogin`), porque o login não carrega `_shared.js`. O `test_qr.js` garante que as duas se comportam igual.
++- Todo texto vindo do banco ou do solicitante passa por `esc()` antes de ir para o HTML.
++- Ler o QR **não valida** que o técnico está na máquina certa; por isso a etiqueta e a tela mostram os dados do ativo em destaque.
++
++---
++
++## 7. Arquivos envolvidos
++
++| Arquivo | Papel |
++|---|---|
++| `migracao_qrcode_ativos.sql` | `ativos.qr_token`, tabela `solicitacoes_qr`, funções públicas, permissões |
++| `_shared.js` | `mxUrlQrAtivo()`, `mxOrigemQrOficial()`, `mxProximoSeguro()` |
++| `ativos.html` | Botão QR Code, modal da etiqueta, geração, impressão |
++| `qr.html` | Destino do QR: roteamento, visão da equipe, visão pública, solicitação |
++| `login.html` | Respeita `?next=` e volta ao `qr.html` após o login |
++| `ordens.html` | `?exec=` e `?nova=`, painel de solicitações (criar OS / descartar) |
++| `_lang.js` | Chaves `qr_*` em PT/EN/ES |
++| `sw.js` | `qr.html` no app shell; `CACHE_VERSION` → `mx-shell-v2` |
++| `test_qr.js` | 30 testes (jsdom): helpers, `qr.html`, `ordens.html`, `ativos.html`, regras do SQL |
++
++---
++
++## 8. Pontos de atenção para o futuro
++
++- Se o domínio mudar, os QRs já impressos deixam de funcionar. Considere manter um redirecionamento no domínio antigo.
++- Ativo **desativado** ainda abre pelo QR antigo (a visão pública mostra o status "Desativado"). Avaliar se deve esconder o formulário de solicitação nesse caso.
++- A etiqueta é gerada **uma por vez**; ainda não existe tela para imprimir várias de uma vez.
++- Ativos de usuário com escopo restrito a certas empresas (`get_user_empresas()`) que leem o QR de um ativo fora do escopo caem na visão pública.
++- Um endpoint público sempre pode receber spam. O limite de 10 pendentes/hora por ativo reduz, mas não impede; se virar problema, adicionar captcha ou limite por IP em uma Edge Function.
+diff --git a/sw.js b/sw.js
+index d4cb892..3e576f9 100644
+--- a/sw.js
++++ b/sw.js
+@@ -4,7 +4,7 @@
+ // chamadas à API do Supabase — dados sempre vêm da rede, para não servir
+ // informação desatualizada ou quebrar a autenticação.
+ 
+-var CACHE_VERSION = "mx-shell-v1";
++var CACHE_VERSION = "mx-shell-v2";
+ 
+ var APP_SHELL = [
+   "./",
+@@ -15,6 +15,7 @@ var APP_SHELL = [
+   "ordens-corretiva.html",
+   "ordens-programada.html",
+   "ativos.html",
++  "qr.html",
+   "cadastros.html",
+   "calendario.html",
+   "relatorios.html",
+diff --git a/test_qr.js b/test_qr.js
+new file mode 100644
+index 0000000..9d57563
+--- /dev/null
++++ b/test_qr.js
+@@ -0,0 +1,463 @@
++// ═══════════════════════════════════════════════════════════════════════
++//  test_qr.js — QR Code dos ativos (etiqueta, qr.html, login ?next, ordens.html)
++//  Rodar:  npm i jsdom   &&   node test_qr.js
++//  Sem rede: o fetch do Supabase e o QRCode (CDN) são substituídos por stubs.
++// ═══════════════════════════════════════════════════════════════════════
++const fs = require("fs");
++const path = require("path");
++const { JSDOM, VirtualConsole } = require("jsdom");
++
++const ROOT = __dirname;
++const UUID = "0f3c9a1e-5b7d-4c2a-9e8f-1a2b3c4d5e6f";
++const HOST = "https://mantenedor.app.br";
++
++let ok = 0, fail = 0;
++const falhas = [];
++async function test(nome, fn){
++  try { await fn(); ok++; console.log("  ✓ " + nome); }
++  catch(e){ fail++; falhas.push(nome); console.log("  ✗ " + nome + "\n      " + (e && e.message)); }
++}
++function assert(cond, msg){ if(!cond) throw new Error(msg || "assert falhou"); }
++function eq(a, b, msg){ if(a !== b) throw new Error((msg||"eq") + ": esperado " + JSON.stringify(b) + ", veio " + JSON.stringify(a)); }
++async function waitFor(cond, ms){
++  const fim = Date.now() + (ms || 2000);
++  while(Date.now() < fim){ if(cond()) return; await new Promise(r => setTimeout(r, 10)); }
++  throw new Error("timeout esperando condição");
++}
++
++// ── infraestrutura ───────────────────────────────────────────────────────
++function jwt(){
++  const b = o => Buffer.from(JSON.stringify(o)).toString("base64url");
++  return b({alg:"HS256"}) + "." + b({exp: 4102444800}) + ".assinatura";
++}
++const SESSAO = (perfil, nome) => ({access_token: jwt(), refresh_token: "r", user_id: "u1", email: "a@b.c",
++  tenant_id: "t-1", perfil: perfil, nome: nome, plano: "paid", tenantNome: "ACME"});
++
++// routes(url, opts) → {status?, body}  |  undefined (→ 200 [])
++function makeFetch(routes){
++  const calls = [];
++  const fn = async (url, opts) => {
++    opts = opts || {};
++    calls.push({url: String(url), method: opts.method || "GET", body: opts.body ? JSON.parse(opts.body) : null, headers: opts.headers || {}});
++    const r = (routes && routes(String(url), opts)) || {body: []};
++    const status = r.status || 200;
++    return {ok: status >= 200 && status < 300, status, statusText: "st",
++            json: async () => (r.body === undefined ? [] : r.body), text: async () => JSON.stringify(r.body)};
++  };
++  fn.calls = calls;
++  return fn;
++}
++
++function loadPage(file, o){
++  let html = fs.readFileSync(path.join(ROOT, file), "utf8");
++  // inline dos scripts locais (jsdom sem carregar arquivos) e remoção de CDN/PWA/tema
++  html = html
++    .replace(/<script src="(_lang|_shared)\.js"><\/script>/g, (m, n) => "<script>" + fs.readFileSync(path.join(ROOT, n + ".js"), "utf8") + "</script>")
++    .replace(/<script src="(_theme|_pwa)\.js"[^>]*><\/script>/g, "")
++    .replace(/<script src="https:[^"]*"[^>]*><\/script>/g, "");
++  const erros = [];
++  const vc = new VirtualConsole();
++  vc.on("jsdomError", e => { if(!/not implemented: navigation/i.test(e.message)) erros.push(e.message); });
++  const dom = new JSDOM(html, {
++    url: o.url, runScripts: "dangerously", pretendToBeVisual: true, virtualConsole: vc,
++    beforeParse(w){
++      if(o.session) w.localStorage.setItem("mx_session", JSON.stringify(o.session));
++      w.fetch = o.fetch;
++      w.confirm = () => true; w.alert = () => {};
++      w.scrollTo = () => {};
++      if(o.qrcode) w.QRCode = o.qrcode;
++    }
++  });
++  dom.erros = erros;
++  return dom;
++}
++// Texto visível da página (sem o conteúdo dos <script>, que inclui as traduções do _lang.js)
++const texto = dom => {
++  const c = dom.window.document.body.cloneNode(true);
++  c.querySelectorAll("script").forEach(e => e.remove());
++  return c.textContent.replace(/\s+/g, " ");
++};
++const toasts = dom => [...dom.window.document.querySelectorAll("#mx-toast-host > div")].map(e => e.textContent);
++
++// ═══════════════════════════════════════════════════════════════════════
++(async () => {
++console.log("\n[1] i18n — toda chave qr_* usada existe em PT/EN/ES");
++await test("chaves usadas nas páginas resolvem nos 3 idiomas", () => {
++  const usadas = new Set();
++  ["qr.html", "ativos.html", "ordens.html"].forEach(f => {
++    (fs.readFileSync(path.join(ROOT, f), "utf8").match(/\bqr_[a-z_]+\b/g) || []).forEach(k => usadas.add(k));
++  });
++  ["qr_token", "qr_ativo_publico", "qr_abrir_solicitacao"].forEach(k => usadas.delete(k)); // coluna/RPC, não chaves
++  assert(usadas.size >= 30, "poucas chaves encontradas: " + usadas.size);
++  const dom = new JSDOM("<body></body>", {url: HOST + "/", runScripts: "outside-only"});
++  dom.window.eval(fs.readFileSync(path.join(ROOT, "_lang.js"), "utf8"));
++  const faltando = [];
++  ["pt", "en", "es"].forEach(l => {
++    dom.window.LANG.set(l);
++    usadas.forEach(k => { if(dom.window.t(k) === k) faltando.push(l + ":" + k); });
++  });
++  assert(!faltando.length, "sem tradução: " + faltando.join(", "));
++});
++
++console.log("\n[2] Helpers de _shared.js e login");
++const shared = new JSDOM("<body></body>", {url: HOST + "/ativos.html", runScripts: "outside-only"});
++shared.window.eval(fs.readFileSync(path.join(ROOT, "_shared.js"), "utf8"));
++const W = shared.window;
++
++await test("mxUrlQrAtivo monta /qr.html?t=<token> e mxOrigemQrOficial", () => {
++  eq(W.mxUrlQrAtivo(UUID), HOST + "/qr.html?t=" + UUID);
++  eq(W.mxUrlQrAtivo(UUID, "http://localhost:8080"), "http://localhost:8080/qr.html?t=" + UUID);
++  assert(W.mxOrigemQrOficial(HOST), "origem oficial");
++  assert(!W.mxOrigemQrOficial("http://localhost:8080"), "localhost não é oficial");
++  assert(!W.mxOrigemQrOficial("https://mantenedor.app.br.evil.com"), "domínio parecido não é oficial");
++});
++
++const ACEITOS = ["qr.html?t=" + UUID, "dashboard.html", "ordens.html?exec=12"];
++const REJEITADOS = ["//evil.com", "https://evil.com", "http:evil.html", "/qr.html", "javascript:alert(1)",
++  "qr.html?t=1\n2", "..\\x.html", "evil.com.html", "qr.html#x", "qr.html?t=<script>", "", "x.html?a=b c"];
++await test("mxProximoSeguro aceita só páginas do app (sem open redirect)", () => {
++  ACEITOS.forEach(v => eq(W.mxProximoSeguro(v), v, "aceito " + v));
++  REJEITADOS.forEach(v => eq(W.mxProximoSeguro(v), "", "rejeitado " + JSON.stringify(v)));
++  eq(W.mxProximoSeguro(null), ""); eq(W.mxProximoSeguro(undefined), "");
++});
++
++await test("login.html: destinoPosLogin() segue a mesma regra de mxProximoSeguro", () => {
++  const src = fs.readFileSync(path.join(ROOT, "login.html"), "utf8");
++  const fnSrc = src.match(/function destinoPosLogin\(\)\{[\s\S]*?\n\}/)[0];
++  [...ACEITOS, ...REJEITADOS].forEach(v => {
++    const url = HOST + "/login.html" + (v ? "?next=" + encodeURIComponent(v) : "");
++    const d = new JSDOM("<body></body>", {url, runScripts: "outside-only"});
++    d.window.eval(fnSrc);
++    eq(d.window.destinoPosLogin(), W.mxProximoSeguro(v) || "dashboard.html", "next=" + JSON.stringify(v));
++  });
++  const semNext = new JSDOM("<body></body>", {url: HOST + "/login.html", runScripts: "outside-only"});
++  semNext.window.eval(fnSrc);
++  eq(semNext.window.destinoPosLogin(), "dashboard.html");
++  assert(!/window\.location\.href="dashboard\.html"/.test(src.replace(fnSrc, "")), "sobrou redirect fixo para o dashboard");
++});
++
++console.log("\n[3] qr.html — visão pública");
++const ATIVO_PUB = {nome: "Compressor <img src=x onerror=alert(1)>", categoria: "Compressor", empresa: "ACME", unidade: "Fábrica 1",
++  localizacao: "Galpão A", tag: "COMP-01", status: "Operacional",
++  ultimas_os: [{numero_os: "2026-COR-0007", tipo: "Corretiva", abertura: "2026-09-01"}]};
++const rotasPub = (resp) => (url, opts) => {
++  if(url.includes("/rpc/qr_ativo_publico")) return {body: ATIVO_PUB};
++  if(url.includes("/rpc/qr_abrir_solicitacao")) return resp ? resp() : {body: "ok"};
++};
++
++await test("token inválido → mensagem de erro, sem consultar o banco", async () => {
++  const f = makeFetch();
++  const dom = loadPage("qr.html", {url: HOST + "/qr.html?t=123", fetch: f});
++  await waitFor(() => /inválido/i.test(texto(dom)));
++  eq(f.calls.length, 0, "chamadas ao banco");
++  const dom2 = loadPage("qr.html", {url: HOST + "/qr.html", fetch: makeFetch()});
++  await waitFor(() => /inválido/i.test(texto(dom2)));
++});
++
++await test("sem login: usa a função pública com a chave anon e mostra ativo + OS concluídas", async () => {
++  const f = makeFetch(rotasPub());
++  const dom = loadPage("qr.html", {url: HOST + "/qr.html?t=" + UUID, fetch: f});
++  await waitFor(() => /2026-COR-0007/.test(texto(dom)));
++  const c = f.calls[0];
++  assert(c.url.endsWith("/rest/v1/rpc/qr_ativo_publico"), c.url);
++  eq(c.body.p_token, UUID);
++  assert(/Bearer eyJ/.test(c.headers.Authorization), "usa a chave anon");
++  assert(!f.calls.some(x => /\/rest\/v1\/(ativos|ordens)\b/.test(x.url)), "não lê tabelas sem login");
++  assert(dom.window.document.getElementById("link-equipe"), "botão 'Sou da equipe'");
++  assert(!dom.window.document.querySelector("#qr-wrap img"), "HTML do nome do ativo foi escapado");
++  assert(/<img src=x/.test(texto(dom)), "nome aparece como texto");
++});
++
++await test("botão 'Sou da equipe' leva ao login com next=qr.html?t=<token>", async () => {
++  const dom = loadPage("qr.html", {url: HOST + "/qr.html?t=" + UUID, fetch: makeFetch(rotasPub())});
++  await waitFor(() => dom.window.document.getElementById("link-equipe"));
++  let destino = null;
++  dom.window.document.getElementById("link-equipe").addEventListener("click", () => {});
++  // jsdom não navega: lemos o destino pelo código da página
++  const src = fs.readFileSync(path.join(ROOT, "qr.html"), "utf8");
++  assert(src.includes('"login.html?next=" + encodeURIComponent("qr.html?t=" + qrToken)'), "monta o next");
++  assert(W.mxProximoSeguro("qr.html?t=" + UUID) !== "", "next gerado é aceito pelo login");
++});
++
++await test("token inexistente (função devolve null) → 'não encontrado'", async () => {
++  const f = makeFetch((u) => u.includes("qr_ativo_publico") ? {body: null} : undefined);
++  const dom = loadPage("qr.html", {url: HOST + "/qr.html?t=" + UUID, fetch: f});
++  await waitFor(() => /não encontrado/i.test(texto(dom)));
++});
++
++async function enviar(resp){
++  const f = makeFetch(rotasPub(resp));
++  const dom = loadPage("qr.html", {url: HOST + "/qr.html?t=" + UUID, fetch: f});
++  await waitFor(() => dom.window.document.getElementById("form-solic"));
++  const form = dom.window.document.getElementById("form-solic");
++  form.elements.nome.value = "Maria"; form.elements.contato.value = "49 99999-0000"; form.elements.descricao.value = "Vazando óleo";
++  form.dispatchEvent(new dom.window.Event("submit", {cancelable: true, bubbles: true}));
++  await waitFor(() => f.calls.some(c => c.url.includes("qr_abrir_solicitacao")));
++  return {dom, f};
++}
++await test("formulário envia token + campos à função pública e confirma", async () => {
++  const {dom, f} = await enviar();
++  const c = f.calls.find(x => x.url.includes("qr_abrir_solicitacao"));
++  eq(c.body.p_token, UUID); eq(c.body.p_nome, "Maria"); eq(c.body.p_contato, "49 99999-0000"); eq(c.body.p_descricao, "Vazando óleo");
++  await waitFor(() => dom.window.document.getElementById("solic-ok").style.display === "block");
++  eq(dom.window.document.getElementById("btn-solic").disabled, false, "botão reabilitado");
++  eq(dom.window.document.getElementById("form-solic").elements.nome.value, "", "form limpo");
++});
++await test("limite / inválido / erro de rede mostram a mensagem certa", async () => {
++  let r = await enviar(() => ({body: "limite"}));
++  await waitFor(() => /Muitas solicitações/.test(r.dom.window.document.getElementById("solic-erro").textContent));
++  r = await enviar(() => ({body: "invalido"}));
++  await waitFor(() => /Confira os campos/.test(r.dom.window.document.getElementById("solic-erro").textContent));
++  r = await enviar(() => ({status: 500, body: {}}));
++  await waitFor(() => /Sem conexão/.test(r.dom.window.document.getElementById("solic-erro").textContent));
++  eq(r.dom.window.document.getElementById("solic-ok").style.display, "none", "não mostra sucesso");
++});
++
++console.log("\n[4] qr.html — equipe logada");
++const ATIVO_DB = {id: 7, nome: "Prensa 02", categoria: "Prensa", empresa: "ACME", unidade: "F1", localizacao: "Galpão B", tag: "PR-02", status: "Operacional"};
++const OS_DB = [
++  {id: 101, numero_os: "2026-COR-0001", titulo: "Trocar mangueira", tipo: "Corretiva", status: "Aberta", tecnico: "Ana", origem: "manual", prazo: "2026-10-20"},
++  {id: 102, numero_os: "2026-PRV-0002", titulo: "Lubrificação", tipo: "Preventiva", status: "Em Andamento", tecnico: "", origem: "plano", prazo: ""},
++  {id: 103, numero_os: "2026-COR-0003", titulo: "Ajuste de pressão", tipo: "Corretiva", status: "Aberta", tecnico: "Bruno", origem: "manual", prazo: ""}
++];
++const rotasEquipe = (u) => {
++  if(/\/rest\/v1\/ativos\?qr_token=/.test(u)) return {body: [ATIVO_DB]};
++  if(/\/rest\/v1\/ordens\?/.test(u)) return {body: OS_DB};
++};
++const hrefs = dom => [...dom.window.document.querySelectorAll("#qr-wrap a")].map(a => a.getAttribute("href"));
++
++await test("coordenador: vê todas as OS abertas com Executar/Continuar e 'Nova OS corretiva'", async () => {
++  const f = makeFetch(rotasEquipe);
++  const dom = loadPage("qr.html", {url: HOST + "/qr.html?t=" + UUID, fetch: f, session: SESSAO("Coordenador", "Carla")});
++  await waitFor(() => /Prensa 02/.test(texto(dom)));
++  const h = hrefs(dom);
++  ["ordens.html?exec=101", "ordens.html?exec=102", "ordens.html?exec=103", "ordens.html?nova=7"].forEach(x => assert(h.includes(x), "falta " + x + " em " + h));
++  assert(h.includes("ordens-corretiva.html?id=101") && h.includes("ordens-programada.html?id=102"), "links 'Ver' vão ao detalhe certo");
++  assert(/Continuar/.test(texto(dom)) && /Executar/.test(texto(dom)), "rótulos Executar/Continuar");
++  const q = f.calls.map(c => c.url);
++  assert(q.some(u => u.includes("ativos?qr_token=eq." + UUID)), "busca o ativo pelo token");
++  assert(q.some(u => u.includes("ativo_id=eq.7") && u.includes("status=in.(Aberta,%22Em%20Andamento%22)")), "filtra OS abertas do ativo");
++  assert(!q.some(u => u.includes("rpc/")), "equipe não usa a função pública");
++  eq(f.calls[0].headers.Authorization, "Bearer " + SESSAO().access_token, "usa o token do usuário");
++});
++await test("técnico: só executa OS própria ou sem responsável; sem 'Nova OS'", async () => {
++  const dom = loadPage("qr.html", {url: HOST + "/qr.html?t=" + UUID, fetch: makeFetch(rotasEquipe), session: SESSAO("Tecnico", "Ana")});
++  await waitFor(() => /Prensa 02/.test(texto(dom)));
++  const h = hrefs(dom);
++  assert(h.includes("ordens.html?exec=101") && h.includes("ordens.html?exec=102"), "Ana: própria + sem responsável");
++  assert(!h.includes("ordens.html?exec=103"), "não executa OS do Bruno");
++  assert(h.includes("ordens-corretiva.html?id=103"), "mas pode ver");
++  assert(!h.some(x => x.includes("nova=")), "técnico não abre OS");
++});
++await test("logado, mas ativo de outro tenant (RLS devolve vazio) → cai na visão pública", async () => {
++  const f = makeFetch((u) => /\/rest\/v1\/ativos\?qr_token=/.test(u) ? {body: []} : rotasPub()(u));
++  const dom = loadPage("qr.html", {url: HOST + "/qr.html?t=" + UUID, fetch: f, session: SESSAO("Coordenador", "Carla")});
++  await waitFor(() => /2026-COR-0007/.test(texto(dom)));
++  assert(!dom.window.document.getElementById("link-equipe"), "já logado: sem botão de login");
++  assert(dom.window.localStorage.getItem("mx_session"), "sessão válida é mantida");
++});
++await test("sessão vencida (401) → limpa a sessão e mostra a visão pública", async () => {
++  const f = makeFetch((u) => {
++    if(/\/rest\/v1\/ativos\?qr_token=/.test(u)) return {status: 401, body: {message: "JWT expired"}};
++    if(u.includes("/auth/v1/")) return {status: 400, body: {}};
++    return rotasPub()(u);
++  });
++  const dom = loadPage("qr.html", {url: HOST + "/qr.html?t=" + UUID, fetch: f, session: SESSAO("Coordenador", "Carla")});
++  await waitFor(() => /2026-COR-0007/.test(texto(dom)));
++  eq(dom.window.localStorage.getItem("mx_session"), null, "sessão vencida removida");
++  assert(dom.window.document.getElementById("link-equipe"), "oferece login");
++});
++
++console.log("\n[5] ordens.html — parâmetros do QR e solicitações");
++const ATIVOS_ORD = [{id: 7, nome: "Prensa 02", categoria: "Prensa", status: "Operacional", tag: "PR-02"}];
++const ORDENS_ORD = [
++  {id: 101, numero_os: "2026-COR-0001", titulo: "Trocar mangueira", ativo_nome: "Prensa 02", ativo_id: 7, tipo: "Corretiva", prioridade: "Normal", status: "Aberta", tecnico: "Ana", abertura: "2026-10-01", origem: "manual"},
++  {id: 103, numero_os: "2026-COR-0003", titulo: "Ajuste", ativo_nome: "Prensa 02", ativo_id: 7, tipo: "Corretiva", prioridade: "Normal", status: "Aberta", tecnico: "Bruno", abertura: "2026-10-02", origem: "manual"}
++];
++const SOLIC = [{id: "6f1c0e5a-aaaa-bbbb-cccc-000000000001", tenant_id: "t-1", ativo_id: 7, nome_solicitante: "Maria <b>Silva</b>",
++  contato_solicitante: "49 99999-0000", descricao: "Vazando <script>alert(1)</script> óleo", status: "Pendente", criado_em: "2026-10-14T10:00:00Z"}];
++function rotasOrdens(extra){
++  return (u, o) => {
++    const m = (o && o.method) || "GET";
++    if(extra){ const r = extra(u, m); if(r) return r; }
++    if(/\/rest\/v1\/ativos\?/.test(u) && m === "GET") return {body: ATIVOS_ORD};
++    if(/\/rest\/v1\/ordens\?/.test(u) && m === "GET") return {body: ORDENS_ORD};
++    if(/\/rest\/v1\/solicitacoes_qr\?status=/.test(u) && m === "GET") return {body: SOLIC};
++  };
++}
++const posts = (f, tabela) => f.calls.filter(c => c.method === "POST" && c.url.endsWith("/rest/v1/" + tabela));
++
++await test("?exec=<id> de OS Aberta: marca Em Andamento e salva antes de abrir a execução", async () => {
++  const f = makeFetch(rotasOrdens());
++  const dom = loadPage("ordens.html", {url: HOST + "/ordens.html?exec=101", fetch: f, session: SESSAO("Tecnico", "Ana")});
++  await waitFor(() => posts(f, "ordens").length > 0);
++  const salvo = posts(f, "ordens")[0].body.find(o => o.id === 101);
++  eq(salvo.status, "Em Andamento");
++  eq(dom.window.location.search, "", "parâmetro removido da URL");
++});
++await test("?exec=<id> de OS de outro técnico: avisa e não altera nada", async () => {
++  const f = makeFetch(rotasOrdens());
++  const dom = loadPage("ordens.html", {url: HOST + "/ordens.html?exec=103", fetch: f, session: SESSAO("Tecnico", "Ana")});
++  await waitFor(() => toasts(dom).length > 0);
++  assert(/outro técnico/.test(toasts(dom).join()), toasts(dom).join());
++  eq(posts(f, "ordens").length, 0, "nenhum upsert");
++});
++await test("?exec=<id> inexistente: avisa e não altera nada", async () => {
++  const f = makeFetch(rotasOrdens());
++  const dom = loadPage("ordens.html", {url: HOST + "/ordens.html?exec=999", fetch: f, session: SESSAO("Coordenador", "Carla")});
++  await waitFor(() => toasts(dom).length > 0);
++  eq(posts(f, "ordens").length, 0);
++});
++await test("?nova=<ativo> (coordenador): abre o modal de OS corretiva com o ativo escolhido", async () => {
++  const dom = loadPage("ordens.html", {url: HOST + "/ordens.html?nova=7", fetch: makeFetch(rotasOrdens()), session: SESSAO("Coordenador", "Carla")});
++  await waitFor(() => dom.window.document.getElementById("modal-os-cor").classList.contains("open"));
++  eq(dom.window.document.getElementById("oc-ativo").value, "7");
++});
++await test("?nova=<ativo> inválido ou técnico: não abre modal", async () => {
++  const d1 = loadPage("ordens.html", {url: HOST + "/ordens.html?nova=555", fetch: makeFetch(rotasOrdens()), session: SESSAO("Coordenador", "Carla")});
++  await waitFor(() => toasts(d1).length > 0);
++  assert(!d1.window.document.getElementById("modal-os-cor").classList.contains("open"));
++  const d2 = loadPage("ordens.html", {url: HOST + "/ordens.html?nova=7", fetch: makeFetch(rotasOrdens()), session: SESSAO("Tecnico", "Ana")});
++  await new Promise(r => setTimeout(r, 150));
++  assert(!d2.window.document.getElementById("modal-os-cor").classList.contains("open"));
++});
++
++await test("solicitações: só o coordenador vê o painel; conteúdo escapado", async () => {
++  const f = makeFetch(rotasOrdens());
++  const dom = loadPage("ordens.html", {url: HOST + "/ordens.html", fetch: f, session: SESSAO("Coordenador", "Carla")});
++  await waitFor(() => /Solicitações via QR/.test(texto(dom)));
++  assert(!dom.window.document.querySelector("#ct script, #ct b"), "HTML do solicitante/descrição foi escapado");
++  assert(/Maria <b>Silva<\/b>/.test(texto(dom)), "mostra como texto");
++  const t = loadPage("ordens.html", {url: HOST + "/ordens.html", fetch: makeFetch(rotasOrdens()), session: SESSAO("Tecnico", "Ana")});
++  await new Promise(r => setTimeout(r, 150));
++  assert(!/Solicitações via QR/.test(texto(t)), "técnico não vê o painel");
++  assert(!t.window.document.defaultView.fetch.calls.some(c => c.url.includes("solicitacoes_qr")), "técnico nem consulta a tabela");
++});
++await test("converter: cria OS corretiva (origem qr) e marca a solicitação como Convertida", async () => {
++  const f = makeFetch(rotasOrdens());
++  const dom = loadPage("ordens.html", {url: HOST + "/ordens.html", fetch: f, session: SESSAO("Coordenador", "Carla")});
++  await waitFor(() => /Solicitações via QR/.test(texto(dom)));
++  dom.window.converterSolicitacao(SOLIC[0].id);
++  await waitFor(() => f.calls.some(c => c.method === "PATCH"));
++  const os = posts(f, "ordens")[0].body.find(o => o.origem === "qr");
++  assert(os, "OS com origem qr foi salva");
++  eq(os.tipo, "Corretiva"); eq(os.status, "Aberta"); eq(os.ativo_id, 7);
++  assert(/Vazando/.test(os.descricao) && /Maria/.test(os.descricao) && /49 99999-0000/.test(os.descricao), "descrição traz problema e contato");
++  assert(/^\d{4}-COR-\d{4}$/.test(os.numero_os), "numeração padrão " + os.numero_os);
++  const p = f.calls.find(c => c.method === "PATCH");
++  assert(p.url.endsWith("solicitacoes_qr?id=eq." + SOLIC[0].id), p.url);
++  eq(p.body.status, "Convertida"); eq(p.body.os_id, os.id);
++  await waitFor(() => !/Solicitações via QR/.test(texto(dom)));
++});
++await test("converter: se a OS não salva, nada some (solicitação continua, sem OS fantasma)", async () => {
++  const f = makeFetch(rotasOrdens((u, m) => (m === "POST" && u.endsWith("/rest/v1/ordens")) ? {status: 500, body: {message: "boom"}} : undefined));
++  const dom = loadPage("ordens.html", {url: HOST + "/ordens.html", fetch: f, session: SESSAO("Coordenador", "Carla")});
++  await waitFor(() => /Solicitações via QR/.test(texto(dom)));
++  dom.window.converterSolicitacao(SOLIC[0].id);
++  await waitFor(() => toasts(dom).length > 0);
++  await new Promise(r => setTimeout(r, 50));
++  assert(/Solicitações via QR/.test(texto(dom)), "solicitação continua na tela");
++  eq(f.calls.filter(c => c.method === "PATCH").length, 0, "não marcou como convertida");
++  eq(dom.window.ordens.length, 2, "estado local de OS intacto");
++});
++await test("converter: OS salva mas marcação falha → avisa e não duplica OS", async () => {
++  const f = makeFetch(rotasOrdens((u, m) => m === "PATCH" ? {status: 500, body: {}} : undefined));
++  const dom = loadPage("ordens.html", {url: HOST + "/ordens.html", fetch: f, session: SESSAO("Coordenador", "Carla")});
++  await waitFor(() => /Solicitações via QR/.test(texto(dom)));
++  dom.window.converterSolicitacao(SOLIC[0].id);
++  await waitFor(() => /não foi possível marcar/i.test(toasts(dom).join()));
++  eq(dom.window.ordens.length, 3, "OS criada permanece");
++  await waitFor(() => !/Solicitações via QR/.test(texto(dom)));
++  dom.window.converterSolicitacao(SOLIC[0].id);   // clique repetido
++  await new Promise(r => setTimeout(r, 50));
++  eq(posts(f, "ordens").length, 1, "segunda conversão não cria outra OS");
++});
++await test("descartar: marca Descartada e remove do painel", async () => {
++  const f = makeFetch(rotasOrdens());
++  const dom = loadPage("ordens.html", {url: HOST + "/ordens.html", fetch: f, session: SESSAO("Coordenador", "Carla")});
++  await waitFor(() => /Solicitações via QR/.test(texto(dom)));
++  dom.window.descartarSolicitacao(SOLIC[0].id);
++  await waitFor(() => f.calls.some(c => c.method === "PATCH"));
++  eq(f.calls.find(c => c.method === "PATCH").body.status, "Descartada");
++  await waitFor(() => !/Solicitações via QR/.test(texto(dom)));
++  eq(posts(f, "ordens").length, 0, "não cria OS");
++});
++
++console.log("\n[6] ativos.html — etiqueta QR");
++function qrStub(){ const q = function(el, opts){ q.chamadas.push({el, opts}); el.setAttribute("data-qr", opts.text); }; q.chamadas = []; return q; }
++const rotasAtivos = (tokenResp) => (u, o) => {
++  const m = (o && o.method) || "GET";
++  if(/\/rest\/v1\/ativos\?id=eq\.7&select=qr_token/.test(u)) return tokenResp;
++  if(/\/rest\/v1\/ativos\?/.test(u) && m === "GET") return {body: [Object.assign({}, ATIVO_DB, {indicadores: [], crit: {}, docs: []})]};
++};
++async function abrirAtivos(url, tokenResp, qr){
++  const f = makeFetch(rotasAtivos(tokenResp));
++  const dom = loadPage("ativos.html", {url, fetch: f, session: SESSAO("Coordenador", "Carla"), qrcode: qr});
++  await waitFor(() => dom.window.ativos && dom.window.ativos.length === 1);
++  return {dom, f};
++}
++await test("gera o QR com /qr.html?t=<token> da origem oficial e preenche a etiqueta", async () => {
++  const qr = qrStub();
++  const {dom, f} = await abrirAtivos(HOST + "/ativos.html", {body: [{qr_token: UUID}]}, qr);
++  dom.window.mostrarQr(7);
++  await waitFor(() => qr.chamadas.length === 1);
++  eq(qr.chamadas[0].opts.text, HOST + "/qr.html?t=" + UUID);
++  eq(qr.chamadas[0].opts.width, 220);
++  const d = dom.window.document;
++  assert(d.getElementById("modal-qr").classList.contains("open"), "modal aberto");
++  eq(d.getElementById("qe-nome").textContent, "Prensa 02");
++  assert(/PR-02/.test(d.getElementById("qe-local").textContent) && /Galpão B/.test(d.getElementById("qe-local").textContent));
++  eq(d.getElementById("qe-rodape").textContent, "ID: 7");
++  eq(d.getElementById("qr-aviso").style.display, "none", "sem aviso na origem oficial");
++  assert(!/qr_token|0f3c9a1e/.test(dom.window.localStorage.getItem("mx_ativos") || ""), "token não vai para o localStorage");
++});
++await test("fora de mantenedor.app.br mostra o aviso de origem", async () => {
++  const qr = qrStub();
++  const {dom} = await abrirAtivos("http://localhost:8080/ativos.html", {body: [{qr_token: UUID}]}, qr);
++  dom.window.mostrarQr(7);
++  await waitFor(() => qr.chamadas.length === 1);
++  eq(dom.window.document.getElementById("qr-aviso").style.display, "block");
++  assert(/mantenedor\.app\.br/.test(dom.window.document.getElementById("qr-aviso").textContent));
++  eq(qr.chamadas[0].opts.text, "http://localhost:8080/qr.html?t=" + UUID);
++});
++await test("migração não aplicada (coluna inexistente) → erro claro, sem abrir modal", async () => {
++  const qr = qrStub();
++  const {dom} = await abrirAtivos(HOST + "/ativos.html", {status: 400, body: {message: "column ativos.qr_token does not exist"}}, qr);
++  dom.window.mostrarQr(7);
++  await waitFor(() => toasts(dom).some(x => /migração/.test(x)));
++  assert(!dom.window.document.getElementById("modal-qr").classList.contains("open"));
++  eq(qr.chamadas.length, 0);
++});
++await test("sem a biblioteca de QR (CDN fora do ar) → aviso, sem erro de script", async () => {
++  const {dom} = await abrirAtivos(HOST + "/ativos.html", {body: [{qr_token: UUID}]}, null);
++  dom.window.mostrarQr(7);
++  await waitFor(() => toasts(dom).some(x => /gerador de QR/.test(x)));
++  assert(!dom.erros.length, "erros de script: " + dom.erros.join(" | "));
++});
++await test("ficha do ativo tem o botão QR Code; impressão liga/desliga a classe de impressão", async () => {
++  const {dom} = await abrirAtivos(HOST + "/ativos.html", {body: [{qr_token: UUID}]}, qrStub());
++  dom.window.selAtivo = dom.window.ativos[0]; dom.window.render();
++  assert(/mostrarQr\(7\)/.test(dom.window.document.getElementById("ct").innerHTML), "botão na ficha");
++  let impresso = false;
++  dom.window.print = () => { impresso = dom.window.document.body.classList.contains("mx-printing-label"); };
++  dom.window.imprimirEtiqueta();
++  assert(impresso, "classe aplicada durante o print");
++  dom.window.dispatchEvent(new dom.window.Event("afterprint"));
++  assert(!dom.window.document.body.classList.contains("mx-printing-label"), "classe removida no afterprint");
++});
++
++console.log("\n[7] Migração SQL — garantias de segurança");
++const sql = fs.readFileSync(path.join(ROOT, "migracao_qrcode_ativos.sql"), "utf8");
++await test("sem leitura pública por RLS; funções públicas restritas e com search_path fixo", () => {
++  assert(/ENABLE ROW LEVEL SECURITY/.test(sql), "RLS ligado");
++  assert(!/CREATE POLICY[^;]*\bTO\s+anon\b/i.test(sql), "nenhuma policy para anon");
++  assert(!/FOR\s+INSERT[^;]*WITH CHECK\s*\(\s*true\s*\)/i.test(sql), "sem insert aberto");
++  assert((sql.match(/SECURITY DEFINER\s*\nSET search_path = public/g) || []).length === 2, "2 funções SECURITY DEFINER com search_path");
++  assert(/REVOKE ALL ON FUNCTION public\.qr_ativo_publico/.test(sql) && /GRANT EXECUTE ON FUNCTION public\.qr_ativo_publico\(uuid\) TO anon/.test(sql));
++  assert(!/custo|tecnico|descricao/.test(sql.slice(sql.indexOf("qr_ativo_publico"), sql.indexOf("qr_abrir_solicitacao"))), "visão pública não expõe custo/técnico/descrição das OS");
++  assert(/\$func\$/.test(sql) && !/\$\$/.test(sql.replace(/\$func\$/g, "")), "usa $func$, não $$");
++});
++
++console.log("\n" + ok + " ok, " + fail + " falha(s)");
++if(fail){ console.log("Falharam: " + falhas.join("; ")); process.exit(1); }
++})();

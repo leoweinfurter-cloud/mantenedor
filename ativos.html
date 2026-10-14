@@ -10,7 +10,29 @@
 <script src="_pwa.js" defer></script>
 <title>Mantenedor — Ativos</title>
 <link rel="stylesheet" href="_style.css" id="theme-link"/>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js" defer></script>
 <style>
+/* ── ETIQUETA QR (sempre fundo branco: sai igual no tema claro/escuro e na impressão) ── */
+#qr-etiqueta{background:#fff;color:#111827;border-radius:12px;padding:18px 16px;text-align:center;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif}
+#qr-etiqueta .qe-marca{display:flex;align-items:center;justify-content:center;gap:8px;font-size:15px;font-weight:800;letter-spacing:.02em;padding-bottom:8px;border-bottom:3px solid #1d4ed8;margin-bottom:10px}
+#qr-etiqueta .qe-marca img{width:28px;height:28px;border-radius:6px}
+#qr-etiqueta .qe-cat{font-size:11px;font-weight:700;color:#4b5563;text-transform:uppercase;letter-spacing:.08em}
+#qr-etiqueta .qe-nome{font-size:22px;font-weight:800;line-height:1.2;margin:2px 0 4px;word-break:break-word}
+#qr-etiqueta .qe-linha{font-size:13px;color:#374151;line-height:1.5}
+#qr-canvas{display:flex;justify-content:center;margin:12px 0 8px}
+#qr-etiqueta .qe-legenda{font-size:12px;color:#374151}
+#qr-etiqueta .qe-rodape{font-size:10px;color:#6b7280;margin-top:8px;font-family:ui-monospace,Menlo,Consolas,monospace}
+#qr-aviso{display:none;background:rgba(251,191,36,.1);border:1px solid rgba(251,191,36,.35);color:#fbbf24;border-radius:10px;padding:10px 12px;font-size:12px;margin-bottom:12px}
+@media print{
+  body.mx-printing-label #app,
+  body.mx-printing-label #bottom-nav,
+  body.mx-printing-label .modal:not(#modal-qr),
+  body.mx-printing-label .qr-no-print{display:none!important}
+  body.mx-printing-label{background:#fff!important}
+  body.mx-printing-label #modal-qr{position:static!important;display:block!important;background:none!important;padding:0!important}
+  body.mx-printing-label #modal-qr .mc{border:none!important;box-shadow:none!important;background:none!important;padding:0!important;max-width:none!important;max-height:none!important;overflow:visible!important;width:80mm;margin:0}
+  body.mx-printing-label #qr-etiqueta{border-radius:0}
+}
 /* ── PLAN MODAL ACTIONS ── */
 .pl-acao-row{background:var(--inner-bg,#060b12);border:1px solid var(--border,#1e3a5f);border-radius:10px;padding:10px 12px;margin-bottom:6px}
 .pl-acao-type{font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.05em;padding:2px 7px;border-radius:8px;margin-bottom:6px;display:inline-block}
@@ -79,6 +101,26 @@
     <div class="fg"><label class="lbl" data-i18n="at_f_pat">Patrimonio</label><input id="at-pat" data-i18n-ph="at_ph_pat" placeholder="Ex: PAT-0001"/></div>
   </div>
   <div class="mf"><button class="btn bx" onclick="closeModal('modal-ativo')"><span data-i18n="btn_cancelar">Cancelar</span></button><button class="btn bp" id="at-save-btn" onclick="saveAtivo()"><span data-i18n="btn_cadastrar">Cadastrar</span></button></div>
+</div></div>
+
+<!-- Modal Etiqueta QR Code -->
+<div class="modal" id="modal-qr"><div class="mc" onclick="event.stopPropagation()">
+  <div class="mt2 qr-no-print" data-i18n="qr_titulo_modal">Etiqueta QR Code</div>
+  <div id="qr-aviso" class="qr-no-print"></div>
+  <div id="qr-etiqueta">
+    <div class="qe-marca"><img src="icons/icon-192.png" alt="" onerror="this.style.display='none'"/><span>Mantenedor</span></div>
+    <div class="qe-cat" id="qe-cat"></div>
+    <div class="qe-nome" id="qe-nome"></div>
+    <div class="qe-linha" id="qe-local"></div>
+    <div class="qe-linha" id="qe-empresa"></div>
+    <div id="qr-canvas"></div>
+    <div class="qe-legenda" id="qe-legenda"></div>
+    <div class="qe-rodape" id="qe-rodape"></div>
+  </div>
+  <div class="mf qr-no-print">
+    <button class="btn bx" onclick="closeModal('modal-qr')"><span data-i18n="qr_fechar">Fechar</span></button>
+    <button class="btn bp" onclick="imprimirEtiqueta()"><span data-i18n="qr_imprimir">Imprimir</span></button>
+  </div>
 </div></div>
 
 <!-- Modal Registrar Manutencao -->
@@ -980,6 +1022,7 @@ function renderFicha(){
   else if(fichaTab=="criticidade")content=tabCrit(a,f);
   return'<div style="display:flex;align-items:center;gap:10px;margin-bottom:16px">'
     +'<button class="btn bx" onclick="selAtivo=null;render()">&#8592; Voltar</button>'
+    +'<button class="btn bx bsm" onclick="mostrarQr('+selAtivo.id+')" style="font-size:11px">&#9638; '+t("qr_btn")+'</button>'
     +(!isCoordenador() ? '' : '<button class="btn bx bsm" onclick="editAtivo('+selAtivo.id+')" style="font-size:11px">'+t("btn_editar")+'</button>')
     +(!isCoordenador() ? '' : selAtivo.status!=="Desativado"
       ?'<button class="btn bsm" onclick="abrirDesativarAtivo()" style="font-size:11px;background:#7f1d1d30;color:#f87171;border:1px solid #f8717140">'+t("at_desativar")+'</button>'
@@ -1287,6 +1330,55 @@ function setCrit(aid,criterio,val){
     if(a){ selAtivo=a; fichaTab="preventiva"; }
   }
 })();
+
+// ── ETIQUETA QR CODE DO ATIVO ─────────────────────────────────────────
+// O QR guarda só o link /qr.html?t=<token>. O token fica em ativos.qr_token
+// (gerado no banco) e é buscado na hora de montar a etiqueta — não vai para
+// o localStorage nem para o array local de ativos.
+function mostrarQr(ativoId){
+  var a=ativos.find(function(x){return x.id==ativoId;});
+  if(!a) return;
+  if(typeof QRCode==="undefined"){mxToast(t("qr_erro_lib"),"error");return;}
+  sbFetch("ativos?id=eq."+encodeURIComponent(ativoId)+"&select=qr_token")
+    .then(function(r){
+      if(!r.ok) throw new Error("HTTP "+r.status);
+      return r.json();
+    })
+    .then(function(rows){
+      var token=rows&&rows[0]&&rows[0].qr_token;
+      if(!token) throw new Error("ativo sem qr_token");
+      preencherEtiquetaQr(a,token);
+    })
+    .catch(function(e){
+      console.error("[QR] falha ao obter o token do ativo",e);
+      mxToast(t("qr_erro_token"),"error");
+    });
+}
+
+function preencherEtiquetaQr(a,token){
+  var set=function(id,txt){document.getElementById(id).textContent=txt||"";};
+  set("qe-cat",a.categoria);
+  set("qe-nome",a.nome);
+  set("qe-local",[a.tag,a.localizacao].filter(Boolean).join(" • "));
+  set("qe-empresa",[a.empresa,a.unidade].filter(Boolean).join(" • "));
+  set("qe-legenda",t("qr_legenda"));
+  set("qe-rodape","ID: "+a.id);
+
+  var aviso=document.getElementById("qr-aviso");
+  if(mxOrigemQrOficial()){aviso.style.display="none";}
+  else{aviso.textContent=t("qr_aviso_origem");aviso.style.display="block";}
+
+  var el=document.getElementById("qr-canvas");
+  el.innerHTML="";
+  new QRCode(el,{text:mxUrlQrAtivo(token),width:220,height:220});
+  openModal("modal-qr");
+}
+
+function imprimirEtiqueta(){
+  document.body.classList.add("mx-printing-label");
+  window.print();
+}
+window.addEventListener("afterprint",function(){document.body.classList.remove("mx-printing-label");});
 
 initApp(render);
 </script>

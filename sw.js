@@ -4,7 +4,7 @@
 // chamadas à API do Supabase — dados sempre vêm da rede, para não servir
 // informação desatualizada ou quebrar a autenticação.
 
-var CACHE_VERSION = "mx-shell-v1";
+var CACHE_VERSION = "mx-shell-v2";
 
 var APP_SHELL = [
   "./",
@@ -15,6 +15,7 @@ var APP_SHELL = [
   "ordens-corretiva.html",
   "ordens-programada.html",
   "ativos.html",
+  "qr.html",
   "cadastros.html",
   "calendario.html",
   "relatorios.html",

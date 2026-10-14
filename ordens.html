@@ -301,7 +301,7 @@ function renderList(){
       +'<button class="btn bx" onclick="openNewOSProgramada()">+ Nova Prev./Predit.</button>'
       +'<button class="btn bp" onclick="openNewOSCorretiva()">+ Nova OS Corretiva</button>'
       +'</div>':'';
-  return summary+'<div class="fr"><div class="fb">'+fb+'</div>'+acoes+'</div>'+cards;
+  return renderSolicitacoes()+summary+'<div class="fr"><div class="fb">'+fb+'</div>'+acoes+'</div>'+cards;
 }
 
 // (Seletor de perfil removido — cada pessoa usa sua própria conta agora.)
@@ -322,7 +322,108 @@ function renderList(){
   }
 })();
 
-initApp(render);
+// ── QR CODE: parametros de entrada (?exec=ID | ?nova=ATIVO_ID) ───────────
+// qr.html leva a equipe para ca; a logica de "Executar" (Aberta → Em Andamento)
+// e a de nova OS corretiva continuam sendo as mesmas desta pagina.
+function tratarParamsQr(){
+  var p=new URLSearchParams(window.location.search);
+  var exec=p.get("exec"), nova=p.get("nova");
+  if(!exec&&!nova) return;
+  // Limpa a URL para nao repetir a acao ao voltar/recarregar.
+  try{ history.replaceState(null,"",window.location.pathname); }catch(e){}
+  if(exec){
+    var o=ordens.find(function(x){return String(x.id)===String(exec);});
+    if(!o){ mxToast(t("os_nao_encontrada")+" "+exec,"error"); return; }
+    var pode=isCoordenador()||!o.tecnico||o.tecnico===meuNomeAtivo();
+    if(!pode){ mxToast(t("qr_sem_permissao"),"error"); return; }
+    if(o.status=="Aberta"||o.status=="Em Andamento") executarOS(o.id);
+    else window.location.href=ordensDetailUrl(o);
+  } else if(isCoordenador()){
+    var ativoId=parseInt(nova,10);
+    if(!ativos.some(function(a){return a.id===ativoId;})){ mxToast(t("os_ativo_invalido"),"error"); return; }
+    openNewOSCorretiva();
+    document.getElementById("oc-ativo").value=String(ativoId);
+  }
+}
+
+// ── QR CODE: solicitacoes abertas por quem leu o QR sem login ────────────
+// Chegam em solicitacoes_qr (via funcao publica qr_abrir_solicitacao) e
+// aparecem so para o Coordenador, que cria a OS corretiva ou descarta.
+var solicitacoes=[];
+function carregarSolicitacoes(){
+  if(!isCoordenador()) return Promise.resolve();
+  return sbFetch("solicitacoes_qr?status=eq.Pendente&select=*&order=criado_em.desc")
+    .then(function(r){ return r.ok?r.json():[]; })
+    .then(function(rows){ solicitacoes=Array.isArray(rows)?rows:[]; render(); })
+    .catch(function(e){ console.warn("[QR] solicitacoes",e); });
+}
+function renderSolicitacoes(){
+  if(!isCoordenador()||!solicitacoes.length) return "";
+  var itens=solicitacoes.map(function(s){
+    var a=ativos.find(function(x){return x.id===s.ativo_id;});
+    return'<div class="os-card" style="cursor:default">'
+      +'<div class="os-card-title">'+esc(a?a.nome:"#"+s.ativo_id)+'</div>'
+      +'<div class="os-desc-preview" style="white-space:pre-wrap">'+esc(s.descricao)+'</div>'
+      +'<div class="os-card-meta" style="margin-top:6px">'
+      +'<span>&#128100; '+esc(s.nome_solicitante)+'</span>'
+      +'<span>&#9742; '+esc(s.contato_solicitante)+'</span>'
+      +'<span>&#128336; '+esc(String(s.criado_em||"").slice(0,10))+'</span>'
+      +'</div>'
+      +'<div style="margin-top:8px;display:flex;gap:8px;justify-content:flex-end">'
+      +'<button class="btn bx bsm" style="font-size:11px" onclick="descartarSolicitacao(\''+esc(s.id)+'\')">'+esc(t("qr_sol_descartar"))+'</button>'
+      +'<button class="btn bp bsm" style="font-size:11px" onclick="converterSolicitacao(\''+esc(s.id)+'\')">'+esc(t("qr_sol_criar_os"))+'</button>'
+      +'</div></div>';
+  }).join("");
+  return'<div class="card" style="border-color:#fbbf2440;margin-bottom:16px">'
+    +'<div class="st" style="margin-bottom:12px">&#9783; '+esc(t("qr_sol_titulo"))+' ('+solicitacoes.length+')</div>'
+    +itens+'</div>';
+}
+function atualizarSolicitacao(id,campos){
+  return sbFetch("solicitacoes_qr?id=eq."+encodeURIComponent(id),{method:"PATCH",body:JSON.stringify(campos)})
+    .then(function(r){ if(!r.ok) throw new Error("HTTP "+r.status); });
+}
+function descartarSolicitacao(id){
+  if(!confirm(t("qr_sol_conf_descartar"))) return;
+  atualizarSolicitacao(id,{status:"Descartada"}).then(function(){
+    solicitacoes=solicitacoes.filter(function(s){return s.id!==id;});
+    render();
+  }).catch(function(e){ console.error("[QR] descartar",e); mxToast(t("qr_sol_erro"),"error"); });
+}
+async function converterSolicitacao(id){
+  var s=solicitacoes.find(function(x){return x.id===id;});
+  if(!s) return;
+  var a=ativos.find(function(x){return x.id===s.ativo_id;});
+  if(!a){ mxToast(t("os_ativo_invalido"),"error"); return; }
+  var desc=s.descricao+"\n\n"+t("qr_sol_de")+": "+s.nome_solicitante+" ("+s.contato_solicitante+")";
+  var nova={id:nextId(),numero_os:nextNumeroOS("Corretiva",ordens),
+    titulo:t("qr_sol_titulo_os").replace("{ativo}",a.nome),ativo:a.nome,ativo_id:a.id,
+    tipo:"Corretiva",prioridade:"Normal",tecnico:"",prazo:"",descricao:desc,status:"Aberta",
+    abertura:new Date().toISOString().split("T")[0],origem:"qr",execLog:[]};
+  var antes=ordens;
+  ordens=[nova].concat(ordens);
+  try{
+    await saveOrdens(ordens);                 // sbUpsert ja avisa por toast se falhar
+  }catch(e){
+    console.error("[QR] converter: OS nao foi salva",e);
+    ordens=antes;                             // nada foi criado: desfaz o estado local
+    mxToast(t("qr_sol_erro"),"error");
+    render();
+    return;
+  }
+  // A OS ja existe no banco. Se so a marcacao da solicitacao falhar, a OS nao pode
+  // ser desfeita: avisa e tira a solicitacao da tela para nao gerar OS duplicada
+  // por clique repetido (ela reaparece no proximo carregamento — descartar la).
+  try{
+    await atualizarSolicitacao(id,{status:"Convertida",os_id:nova.id});
+  }catch(e){
+    console.error("[QR] converter: OS criada, solicitacao nao marcada",e);
+    mxToast(t("qr_sol_erro_marcar"),"warn");
+  }
+  solicitacoes=solicitacoes.filter(function(x){return x.id!==id;});
+  render();
+}
+
+initApp(function(){ render(); tratarParamsQr(); carregarSolicitacoes(); });
 </script>
 <script>
 window.addEventListener("langchange", function(){
