@@ -63,15 +63,18 @@
       }
 
       try {
-        const [equip] = await cpFetch(`caspere_equipamentos?id=eq.${equipId}&select=*,caspere_clientes(razao_social)`);
-        if (!equip) throw new Error("Equipamento não encontrado.");
+        // A visão pública não lê as tabelas direto: usa a função
+        // caspere_equip_publico, que devolve só este equipamento.
+        const equip = await rpcPublica("caspere_equip_publico", { p_id: equipId });
+        if (!equip) throw new Error("Equipamento não encontrado ou desativado. Confira o QR Code com a Caspere.");
 
         el.innerHTML = `
           <div class="cp-card">
             <h3>${esc(CP_TIPO_EQUIP_LABEL[equip.tipo] || equip.tipo)}</h3>
             <h1>${esc(equip.identificacao)}</h1>
-            <p>${esc(equip.caspere_clientes?.razao_social || "")}</p>
-            <button type="button" class="cp-btn-outline cp-btn" onclick="window.location.href='login.html?equip=${equip.id}'">Sou técnico — fazer login para executar o checklist</button>
+            ${equip.local_instalacao ? `<p style="margin-bottom:4px;">${esc(equip.local_instalacao)}</p>` : ""}
+            <p>${esc(equip.cliente || "")}</p>
+            <button type="button" class="cp-btn-outline cp-btn" onclick="window.location.href='login.html?equip=${esc(equip.id)}'">Sou técnico — fazer login para executar o checklist</button>
           </div>
 
           <div class="cp-card">
@@ -101,7 +104,7 @@
             </form>
           </div>`;
 
-        carregarHistorico(equip.id);
+        renderHistorico(equip.historico || []);
 
         document.getElementById("form-chamado").addEventListener("submit", async (e) => {
           e.preventDefault();
@@ -112,14 +115,11 @@
           btn.textContent = "Enviando…";
           try {
             const fd = new FormData(e.target);
-            await cpFetch("caspere_chamados", {
-              method: "POST",
-              body: JSON.stringify({
-                equipamento_id: equip.id,
-                nome_solicitante: fd.get("nome_solicitante"),
-                contato_solicitante: fd.get("contato_solicitante"),
-                descricao: fd.get("descricao"),
-              }),
+            await rpcPublica("caspere_abrir_chamado", {
+              p_equipamento_id: equip.id,
+              p_nome: fd.get("nome_solicitante"),
+              p_contato: fd.get("contato_solicitante"),
+              p_descricao: fd.get("descricao"),
             });
             document.getElementById("ok-chamado").style.display = "block";
             e.target.reset();
@@ -137,30 +137,33 @@
       }
     }
 
-    async function carregarHistorico(equipId) {
+    // Chama uma função pública do banco sempre como visitante (anon key),
+    // mesmo que exista um token de sessão vencido guardado no navegador.
+    function rpcPublica(nome, args) {
+      return cpFetch(`rpc/${nome}`, {
+        method: "POST",
+        headers: { Authorization: `Bearer ${SUPABASE_ANON_KEY}` },
+        body: JSON.stringify(args),
+      });
+    }
+
+    function renderHistorico(relatorios) {
       const el = document.getElementById("historico");
-      try {
-        const relatorios = await cpFetch(
-          `caspere_relatorios?equipamento_id=eq.${equipId}&status=eq.finalizado&select=id,data_execucao,tipo_manutencao,pdf_url,caspere_funcionarios(nome)&order=data_execucao.desc&limit=10`
-        );
-        el.innerHTML = relatorios.length
-          ? relatorios.map(r => `
-              <div class="cp-item-row" style="flex-wrap:wrap;">
-                <div>
-                  <div style="font-weight:600;">Manutenção ${r.tipo_manutencao === "corretiva" ? "corretiva" : "preventiva"}</div>
-                  <div class="cp-meta">Técnico: ${esc(r.caspere_funcionarios?.nome || "")} · ${cpFmtData(r.data_execucao)}</div>
-                </div>
-                <div style="display:flex; align-items:center; gap:8px;">
-                  ${badgeStatus("resolvido")}
-                  ${r.pdf_url
-                    ? `<a href="${esc(r.pdf_url)}" target="_blank" rel="noopener" class="cp-btn-outline cp-btn" style="width:auto; padding:6px 12px; font-size:0.8rem; text-decoration:none;">Ver relatório (PDF)</a>`
-                    : `<span class="cp-meta">PDF indisponível</span>`}
-                </div>
-              </div>`).join("")
-          : `<p class="cp-empty">Nenhuma manutenção registrada ainda.</p>`;
-      } catch (err) {
-        el.innerHTML = `<p style="color:var(--cp-nao-conforme);">${esc(err.message)}</p>`;
-      }
+      el.innerHTML = relatorios.length
+        ? relatorios.map(r => `
+            <div class="cp-item-row" style="flex-wrap:wrap;">
+              <div>
+                <div style="font-weight:600;">Manutenção ${r.tipo_manutencao === "corretiva" ? "corretiva" : "preventiva"}</div>
+                <div class="cp-meta">Técnico: ${esc(r.tecnico || "—")} · ${cpFmtData(r.data_execucao)}</div>
+              </div>
+              <div style="display:flex; align-items:center; gap:8px;">
+                ${badgeStatus("resolvido")}
+                ${r.pdf_url
+                  ? `<a href="${esc(r.pdf_url)}" target="_blank" rel="noopener" class="cp-btn-outline cp-btn" style="width:auto; padding:6px 12px; font-size:0.8rem; text-decoration:none;">Ver relatório (PDF)</a>`
+                  : `<span class="cp-meta">PDF indisponível</span>`}
+              </div>
+            </div>`).join("")
+        : `<p class="cp-empty">Nenhuma manutenção registrada ainda.</p>`;
     }
   </script>
 </body>
