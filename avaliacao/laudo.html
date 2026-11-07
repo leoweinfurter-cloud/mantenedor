@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#3a3d42">
+<title>Laudo de avaliação</title>
+<link rel="stylesheet" href="assets/avaliacao.css">
+<style>
+  /* ── tela: folha A4 simulada ── */
+  body { background: #d9d7d0; }
+  .tools { max-width: 210mm; margin: 12px auto; padding: 0 8px; }
+  .pend-banner { background: var(--avl-warn-bg); color: var(--avl-warn); border-radius: 8px; padding: 8px 12px; margin-bottom: 8px; font-size: .88rem; }
+  .sheet { width: 210mm; max-width: 100%; margin: 0 auto 30px; background: #fff; box-shadow: 0 2px 12px rgba(0,0,0,.25); font-family: Arial, Helvetica, sans-serif; font-size: 10.5pt; line-height: 1.45; color: #111; }
+  .sheet img.tb { display: block; width: 100%; }
+  .sheet .corpo { padding: 8mm 14mm 6mm; }
+  .sheet table.page { width: 100%; border-collapse: collapse; }
+  .sheet .sp-top, .sheet .sp-bot { display: none; }
+  .sheet h1 { font-size: 15pt; text-align: center; letter-spacing: .03em; margin: 2mm 0 1mm; color: #2b2e32; }
+  .sheet .sub { text-align: center; color: #7a5f2b; margin-bottom: 5mm; font-size: 10pt; }
+  .sheet h2 { font-size: 11pt; margin: 6mm 0 2mm; padding-bottom: 1mm; border-bottom: 1.5px solid #b8975a; color: #2b2e32; text-transform: uppercase; letter-spacing: .03em; break-after: avoid; }
+  .sheet h3 { font-size: 10.5pt; margin: 4mm 0 1.5mm; break-after: avoid; }
+  .sheet p { color: #111; margin: 0 0 2mm; text-align: justify; }
+  .sheet table.t { width: 100%; border-collapse: collapse; font-size: 9pt; margin: 2mm 0 3mm; }
+  .sheet table.t th { background: #3a3d42; color: #fff; text-align: left; padding: 3px 5px; font-size: 8pt; text-transform: uppercase; letter-spacing: .03em; }
+  .sheet table.t td { border-bottom: 1px solid #ccc; padding: 3px 5px; vertical-align: top; }
+  .sheet table.t .r { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
+  .sheet table.t tr { break-inside: avoid; }
+  .sheet table.t tr.total td { font-weight: 700; border-top: 2px solid #3a3d42; border-bottom: none; }
+  .sheet table.t tr.off td { color: #888; text-decoration: line-through; }
+  .sheet table.id td:first-child { width: 36%; font-weight: 700; background: #f3ecdd; }
+  .sheet .avl-calc { font-size: 8.5pt; background: #f6f2e8; border-radius: 4px; padding: 3px 6px; margin: 2mm 0; color: #222; }
+  .sheet .avl-table { font-size: 8pt; }
+  .sheet .avl-table th { color: #444; }
+  .sheet .bem { break-inside: avoid-page; margin-bottom: 5mm; border: 1px solid #ccc; border-radius: 4px; padding: 3mm 4mm; }
+  .sheet .bem h3 { margin-top: 0; }
+  .sheet .destaque { background: #f3ecdd; border-left: 4px solid #b8975a; padding: 3mm 4mm; margin: 3mm 0; }
+  .sheet .assin { margin-top: 14mm; text-align: center; break-inside: avoid; }
+  .sheet .assin .linha { width: 70mm; border-top: 1px solid #000; margin: 0 auto 1mm; }
+  .sheet .assin p { text-align: center; margin: 0; }
+  .sheet .quebra { break-before: page; }
+  .sheet [contenteditable="true"] { outline: 1px dashed #b8975a; }
+
+  /* ── impressão: cabeçalho e rodapé do papel timbrado em todas as páginas ── */
+  @page { size: A4; margin: 0; }
+  @media print {
+    html, body { background: #fff !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    .tools, .avl-topbar, .avl-syncbar { display: none !important; }
+    .sheet { box-shadow: none; width: auto; margin: 0; }
+    .sheet img.tb.fix-top { position: fixed; top: 0; left: 0; width: 210mm; }
+    .sheet img.tb.fix-bot { position: fixed; bottom: 0; left: 0; width: 210mm; }
+    .sheet .sp-top { display: block; height: 31mm; }
+    .sheet .sp-bot { display: block; height: 14mm; }
+    .sheet .corpo { padding: 2mm 15mm 0; }
+    .sheet img.tb.scr { display: none; }
+  }
+  @media screen { .sheet img.tb.fix-top, .sheet img.tb.fix-bot { display: none; } }
+</style>
+</head>
+<body>
+  <div id="topo"></div>
+  <div class="tools">
+    <div id="banner"></div>
+    <div class="avl-row">
+      <a class="avl-btn ghost" id="voltar" href="#" style="background:#fff;">← Voltar</a>
+      <button class="avl-btn gold" onclick="window.print()">Imprimir / salvar em PDF</button>
+      <button class="avl-btn ghost" style="background:#fff;" onclick="alternarEdicao(this)">Editar texto antes de imprimir</button>
+    </div>
+    <p style="margin:6px 0 0;font-size:.8rem;">Dica: na janela de impressão, escolha “Salvar como PDF”, papel A4, margens “Nenhuma” e ative “Gráficos de segundo plano”.</p>
+  </div>
+  <div class="sheet" id="sheet"></div>
+
+  <script src="calc.js"></script>
+  <script src="sync.js"></script>
+  <script src="_shared.js"></script>
+  <script>
+    avlRequireLogin(); // sem sessão: redireciona para o login
+    var C = AVLCALC, AV_ID = avlQS("id");
+    document.getElementById("voltar").href = "avaliacao.html?id=" + AV_ID + "#resumo";
+
+    var ESTADO_NOME = {}; C.ESTADOS.forEach(function (e) { ESTADO_NOME[e.cod] = e.cod.toUpperCase() + " — " + e.nome; });
+    var PROP = { propria: "Própria", leasing: "Leasing", comodato: "Comodato/locação", terceiro: "Terceiros", socio: "Sócio" };
+    var ONUS = { nenhum: "Nenhum", alienacao_fiduciaria: "Alienação fiduciária", reserva_dominio: "Reserva de domínio", penhora: "Penhora", outro: "Outro" };
+    var FUNC = { nao_observado: "não observado", observado: "observado em operação", completo: "observado em operação, com produção e manutenção relatadas" };
+
+    function linhasTexto(t) { return String(t || "").split(/\n+/).filter(function (x) { return x.trim(); }).map(function (x) { return "<p>" + esc(x) + "</p>"; }).join(""); }
+
+    async function montar() {
+      var D = await avlCarregar(AV_ID);
+      if (!D.av) { document.getElementById("sheet").innerHTML = '<div class="corpo"><p>Avaliação não encontrada neste aparelho.</p></div>'; return; }
+      var av = D.av, r = C.avaliarTudo(av, D.bens, D.cots), t = r.totais;
+      document.title = "Laudo — " + (av.titulo || "avaliação");
+      var pend = r.itens.filter(function (i) { return i.res.alertas.length || i.res.valor_total === null; }).length;
+      document.getElementById("banner").innerHTML = pend ? '<div class="pend-banner">⚠ ' + pend + ' bem/bens com pendências ou sem valor. Confira a aba “Resumo e cálculo” antes de emitir o laudo.</div>' : "";
+
+      var mercVenda = av.tipo_valor === "mercado_venda";
+      var tipoValor = mercVenda
+        ? "valor de mercado para venda (desimobilização) — valor provável pelo qual o bem seria vendido, no estado e no local em que se encontra"
+        : "valor de mercado em uso (preço de saída) — valor provável do bem, no estado em que se encontrava e instalado, na data-base";
+      var proprios = r.itens.filter(function (i) { return i.proprio; });
+      var naoProp = r.itens.filter(function (i) { return !i.proprio; });
+      var comOnus = proprios.filter(function (i) { return i.bem.onus && i.bem.onus !== "nenhum"; });
+
+      var h = '<img class="tb scr" src="assets/timbrado-topo.jpg" alt="">' +
+        '<img class="tb fix-top" src="assets/timbrado-topo.jpg" alt=""><img class="tb fix-bot" src="assets/timbrado-rodape.jpg" alt="">' +
+        '<table class="page"><thead><tr><td><div class="sp-top"></div></td></tr></thead><tfoot><tr><td><div class="sp-bot"></div></td></tr></tfoot><tbody><tr><td class="corpo">';
+
+      h += '<h1>LAUDO DE AVALIAÇÃO</h1><div class="sub">Máquinas e equipamentos industriais</div>';
+      h += '<table class="t id"><tbody>' +
+        row("Processo / referência", av.processo) + row("Contratante", av.cliente) + row("Empresa avaliada", av.empresa_avaliada) +
+        row("Local da vistoria", av.local_vistoria) + row("Finalidade", av.finalidade) + row("Tipo de valor", mercVenda ? "Valor de mercado para venda" : "Valor de mercado em uso (preço de saída)") +
+        row("Data-base da avaliação", avlFmtData(av.data_base)) + row("Data da vistoria", avlFmtData(av.data_vistoria)) +
+        row("Responsável técnico", "Leo — Engenheiro Mecânico — CREA-SC 182876-8") + row("ART nº", av.art_numero) + '</tbody></table>';
+
+      h += '<h2>1. Objeto e finalidade</h2><p>O presente laudo tem por objeto a avaliação das máquinas e equipamentos' + (av.empresa_avaliada ? ' da empresa <b>' + esc(av.empresa_avaliada) + '</b>' : '') +
+        ', para fins de <b>' + esc((av.finalidade || "").toLowerCase()) + '</b>, na data-base de <b>' + esc(avlFmtData(av.data_base) || "—") + '</b>. Foram avaliados <b>' + t.n_bens + '</b> item(ns), totalizando <b>' + t.n_unidades + '</b> unidade(s).</p>';
+
+      h += '<h2>2. Metodologia</h2>' +
+        '<p>A avaliação seguiu as diretrizes da ABNT NBR 14653-1 (Avaliação de bens — Procedimentos gerais) e da ABNT NBR 14653-5 (Máquinas, equipamentos, instalações e bens industriais em geral). O valor determinado é o <b>' + tipoValor + '</b>.</p>' +
+        '<p><b>Método comparativo direto de dados de mercado.</b> Sempre que existiu mercado de bens usados, o valor foi obtido a partir de dados de mercado (ofertas e transações) de bens similares, homogeneizados por fatores: oferta (Ff), idade e estado de conservação (Fid, pela razão entre os fatores K da curva de depreciação do bem avaliado e do dado de mercado), estado (Fest), capacidade (Fcap) e opcionais (Fop). A amostra foi saneada, descartando-se dados fora de ±30 % da média; o resultado é a média dos dados remanescentes, com campo de arbítrio de ± ' + C.fmtNum(C.num(av.margem_arbitrio) == null ? 15 : C.num(av.margem_arbitrio), 0) + ' %.</p>' +
+        '<p><b>Método da quantificação de custo (custo de reedição).</b> Na falta de mercado de usados, o valor foi obtido a partir do valor do bem novo (cotações de similares), deduzida a depreciação física, a obsolescência funcional ou econômica e o custo de adequação à NR-12 ou de reparos necessários. A depreciação foi calculada pela curva de mercado do IBAPE (fator K em função da relação idade/vida útil, para bens em estado bom ou regular), por Ross-Heidecke (coeficiente de estado de conservação) ou linear, conforme indicado na memória de cálculo de cada bem. As vidas úteis de referência seguem o Estudo de Vidas Úteis do IBAPE/SP, e não a vida contábil.</p>' +
+        '<p><b>Grau de fundamentação.</b> Para cada bem foi atribuído o grau de fundamentação conforme os critérios de pontuação da NBR 14653-5 (vistoria, observação do funcionamento, quantidade e qualidade dos dados, e critério de depreciação).</p>';
+
+      h += '<h2>3. Vistoria</h2><p>A vistoria foi realizada em ' + esc(avlFmtData(av.data_vistoria) || "—") + (av.local_vistoria ? ', em ' + esc(av.local_vistoria) : '') + ', com identificação de cada bem (fabricante, modelo, número de série e ano de fabricação), verificação do estado de conservação, observação do funcionamento sempre que possível e registro fotográfico. A idade dos bens foi calculada até a data-base.</p>';
+
+      h += '<h2>4. Resultado da avaliação</h2><table class="t"><thead><tr><th>Nº</th><th>Descrição</th><th>Fabr. / modelo</th><th>Ano</th><th>Estado</th><th>Método</th><th class="r">Valor un.</th><th class="r">Qtd</th><th class="r">Valor total</th><th>Grau</th></tr></thead><tbody>';
+      proprios.forEach(function (i) {
+        var b = i.bem, x = i.res;
+        h += '<tr><td>' + esc(b.numero) + '</td><td>' + esc(b.descricao) + (b.tag ? ' <small>(' + esc(b.tag) + ')</small>' : '') + '</td><td>' + esc([b.fabricante, b.modelo].filter(Boolean).join(" ")) + '</td><td>' + esc(b.ano_fabricacao || "") + '</td><td>' + esc((b.estado || "").toUpperCase()) +
+          '</td><td>' + esc(metodoCurto(b.metodo)) + '</td><td class="r">' + esc(C.brl(x.valor)) + '</td><td class="r">' + x.qtd + '</td><td class="r">' + esc(C.brl(x.valor_total)) + '</td><td>' + (x.grau.grau || "—") + '</td></tr>';
+      });
+      h += '<tr class="total"><td colspan="8">VALOR TOTAL DOS BENS</td><td class="r">' + esc(C.brl(t.proprios)) + '</td><td></td></tr></tbody></table>';
+      h += '<div class="destaque"><b>Valor total dos bens avaliados: ' + esc(C.brl(t.proprios)) + '</b> (' + esc(C.extenso(t.proprios)) + '), na data-base de ' + esc(avlFmtData(av.data_base) || "—") + '.</div>';
+      if (t.n_sem_valor) h += '<p><i>Atenção: ' + t.n_sem_valor + ' item(ns) ainda sem valor e não incluído(s) no total.</i></p>';
+
+      if (naoProp.length || comOnus.length || (av.vlf_ativo && t.vlf)) {
+        h += '<h2>5. Informações complementares</h2>';
+        if (naoProp.length) {
+          h += '<h3>Bens que não pertencem à sociedade (excluídos do total)</h3><table class="t"><thead><tr><th>Nº</th><th>Descrição</th><th>Condição</th><th class="r">Valor de mercado (informativo)</th></tr></thead><tbody>' +
+            naoProp.map(function (i) { return '<tr><td>' + esc(i.bem.numero) + '</td><td>' + esc(i.bem.descricao) + '</td><td>' + esc(PROP[i.bem.propriedade] || i.bem.propriedade) + '</td><td class="r">' + esc(C.brl(i.res.valor_total)) + '</td></tr>'; }).join("") + '</tbody></table>';
+        }
+        if (comOnus.length) {
+          h += '<h3>Bens com ônus (valor do bem não abatido da dívida)</h3><table class="t"><thead><tr><th>Nº</th><th>Descrição</th><th>Ônus</th><th>Credor</th><th class="r">Saldo devedor informado</th></tr></thead><tbody>' +
+            comOnus.map(function (i) { var b = i.bem; return '<tr><td>' + esc(b.numero) + '</td><td>' + esc(b.descricao) + '</td><td>' + esc(ONUS[b.onus] || b.onus) + '</td><td>' + esc(b.onus_credor) + '</td><td class="r">' + esc(C.brl(C.num(b.onus_saldo))) + '</td></tr>'; }).join("") +
+            '<tr class="total"><td colspan="4">Total informado</td><td class="r">' + esc(C.brl(t.saldo_onus)) + '</td></tr></tbody></table><p>O saldo devedor é informativo e deve ser considerado no passivo da sociedade, sem abatimento do valor do bem.</p>';
+        }
+        if (av.vlf_ativo && t.vlf) h += '<h3>Valor de liquidação forçada (informativo)</h3><p>Considerando custos de venda de ' + C.fmtNum(C.num(av.vlf_custos), 1) + ' %, taxa de ' + C.fmtNum(C.num(av.vlf_juros_mensal), 2) + ' % ao mês e prazo de comercialização de ' + C.fmtNum(C.num(av.vlf_meses), 0) + ' meses, o valor de liquidação forçada dos bens próprios é de <b>' + esc(C.brl(t.vlf)) + '</b>. Este valor não substitui o valor de mercado adotado.</p>';
+      }
+
+      var n = (naoProp.length || comOnus.length || (av.vlf_ativo && t.vlf)) ? 6 : 5;
+      if ((av.pressupostos || "").trim() || (av.ressalvas || "").trim()) {
+        h += '<h2>' + n + '. Pressupostos e ressalvas</h2>' + linhasTexto(av.pressupostos) + linhasTexto(av.ressalvas); n++;
+      }
+      h += '<div style="break-inside:avoid"><h2>' + n + '. Conclusão</h2><p>Com base na vistoria realizada, nos dados de mercado pesquisados e nos critérios descritos, o valor dos bens avaliados, na data-base de ' + esc(avlFmtData(av.data_base) || "—") + ', é de <b>' + esc(C.brl(t.proprios)) + '</b> (' + esc(C.extenso(t.proprios)) + ').</p>' +
+        '<p>Este laudo contém ' + (r.itens.length ? 'o Anexo A, com a ficha e a memória de cálculo de cada bem' : 'o resumo da avaliação') + '.</p>';
+      h += '<p style="margin-top:6mm;">' + esc("Três Barras/SC, " + dataExtenso(new Date())) + '.</p>' +
+        '<div class="assin"><div class="linha"></div><p><b>Leo</b></p><p>Engenheiro Mecânico — CREA-SC 182876-8</p>' + (av.art_numero ? '<p>ART nº ' + esc(av.art_numero) + '</p>' : '') + '<p>Methodous Consultoria</p></div></div>';
+
+      // Anexo A
+      if (r.itens.length) {
+        h += '<div class="quebra"></div><h2>Anexo A — Fichas e memória de cálculo</h2>';
+        r.itens.forEach(function (i) {
+          var b = i.bem, x = i.res, cs = D.cots.filter(function (c) { return c.bem_id === b.id && !c.excluido; });
+          h += '<div class="bem"><h3>Item ' + esc(b.numero) + ' — ' + esc(b.descricao) + (b.quantidade > 1 ? ' (' + b.quantidade + ' un.)' : '') + (i.proprio ? '' : ' — <i>' + esc(PROP[b.propriedade] || b.propriedade) + '</i>') + '</h3>' +
+            '<table class="t id"><tbody>' +
+            row("Fabricante / modelo / série", [b.fabricante, b.modelo, b.serie].filter(Boolean).join(" / ")) +
+            row("Ano de fabricação", b.ano_fabricacao) + row("Capacidade / comando", [b.capacidade, b.comando].filter(Boolean).join(" · ")) +
+            row("Estado de conservação", ESTADO_NOME[b.estado] || "") + row("Funcionamento", FUNC[b.funcionamento] || "") +
+            row("Manutenção / regime", [b.manutencao, b.regime].filter(Boolean).join(" · ")) + row("Reformas / retrofit", b.retrofit) +
+            row("NR-12", ({ conforme: "Conforme", nao_conforme: "Não conforme" + (C.num(b.nr12_custo) ? " — adequação estimada em " + C.brl(C.num(b.nr12_custo)) : ""), nao_avaliado: "Não avaliada", nao_aplica: "Não se aplica" })[b.nr12] || "") +
+            row("Obsolescência", b.obsolescencia) + row("Fotos (arquivos)", (b.fotos_nomes || []).join(", ") || (b.fotos_qtd ? b.fotos_qtd + " foto(s)" : "")) + row("Observações", b.observacoes) +
+            '</tbody></table>' + avlMemoriaHtml(b, x);
+          if (cs.length) {
+            h += '<table class="t"><thead><tr><th>Dado</th><th>Fonte</th><th>Referência</th><th>Data</th><th>Descrição</th></tr></thead><tbody>' +
+              cs.map(function (c, k) { return '<tr><td>' + (k + 1) + ' (' + esc(c.tipo) + ')</td><td>' + esc(c.fonte) + '</td><td>' + esc(c.referencia) + '</td><td>' + esc(avlFmtData(c.data_coleta)) + '</td><td>' + esc(c.descricao) + '</td></tr>'; }).join("") + '</tbody></table>';
+          }
+          if (b.metodo === "manual") h += '<p><b>Justificativa do arbitramento:</b> ' + esc(b.justificativa_manual) + '</p>';
+          h += '<p><b>Valor adotado: ' + esc(C.brl(x.valor)) + '</b> · Grau de fundamentação: ' + (x.grau.grau ? x.grau.grau : "—") + ' (' + x.grau.pontos + ' pts: vistoria ' + x.grau.vistoria + ', funcionamento ' + x.grau.funcionamento + ', dados ' + x.grau.dados + ', depreciação ' + x.grau.depreciacao + ')</p></div>';
+        });
+      }
+      h += '</td></tr></tbody></table><img class="tb scr" src="assets/timbrado-rodape.jpg" alt="">';
+      document.getElementById("sheet").innerHTML = h;
+    }
+    function row(k, v) { return (v === null || v === undefined || String(v).trim() === "") ? "" : "<tr><td>" + esc(k) + "</td><td>" + esc(v) + "</td></tr>"; }
+    function metodoCurto(m) { return ({ comparativo: "Comparativo", ibape: "Curva IBAPE", rossheidecke: "Ross-Heidecke", linear: "Linear", sucata: "Sucata", manual: "Arbitrado" })[m] || m; }
+    function dataExtenso(d) { var m = ["janeiro", "fevereiro", "março", "abril", "maio", "junho", "julho", "agosto", "setembro", "outubro", "novembro", "dezembro"]; return d.getDate() + " de " + m[d.getMonth()] + " de " + d.getFullYear(); }
+    function alternarEdicao(btn) {
+      var s = document.getElementById("sheet"), on = s.getAttribute("contenteditable") !== "true";
+      s.setAttribute("contenteditable", on ? "true" : "false");
+      btn.textContent = on ? "Concluir edição" : "Editar texto antes de imprimir";
+    }
+
+    document.getElementById("topo").innerHTML = avlTopbar("Laudo", "avaliacao.html?id=" + AV_ID + "#resumo");
+    montar().then(avlIniciarPagina);
+    window.avlAposSync = function () { if (document.getElementById("sheet").getAttribute("contenteditable") !== "true") montar(); };
+  </script>
+</body>
+</html>

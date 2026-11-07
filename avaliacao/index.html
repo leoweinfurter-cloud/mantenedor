@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#3a3d42">
+<title>Avaliações — Avaliação de Máquinas</title>
+<link rel="stylesheet" href="assets/avaliacao.css">
+</head>
+<body>
+  <div id="topo"></div>
+  <div class="avl-shell">
+    <div class="avl-row between" style="margin-bottom:12px;">
+      <div><h1>Avaliações</h1><p style="margin:0;">Um registro por processo ou contratante</p></div>
+      <button class="avl-btn gold" onclick="novaAvaliacao()">+ Nova avaliação</button>
+    </div>
+    <div id="lista"><p class="avl-empty">Carregando…</p></div>
+  </div>
+
+  <script src="calc.js"></script>
+  <script src="sync.js"></script>
+  <script src="_shared.js"></script>
+  <script>
+    avlRequireLogin(); // sem sessão: redireciona para o login
+    document.getElementById("topo").innerHTML = avlTopbar("Avaliação de Máquinas");
+
+    async function render() {
+      var avs = (await AVL_STORE.all("avaliacoes")).filter(function (a) { return !a.excluido; })
+        .sort(function (a, b) { return String(b.criado_em).localeCompare(String(a.criado_em)); });
+      var bens = await AVL_STORE.all("bens"), cots = await AVL_STORE.all("cotacoes");
+      var el = document.getElementById("lista");
+      if (!avs.length) {
+        el.innerHTML = '<div class="avl-card avl-empty"><p><b>Nenhuma avaliação ainda.</b></p><p>Toque em “+ Nova avaliação” para começar o levantamento.</p></div>';
+        return;
+      }
+      el.innerHTML = avs.map(function (a) {
+        var meus = bens.filter(function (b) { return b.avaliacao_id === a.id && !b.excluido; });
+        var r = AVLCALC.avaliarTudo(a, meus, cots.filter(function (c) { return c.avaliacao_id === a.id && !c.excluido; }));
+        var t = r.totais;
+        return '<a class="avl-item" href="avaliacao.html?id=' + a.id + '">' +
+          '<div class="avl-num">' + t.n_bens + '</div>' +
+          '<div class="avl-item-main"><div class="avl-item-title">' + esc(a.titulo || "(sem título)") + '</div>' +
+          '<div class="avl-item-sub">' + esc([a.cliente, a.empresa_avaliada, a.processo].filter(Boolean).join(" · ") || "—") + '</div>' +
+          '<div class="avl-item-sub">' + (t.n_bens === 1 ? "1 bem" : t.n_bens + " bens") + (t.n_sem_valor ? " · " + t.n_sem_valor + " sem valor" : "") +
+          (a.data_base ? " · data-base " + esc(avlFmtData(a.data_base)) : "") + '</div></div>' +
+          '<div class="avl-item-val">' + esc(AVLCALC.brl(t.proprios)) + '<small>bens próprios</small></div></a>';
+      }).join("");
+    }
+
+    async function novaAvaliacao() {
+      var av = avlNovaAvaliacao();
+      av.titulo = "Nova avaliação";
+      await avlSalvar("avaliacoes", av);
+      window.location.href = "avaliacao.html?id=" + av.id + "#dados";
+    }
+
+    window.avlAposSync = function () { render(); };
+    render().then(avlIniciarPagina);
+  </script>
+</body>
+</html>

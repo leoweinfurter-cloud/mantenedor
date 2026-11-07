@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#3a3d42">
+<title>Ficha do bem — Avaliação de Máquinas</title>
+<link rel="stylesheet" href="assets/avaliacao.css">
+</head>
+<body>
+  <div id="topo"></div>
+  <div class="avl-shell">
+    <div id="resultado"></div>
+    <form id="form" onsubmit="return false"></form>
+    <div id="mercado"></div>
+    <div class="avl-card"><button class="avl-btn danger" onclick="excluirBem()">Excluir este bem</button></div>
+  </div>
+  <div class="avl-actionbar">
+    <a class="avl-btn ghost" id="btn-voltar" href="#">Lista</a>
+    <button class="avl-btn ghost" onclick="duplicar()">Duplicar</button>
+    <button class="avl-btn gold" onclick="salvarENovo()">Salvar e novo bem</button>
+  </div>
+
+  <script src="calc.js"></script>
+  <script src="sync.js"></script>
+  <script src="_shared.js"></script>
+  <script>
+    avlRequireLogin(); // sem sessão: redireciona para o login
+    var C = AVLCALC;
+    var AV_ID = avlQS("av"), BEM_ID = avlQS("id");
+    var av = null, bem = null, cots = [];
+    var pendente = false;
+
+    var OP_ESTADO = C.ESTADOS.map(function (e) { return [e.cod, e.cod.toUpperCase() + " — " + e.nome]; });
+    var OP_VIDA = C.VIDAS_UTEIS.map(function (v) { return [v.ref, v.nome + (v.anos ? " (" + v.anos + " anos)" : "")]; });
+    var OP_METODO = C.METODOS.map(function (m) { return [m.cod, m.nome]; });
+
+    // ── CARGA ───────────────────────────────────────────────────────────
+    async function iniciar() {
+      var D = await avlCarregar(AV_ID);
+      av = D.av;
+      bem = (await AVL_STORE.get("bens", BEM_ID)) || null;
+      if (!av || !bem) { document.querySelector(".avl-shell").innerHTML = '<div class="avl-card avl-empty"><p>Bem não encontrado neste aparelho.</p><a class="avl-btn" href="index.html">Voltar</a></div>'; return; }
+      cots = D.cots.filter(function (c) { return c.bem_id === BEM_ID; });
+      document.getElementById("topo").innerHTML = avlTopbar("Bem " + (bem.numero || ""), "avaliacao.html?id=" + AV_ID + "#bens");
+      document.getElementById("btn-voltar").href = "avaliacao.html?id=" + AV_ID + "#bens";
+      renderForm(); renderMercado(); renderResultado();
+      avlIniciarPagina();
+    }
+
+    // ── FORMULÁRIO ──────────────────────────────────────────────────────
+    function sec(titulo, corpo, aberto, badge) {
+      return '<details class="avl-sec"' + (aberto ? " open" : "") + '><summary>' + esc(titulo) + (badge ? '<span class="avl-sec-badge">' + esc(badge) + '</span>' : '') + '</summary><div class="avl-sec-body">' + corpo + '</div></details>';
+    }
+    function renderForm() {
+      var b = bem, h = "";
+      h += sec("1. Identificação", '<div class="avl-grid c2">' +
+        avlCampo("Nº do item", "numero", b.numero, { tipo: "number", conv: "int" }) +
+        avlCampo("Quantidade (unidades iguais)", "quantidade", b.quantidade, { tipo: "number", conv: "int" }) +
+        avlCampo("Descrição do bem *", "descricao", b.descricao, { cls: "span2", ph: "Ex.: Torno CNC, Injetora 150 t, Compressor de parafuso" }) +
+        avlCampo("TAG / patrimônio", "tag", b.tag) +
+        avlCampo("Cód. contábil", "cod_contabil", b.cod_contabil) +
+        avlCampo("Fabricante", "fabricante", b.fabricante) +
+        avlCampo("Modelo", "modelo", b.modelo) +
+        avlCampo("Nº de série", "serie", b.serie) +
+        avlCampo("Ano de fabricação", "ano_fabricacao", b.ano_fabricacao, { tipo: "number", conv: "int" }) +
+        avlCampo("Ano de aquisição", "ano_aquisicao", b.ano_aquisicao, { tipo: "number", conv: "int" }) +
+        avlCampo("Capacidade / potência", "capacidade", b.capacidade, { ph: "Ex.: 15 kW · 150 t · 240 mm" }) +
+        avlCampo("Comando / opcionais", "comando", b.comando, { ph: "Ex.: CNC Fanuc 0i, Siemens…" }) +
+        avlCampo("Horímetro / contadores", "horimetro", b.horimetro) +
+        avlCampo("Localização na planta", "localizacao", b.localizacao) +
+        avlSelect("Instalação", "integracao", b.integracao, [["isolada", "Máquina isolada"], ["linha", "Integrada a linha de produção"]], { vazio: false, cls: "span2" }) +
+        '</div>', true);
+
+      h += sec("2. Condição e funcionamento", '<div class="avl-grid c2">' +
+        avlSelect("Funcionamento", "funcionamento", b.funcionamento, [["nao_observado", "Não observado"], ["observado", "Observado em operação"], ["completo", "Observado + produção, eficiência e manutenção relatadas"]], { vazio: false, cls: "span2" }) +
+        avlSelect("Estado de conservação", "estado", b.estado, OP_ESTADO, { cls: "span2", ajuda: "Define o coeficiente de depreciação. Curva IBAPE vale para A–D; de E em diante use Ross-Heidecke ou custo de reparo." }) +
+        avlSelect("Manutenção", "manutencao", b.manutencao, [["nenhuma", "Sem manutenção"], ["corretiva", "Só corretiva"], ["preventiva", "Preventiva"], ["preditiva", "Preditiva"]]) +
+        avlSelect("Ambiente", "ambiente", b.ambiente, [["normal", "Normal"], ["agressivo", "Agressivo (corrosivo, poeira, umidade)"]], { vazio: false }) +
+        avlCampo("Regime de trabalho", "regime", b.regime, { ph: "Ex.: 2 turnos, 16 h/dia" }) +
+        avlSelect("Liquidez (mercado de usados)", "liquidez", b.liquidez, [["alta", "Alta — muitos anúncios"], ["media", "Média"], ["baixa", "Baixa — poucos anúncios"]]) +
+        avlCampo("Reformas / retrofit", "retrofit", b.retrofit, { cls: "span2", ph: "Ano, o que foi feito e valor" }) +
+        avlCampo("Idade aparente (anos)", "idade_aparente", b.idade_aparente, { tipo: "number", ajuda: "Opcional: use se houve reforma que rejuvenesceu o bem." }) +
+        '</div>', true);
+
+      h += sec("3. NR-12 e obsolescência", '<div class="avl-grid c2">' +
+        avlSelect("NR-12 (segurança em máquinas)", "nr12", b.nr12, [["nao_avaliado", "Não avaliada"], ["conforme", "Conforme"], ["nao_conforme", "Não conforme"], ["nao_aplica", "Não se aplica"]], { vazio: false }) +
+        avlCampo("Custo de adequação à NR-12 (R$)", "nr12_custo", b.nr12_custo, { tipo: "number" }) +
+        avlCampo("Custo de reparos necessários (R$)", "custo_reparos", b.custo_reparos, { tipo: "number" }) +
+        avlCampo("Fator de obsolescência (≤ 1)", "fobs", b.fobs, { tipo: "number", ajuda: "1,00 = sem obsolescência. Ex.: 0,90 para comando descontinuado." }) +
+        avlCampo("Obsolescência (descrever)", "obsolescencia", b.obsolescencia, { cls: "span2", tipo: "textarea", rows: 2, ph: "Peças, suporte do fabricante, eficiência…" }) +
+        '</div>', false);
+
+      h += sec("4. Propriedade e ônus", '<div class="avl-grid c2">' +
+        avlSelect("Propriedade", "propriedade", b.propriedade, [["propria", "Própria da sociedade"], ["leasing", "Arrendamento mercantil (leasing)"], ["comodato", "Comodato / locação"], ["terceiro", "De terceiros"], ["socio", "Pessoal de sócio"]], { vazio: false, ajuda: "Só os próprios entram no total." }) +
+        avlSelect("Ônus", "onus", b.onus, [["nenhum", "Nenhum"], ["alienacao_fiduciaria", "Alienação fiduciária"], ["reserva_dominio", "Reserva de domínio"], ["penhora", "Penhora"], ["outro", "Outro"]], { vazio: false }) +
+        avlCampo("Credor", "onus_credor", b.onus_credor) +
+        avlCampo("Saldo devedor (R$)", "onus_saldo", b.onus_saldo, { tipo: "number", ajuda: "Informativo: não abater do valor do bem." }) +
+        avlCampo("Valor de aquisição (R$)", "valor_aquisicao", b.valor_aquisicao, { tipo: "number" }) +
+        avlCampo("Valor contábil (R$)", "valor_contabil", b.valor_contabil, { tipo: "number" }) +
+        '</div>', false);
+
+      h += sec("5. Fotos (nomes dos arquivos)", fotosHtml(), false, (b.fotos_qtd || 0) + " foto(s)");
+
+      h += sec("6. Valor e método de cálculo", '<div class="avl-grid c2">' +
+        avlSelect("Método", "metodo", b.metodo, OP_METODO, { vazio: false, cls: "span2" }) +
+        avlSelect("Tipo de bem (vida útil de referência)", "vida_util_ref", b.vida_util_ref, OP_VIDA, { cls: "span2", ajuda: "Estudo de Vidas Úteis IBAPE/SP. A vida contábil (10 % a.a.) não vale como vida útil." }) +
+        avlCampo("Vida útil adotada (anos)", "vida_util_anos", b.vida_util_anos, { tipo: "number" }) +
+        avlCampo("Valor residual (% do novo)", "residual_pct", b.residual_pct, { tipo: "number", ajuda: "Usado em Ross-Heidecke e linear (a curva IBAPE já tem piso de 10 %)." }) +
+        avlCampo("Valor do bem novo (R$)", "valor_novo", b.valor_novo, { tipo: "number", ajuda: "Em branco: usa a média das cotações de novo, se houver." }) +
+        avlCampo("Frete + instalação (R$)", "custos_adicionais", b.custos_adicionais, { tipo: "number" }) +
+        avlCampo("Fonte do valor novo", "valor_novo_fonte", b.valor_novo_fonte, { cls: "span2", ph: "Fabricante, representante, data" }) +
+        avlCampo("Valor arbitrado (R$)", "valor_manual", b.valor_manual, { tipo: "number" }) +
+        avlCampo("Justificativa do arbitramento", "justificativa_manual", b.justificativa_manual, { tipo: "textarea", rows: 2 }) +
+        avlCampo("Peso (kg) — sucata", "peso_kg", b.peso_kg, { tipo: "number" }) +
+        avlCampo("Preço da sucata (R$/kg)", "preco_sucata_kg", b.preco_sucata_kg, { tipo: "number" }) +
+        '</div>', true);
+
+      h += sec("7. Observações", avlCampo("Observações do bem", "observacoes", b.observacoes, { tipo: "textarea", rows: 3 }), false);
+      document.getElementById("form").innerHTML = h;
+    }
+
+    // Fotos: só registramos a quantidade e o nome dos arquivos
+    function proxNomeFoto() {
+      var n = (bem.fotos_nomes || []).length + 1, num = String(bem.numero || 0).padStart(3, "0");
+      return "M" + num + "-" + String(n).padStart(2, "0") + ".jpg";
+    }
+    function fotosHtml() {
+      var nomes = bem.fotos_nomes || [];
+      return '<p>As fotos ficam na galeria/Drive; aqui registramos só quantas são e o nome de cada arquivo. Tire fotos da plaqueta, vista geral, painel e detalhes de desgaste.</p>' +
+        '<div class="avl-chips" id="chips">' + nomes.map(function (n, i) { return '<span class="avl-chip">' + esc(n) + '<button type="button" onclick="rmFoto(' + i + ')" aria-label="Remover">×</button></span>'; }).join("") + '</div>' +
+        '<div class="avl-row"><button type="button" class="avl-btn sm gold" onclick="addFoto()">+ foto (' + esc(proxNomeFoto()) + ')</button>' +
+        '<input id="foto-nome" placeholder="ou digite o nome do arquivo e toque +" style="flex:1;min-width:160px;padding:8px;border:1px solid var(--avl-border);border-radius:8px;font:inherit;">' +
+        '<button type="button" class="avl-btn sm ghost" onclick="addFotoNome()">+</button></div>' +
+        '<div class="avl-grid c2" style="margin-top:10px;">' + avlCampo("Quantidade de fotos", "fotos_qtd", bem.fotos_qtd, { tipo: "number", conv: "int", ajuda: "Atualiza sozinha ao adicionar nomes." }) + '</div>';
+    }
+    function refazFotos() {
+      var d = document.querySelectorAll("details.avl-sec")[4];
+      d.querySelector(".avl-sec-body").innerHTML = fotosHtml();
+      d.querySelector(".avl-sec-badge").textContent = (bem.fotos_qtd || 0) + " foto(s)";
+      agendarSalvar(); renderResultado();
+    }
+    function addFoto() { bem.fotos_nomes = (bem.fotos_nomes || []).concat([proxNomeFoto()]); bem.fotos_qtd = bem.fotos_nomes.length; refazFotos(); }
+    function addFotoNome() {
+      var v = document.getElementById("foto-nome").value.trim(); if (!v) return;
+      bem.fotos_nomes = (bem.fotos_nomes || []).concat([v]); bem.fotos_qtd = bem.fotos_nomes.length; refazFotos();
+    }
+    function rmFoto(i) { bem.fotos_nomes.splice(i, 1); bem.fotos_qtd = bem.fotos_nomes.length; refazFotos(); }
+
+    // Edição dos campos do bem
+    function aoEditarBem(e) {
+      var el = e.target, f = el.getAttribute && el.getAttribute("data-f");
+      if (!f || el.closest("#mercado")) return;
+      var antes = bem[f];
+      bem[f] = avlLer(el);
+      if (f === "vida_util_ref") { // sugere a vida útil de referência
+        var vi = C.vidaUtilInfo(bem.vida_util_ref), ant = C.vidaUtilInfo(antes);
+        if (vi && vi.anos && (bem.vida_util_anos == null || (ant && ant.anos === bem.vida_util_anos))) {
+          bem.vida_util_anos = vi.anos;
+          var campo = document.querySelector('[data-f="vida_util_anos"]'); if (campo) campo.value = vi.anos;
+        }
+      }
+      if (f === "fotos_qtd") { var s = document.querySelector("details.avl-sec:nth-of-type(5) .avl-sec-badge"); if (s) s.textContent = (bem.fotos_qtd || 0) + " foto(s)"; }
+      agendarSalvar(); renderResultado();
+    }
+    document.getElementById("form").addEventListener("input", aoEditarBem);
+    document.getElementById("form").addEventListener("change", aoEditarBem);
+
+    // ── SALVAR ──────────────────────────────────────────────────────────
+    async function salvarAgora() {
+      if (!pendente) return;
+      pendente = false;
+      await avlSalvar("bens", bem);
+      for (var i = 0; i < cots.length; i++) if (cots[i]._mudou) { cots[i]._mudou = false; var c = Object.assign({}, cots[i]); delete c._mudou; await avlSalvar("cotacoes", c); }
+      document.getElementById("topo").querySelector(".avl-brand span:last-child").textContent = "Bem " + (bem.numero || "");
+    }
+    var salvarDeb = avlDebounce(salvarAgora, 500);
+    function agendarSalvar() { pendente = true; salvarDeb(); }
+    document.addEventListener("visibilitychange", function () { if (document.visibilityState === "hidden") salvarAgora(); });
+    window.addEventListener("pagehide", salvarAgora);
+
+    // ── RESULTADO AO VIVO ───────────────────────────────────────────────
+    function renderResultado() {
+      var res = C.avaliarBem(bem, av, cots.filter(function (c) { return !c.excluido; }));
+      var h = '<div class="avl-result"><small>Valor adotado — ' + esc((C.METODOS.filter(function (m) { return m.cod === res.metodo; })[0] || {}).nome || "") + '</small>' +
+        '<div class="big">' + esc(C.brl(res.valor)) + (res.qtd > 1 ? ' <small>× ' + res.qtd + ' = ' + esc(C.brl(res.valor_total)) + '</small>' : '') + '</div>' +
+        '<div class="avl-row" style="margin-top:6px;"><div><small>Campo de arbítrio</small><br>' + esc(C.brl(res.arb_min)) + ' – ' + esc(C.brl(res.arb_max)) + '</div>' +
+        '<div><small>Grau de fundamentação</small><br><b>' + (res.grau.grau ? "Grau " + res.grau.grau : "—") + '</b> · ' + res.grau.pontos + ' pts</div>' +
+        (res.conferencia ? '<div><small>Conferência (' + esc(res.conferencia.metodo) + ')</small><br>' + esc(C.brl(res.conferencia.valor)) + (res.conferencia.dif_pct != null ? ' <small>(' + (res.conferencia.dif_pct >= 0 ? "+" : "") + C.pct(res.conferencia.dif_pct) + ')</small>' : '') + '</div>' : '') +
+        '</div>';
+      if (res.alertas.length) h += '<ul class="avl-alerts">' + res.alertas.map(function (a) { return '<li>' + esc(a) + '</li>'; }).join("") + '</ul>';
+      h += '<details style="margin-top:10px;"><summary style="cursor:pointer;color:#e6d3a8;">Memória de cálculo</summary><div style="color:var(--avl-ink);margin-top:8px;background:#fff;border-radius:8px;padding:8px;">' + avlMemoriaHtml(bem, res) +
+        '<p class="avl-calc">Fundamentação: vistoria ' + res.grau.vistoria + ' · funcionamento ' + res.grau.funcionamento + ' · dados ' + res.grau.dados + ' · depreciação ' + res.grau.depreciacao + ' (3 pts = grau III)</p></div></details></div>';
+      var el = document.getElementById("resultado"), aberto = el.querySelector("details") && el.querySelector("details").open;
+      el.innerHTML = h;
+      if (aberto) el.querySelector("details").open = true;
+      atualizaCalcCotacoes(res);
+    }
+
+    // ── PESQUISA DE MERCADO (cotações) ──────────────────────────────────
+    function renderMercado() {
+      var vis = cots.filter(function (c) { return !c.excluido; });
+      var h = '<details class="avl-sec" open><summary>8. Pesquisa de mercado (' + vis.length + ')</summary><div class="avl-sec-body">' +
+        '<p>Mínimo de 3 dados por bem para Grau III. <b>Oferta</b> = anúncio de usado (aplica fator de oferta). <b>Transação</b> = venda realizada. <b>Novo</b> = cotação do similar novo (para custo de reedição).</p>';
+      if (!vis.length) h += '<p class="avl-empty" style="padding:10px;">Nenhum dado de mercado ainda.</p>';
+      vis.forEach(function (c) { h += cotHtml(c, vis.indexOf(c) + 1); });
+      h += '<div class="avl-row"><button type="button" class="avl-btn sm gold" onclick="addCot(\'oferta\')">+ Oferta de usado</button>' +
+        '<button type="button" class="avl-btn sm ghost" onclick="addCot(\'transacao\')">+ Transação</button>' +
+        '<button type="button" class="avl-btn sm ghost" onclick="addCot(\'novo\')">+ Cotação de novo</button></div></div></details>';
+      document.getElementById("mercado").innerHTML = h;
+    }
+    function cf(c, nome, label, o) { // campo de cotação
+      o = o || {}; var v = c[nome] == null ? "" : c[nome];
+      return '<label class="avl-field' + (o.cls ? " " + o.cls : "") + '"><span>' + esc(label) + '</span><input type="text" ' + (o.num ? 'inputmode="decimal"' : "") + ' value="' + esc(v) + '" data-cot="' + c.id + '" data-f="' + nome + '" data-t="' + (o.conv || (o.num ? "num" : "txt")) + '"' + (o.ph ? ' placeholder="' + esc(o.ph) + '"' : '') + '></label>';
+    }
+    function cotHtml(c, n) {
+      var novo = c.tipo === "novo";
+      var h = '<div class="avl-cot' + (c.incluido === false ? " off" : "") + '" id="cot-' + c.id + '"><div class="avl-cot-head"><b>#' + n + ' · ' + (novo ? "Cotação de novo" : c.tipo === "transacao" ? "Transação" : "Oferta de usado") + '</b>' +
+        '<span class="avl-row"><label class="avl-check"><input type="checkbox" data-cot="' + c.id + '" data-f="incluido" data-t="bool"' + (c.incluido !== false ? " checked" : "") + '><span>Usar</span></label>' +
+        '<button type="button" class="avl-btn sm danger" onclick="rmCot(\'' + c.id + '\')">Excluir</button></span></div><div class="avl-grid c2">' +
+        cf(c, "fonte", "Fonte", { ph: "Site, leiloeiro, fabricante" }) + cf(c, "referencia", "Link / contato / lote") +
+        cf(c, "descricao", "Descrição do dado", { cls: "span2" }) +
+        cf(c, "preco", "Preço (R$)", { num: true }) + cf(c, "data_coleta", "Data da coleta", { ph: "AAAA-MM-DD", conv: "date" });
+      if (!novo) {
+        h += cf(c, "ano", "Ano do bem pesquisado", { num: true, conv: "int" });
+        h += '<label class="avl-field"><span>Estado do dado</span><select data-cot="' + c.id + '" data-f="curva" data-t="txt"><option value="bom"' + (c.curva !== "regular" ? " selected" : "") + '>Bom</option><option value="regular"' + (c.curva === "regular" ? " selected" : "") + '>Regular</option></select></label>';
+        h += cf(c, "ff", "Fator de oferta (Ff)", { num: true, ph: "padrão " + (av.ff_padrao || 0.9) }) + cf(c, "fid", "Fator idade (Fid)", { num: true, ph: "automático" }) +
+          cf(c, "fest", "Fator estado (Fest)", { num: true, ph: "1" }) + cf(c, "fcap", "Fator capacidade (Fcap)", { num: true, ph: "1" }) + cf(c, "fop", "Fator opcionais (Fop)", { num: true, ph: "1" });
+      } else {
+        h += '<label class="avl-check span2"><input type="checkbox" data-cot="' + c.id + '" data-f="direta" data-t="bool"' + (c.direta ? " checked" : "") + '><span>Cotação direta no fabricante (vale Grau III sozinha)</span></label>';
+      }
+      return h + '</div><div class="avl-calc" data-calc="' + c.id + '"></div></div>';
+    }
+    function atualizaCalcCotacoes(res) {
+      res.comparativo.linhas.forEach(function (l) {
+        var el = document.querySelector('[data-calc="' + l.id + '"]'); if (!el) return;
+        el.textContent = l.vh === null ? "Informe o preço." :
+          "Fid " + C.fmtNum(l.fid, 3) + (l.fidAuto ? " (curva IBAPE)" : "") + " · produto dos fatores " + C.fmtNum(l.produto, 3) + " → valor homogeneizado " + C.brl(l.vh) + (l.descartado ? " — descartado no saneamento" : "") + (l.alertas.length ? " ⚠ " + l.alertas.join("; ") : "");
+      });
+      cots.forEach(function (c) { if (c.tipo === "novo") { var el = document.querySelector('[data-calc="' + c.id + '"]'); if (el) el.textContent = c.direta ? "Cotação direta no fabricante." : "Entra na média do valor do bem novo."; } });
+    }
+    document.getElementById("mercado").addEventListener("input", aoEditarCot);
+    document.getElementById("mercado").addEventListener("change", aoEditarCot);
+    function aoEditarCot(e) {
+      var el = e.target, id = el.getAttribute && el.getAttribute("data-cot"); if (!id) return;
+      var c = cots.filter(function (x) { return x.id === id; })[0]; if (!c) return;
+      c[el.getAttribute("data-f")] = avlLer(el); c._mudou = true;
+      if (el.getAttribute("data-f") === "incluido") document.getElementById("cot-" + id).classList.toggle("off", !c.incluido);
+      agendarSalvar(); renderResultado();
+    }
+    async function addCot(tipo) {
+      var c = avlNovaCotacao(AV_ID, BEM_ID, tipo); cots.push(c);
+      await avlSalvar("cotacoes", c);
+      renderMercado(); renderResultado();
+      var el = document.getElementById("cot-" + c.id); if (el) el.scrollIntoView({ behavior: "smooth", block: "center" });
+    }
+    async function rmCot(id) {
+      if (!confirm("Excluir este dado de mercado?")) return;
+      var c = cots.filter(function (x) { return x.id === id; })[0]; c.excluido = true;
+      var copia = Object.assign({}, c); delete copia._mudou; await avlSalvar("cotacoes", copia);
+      cots = cots.filter(function (x) { return x.id !== id; });
+      renderMercado(); renderResultado();
+    }
+
+    // ── AÇÕES ───────────────────────────────────────────────────────────
+    async function excluirBem() {
+      if (!confirm("Excluir este bem?")) return;
+      pendente = false; bem.excluido = true; await avlSalvar("bens", bem);
+      window.location.href = "avaliacao.html?id=" + AV_ID + "#bens";
+    }
+    async function proximoNumero() {
+      var D = await avlCarregar(AV_ID);
+      return D.bens.reduce(function (m, b) { return Math.max(m, b.numero || 0); }, 0) + 1;
+    }
+    async function salvarENovo() {
+      await salvarAgora();
+      var n = avlNovoBem(AV_ID, await proximoNumero());
+      n.localizacao = bem.localizacao; n.integracao = bem.integracao; // mesma área, costuma repetir
+      await avlSalvar("bens", n);
+      window.location.href = "bem.html?av=" + AV_ID + "&id=" + n.id;
+    }
+    async function duplicar() {
+      await salvarAgora();
+      var n = Object.assign({}, bem, { id: avlUuid(), numero: await proximoNumero(), serie: "", tag: "", fotos_nomes: [], fotos_qtd: 0, criado_em: new Date().toISOString() });
+      delete n._dirty; delete n._local_ts; delete n.atualizado_em;
+      await avlSalvar("bens", n);
+      for (var i = 0; i < cots.length; i++) {
+        var c = Object.assign({}, cots[i], { id: avlUuid(), bem_id: n.id }); delete c._mudou; delete c._dirty; delete c._local_ts; delete c.atualizado_em;
+        await avlSalvar("cotacoes", c);
+      }
+      window.location.href = "bem.html?av=" + AV_ID + "&id=" + n.id;
+    }
+
+    window.avlAposSync = function () { /* ficha aberta: não redesenhar durante a edição */ };
+    iniciar();
+  </script>
+</body>
+</html>

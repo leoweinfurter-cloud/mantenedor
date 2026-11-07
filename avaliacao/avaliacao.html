@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#3a3d42">
+<title>Avaliação — Avaliação de Máquinas</title>
+<link rel="stylesheet" href="assets/avaliacao.css">
+</head>
+<body>
+  <div id="topo"></div>
+  <div class="avl-shell">
+    <div class="avl-tabs" id="tabs">
+      <button class="avl-tab" data-tab="bens">Bens</button>
+      <button class="avl-tab" data-tab="resumo">Resumo e cálculo</button>
+      <button class="avl-tab" data-tab="dados">Dados da avaliação</button>
+    </div>
+    <div id="painel"></div>
+  </div>
+  <button class="avl-btn gold avl-fab" id="fab" onclick="novoBem()">+ Novo bem</button>
+
+  <script src="calc.js"></script>
+  <script src="sync.js"></script>
+  <script src="_shared.js"></script>
+  <script>
+    avlRequireLogin(); // sem sessão: redireciona para o login
+    var AV_ID = avlQS("id");
+    var D = null;           // { av, bens, cots }
+    var aba = (location.hash || "#bens").slice(1);
+    var busca = "";
+    var C = AVLCALC;
+
+    async function carregar() {
+      D = await avlCarregar(AV_ID);
+      if (!D.av) { document.getElementById("painel").innerHTML = '<div class="avl-card avl-empty"><p>Avaliação não encontrada neste aparelho.</p><a class="avl-btn" href="index.html">Voltar</a></div>'; document.getElementById("fab").style.display = "none"; return false; }
+      document.getElementById("topo").innerHTML = avlTopbar(D.av.titulo || "Avaliação", "index.html");
+      avlAtualizarBarra();
+      return true;
+    }
+
+    function selecionarAba(a) {
+      aba = a; history.replaceState(null, "", "#" + a);
+      Array.prototype.forEach.call(document.querySelectorAll(".avl-tab"), function (b) { b.classList.toggle("active", b.getAttribute("data-tab") === a); });
+      document.getElementById("fab").style.display = a === "bens" ? "" : "none";
+      render();
+    }
+    document.getElementById("tabs").addEventListener("click", function (e) { var t = e.target.closest(".avl-tab"); if (t) selecionarAba(t.getAttribute("data-tab")); });
+
+    function render() {
+      if (!D || !D.av) return;
+      var el = document.getElementById("painel");
+      if (aba === "dados") el.innerHTML = htmlDados();
+      else if (aba === "resumo") el.innerHTML = htmlResumo();
+      else el.innerHTML = htmlBens();
+    }
+
+    // ── ABA BENS ───────────────────────────────────────────────────────
+    function htmlBens() {
+      var r = C.avaliarTudo(D.av, D.bens, D.cots);
+      var q = busca.trim().toLowerCase();
+      var itens = r.itens.filter(function (i) {
+        if (!q) return true; var b = i.bem;
+        return [b.numero, b.tag, b.descricao, b.fabricante, b.modelo, b.serie, b.localizacao].join(" ").toLowerCase().indexOf(q) >= 0;
+      });
+      var h = '<div class="avl-row between" style="margin-bottom:10px;">' +
+        '<input type="search" id="busca" placeholder="Buscar por nº, TAG, descrição, modelo…" value="' + esc(busca) + '" style="flex:1;min-width:180px;padding:10px;border:1px solid var(--avl-border);border-radius:8px;font:inherit;min-height:44px;">' +
+        '<a class="avl-btn ghost" href="laudo.html?id=' + AV_ID + '">Laudo / PDF</a></div>';
+      if (!r.itens.length) return h + '<div class="avl-card avl-empty"><p><b>Nenhum bem cadastrado.</b></p><p>Toque em “+ Novo bem” e preencha a ficha de vistoria de cada máquina.</p></div>';
+      h += itens.map(function (i) {
+        var b = i.bem, res = i.res;
+        var sub = [b.fabricante, b.modelo, b.ano_fabricacao, b.tag].filter(Boolean).join(" · ");
+        var selo = res.valor_total === null ? '<span class="avl-badge warn">sem valor</span>'
+          : (res.grau.grau ? '<span class="avl-badge ' + (res.grau.grau === "III" ? "ok" : res.grau.grau === "II" ? "" : "warn") + '">Grau ' + res.grau.grau + '</span>' : '<span class="avl-badge warn">s/ grau</span>');
+        var extra = (!i.proprio ? ' <span class="avl-badge mute">' + esc(b.propriedade) + '</span>' : '') + (res.alertas.length ? ' <span class="avl-badge warn">' + res.alertas.length + ' alerta(s)</span>' : '');
+        return '<a class="avl-item" href="bem.html?av=' + AV_ID + '&id=' + b.id + '">' +
+          '<div class="avl-num">' + esc(b.numero || "?") + '</div>' +
+          '<div class="avl-item-main"><div class="avl-item-title">' + esc(b.descricao || "(sem descrição)") + (b.quantidade > 1 ? " ×" + b.quantidade : "") + '</div>' +
+          '<div class="avl-item-sub">' + esc(sub || "—") + '</div><div class="avl-item-sub">' + selo + extra + '</div></div>' +
+          '<div class="avl-item-val">' + esc(C.brl(res.valor_total)) + '<small>' + esc(metodoCurto(b.metodo)) + '</small></div></a>';
+      }).join("");
+      if (!itens.length) h += '<p class="avl-empty">Nenhum bem encontrado para a busca.</p>';
+      return h + '<div class="avl-card" style="margin-top:12px;"><div class="avl-row between"><b>Total dos bens próprios</b><b>' + esc(C.brl(r.totais.proprios)) + '</b></div></div>';
+    }
+    function metodoCurto(m) { return ({ comparativo: "comparativo", ibape: "curva IBAPE", rossheidecke: "Ross-Heidecke", linear: "linear", sucata: "sucata", manual: "arbitrado" })[m] || m; }
+
+    document.getElementById("painel").addEventListener("input", function (e) {
+      if (e.target.id === "busca") { busca = e.target.value; var pos = e.target.selectionStart; render(); var b = document.getElementById("busca"); if (b) { b.focus(); b.setSelectionRange(pos, pos); } }
+    });
+
+    async function novoBem() {
+      var max = D.bens.reduce(function (m, b) { return Math.max(m, b.numero || 0); }, 0);
+      var b = avlNovoBem(AV_ID, max + 1);
+      await avlSalvar("bens", b);
+      window.location.href = "bem.html?av=" + AV_ID + "&id=" + b.id;
+    }
+
+    // ── ABA DADOS ──────────────────────────────────────────────────────
+    function htmlDados() {
+      var a = D.av;
+      return '<div class="avl-card"><h2>Identificação</h2><div class="avl-grid c2">' +
+        avlCampo("Título (uso interno)", "titulo", a.titulo, { cls: "span2" }) +
+        avlCampo("Contratante / escritório", "cliente", a.cliente) +
+        avlCampo("Nº do processo / referência", "processo", a.processo) +
+        avlCampo("Empresa avaliada", "empresa_avaliada", a.empresa_avaliada) +
+        avlCampo("Local da vistoria", "local_vistoria", a.local_vistoria) +
+        avlCampo("Data-base da avaliação", "data_base", a.data_base, { tipo: "date", ajuda: "Data da resolução da sociedade (CPC art. 605). A idade dos bens é calculada a partir dela." }) +
+        avlCampo("Data da vistoria", "data_vistoria", a.data_vistoria, { tipo: "date" }) +
+        avlCampo("Nº da ART (CREA-SC)", "art_numero", a.art_numero) +
+        avlCampo("Finalidade", "finalidade", a.finalidade, { cls: "span2" }) +
+        avlSelect("Tipo de valor", "tipo_valor", a.tipo_valor, [["mercado_em_uso", "Valor de mercado — bem instalado e em uso (preço de saída)"], ["mercado_venda", "Valor de mercado para venda (desimobilização)"]], { vazio: false, cls: "span2" }) +
+        '</div></div>' +
+        '<div class="avl-card"><h2>Parâmetros de cálculo</h2><div class="avl-grid c2">' +
+        avlCampo("Fator de oferta padrão", "ff_padrao", a.ff_padrao, { tipo: "number", ajuda: "Aplicado aos anúncios (ofertas). Usual: 0,85 a 0,95." }) +
+        avlCampo("Campo de arbítrio (± %)", "margem_arbitrio", a.margem_arbitrio, { tipo: "number" }) +
+        avlCheck("Calcular valor de liquidação forçada (informativo)", "vlf_ativo", a.vlf_ativo, { cls: "span2" }) +
+        avlCampo("Custos de venda (%)", "vlf_custos", a.vlf_custos, { tipo: "number" }) +
+        avlCampo("Taxa de desconto (% ao mês)", "vlf_juros_mensal", a.vlf_juros_mensal, { tipo: "number" }) +
+        avlCampo("Prazo de comercialização (meses)", "vlf_meses", a.vlf_meses, { tipo: "number" }) +
+        '</div></div>' +
+        '<div class="avl-card"><h2>Textos do laudo</h2><div class="avl-grid">' +
+        avlCampo("Pressupostos e fatores limitantes", "pressupostos", a.pressupostos, { tipo: "textarea", rows: 4, ph: "Ex.: bens avaliados no estado em que se encontravam na data da vistoria; documentação fornecida pela empresa…" }) +
+        avlCampo("Ressalvas", "ressalvas", a.ressalvas, { tipo: "textarea", rows: 3 }) +
+        avlCampo("Observações internas (não vão para o laudo)", "observacoes", a.observacoes, { tipo: "textarea", rows: 2 }) +
+        '</div></div>' +
+        '<div class="avl-card"><button class="avl-btn danger" onclick="excluirAvaliacao()">Excluir esta avaliação</button></div>';
+    }
+    var salvarAv = avlDebounce(async function () { await avlSalvar("avaliacoes", D.av); document.getElementById("topo").innerHTML = avlTopbar(D.av.titulo || "Avaliação", "index.html"); avlAtualizarBarra(); }, 500);
+    document.getElementById("painel").addEventListener("input", function (e) {
+      var f = e.target.getAttribute && e.target.getAttribute("data-f");
+      if (!f || aba !== "dados") return;
+      D.av[f] = avlLer(e.target); salvarAv();
+    });
+    document.getElementById("painel").addEventListener("change", function (e) {
+      var f = e.target.getAttribute && e.target.getAttribute("data-f");
+      if (!f || aba !== "dados") return;
+      D.av[f] = avlLer(e.target); salvarAv();
+    });
+    async function excluirAvaliacao() {
+      if (!confirm("Excluir esta avaliação e todos os seus bens? (Pode ser desfeito apenas pelo banco de dados.)")) return;
+      D.av.excluido = true; await avlSalvar("avaliacoes", D.av);
+      window.location.href = "index.html";
+    }
+
+    // ── ABA RESUMO ─────────────────────────────────────────────────────
+    function htmlResumo() {
+      var r = C.avaliarTudo(D.av, D.bens, D.cots), t = r.totais;
+      var h = '<div class="avl-result"><small>Total dos bens próprios (valor adotado)</small><div class="big">' + esc(C.brl(t.proprios)) + '</div>' +
+        '<div class="avl-row" style="margin-top:6px;"><div><small>Bens</small><br><b>' + t.n_bens + '</b> (' + t.n_unidades + ' un.)</div>' +
+        '<div><small>Sem valor</small><br><b>' + t.n_sem_valor + '</b></div>' +
+        '<div><small>Em Grau III</small><br><b>' + esc(C.pct(t.pct_grau_III, 0)) + '</b> do valor</div></div></div>';
+      if (t.nao_pertencentes || t.saldo_onus || (D.av.vlf_ativo && t.vlf)) {
+        h += '<div class="avl-card"><h3>Informações complementares</h3><table class="avl-table"><tbody>' +
+          (t.nao_pertencentes ? '<tr><td>Bens não pertencentes à sociedade (leasing, comodato, terceiros, sócios) — fora do total</td><td class="r">' + esc(C.brl(t.nao_pertencentes)) + '</td></tr>' : '') +
+          (t.saldo_onus ? '<tr><td>Saldo devedor de bens com ônus (informativo — lançar no passivo, não abater do bem)</td><td class="r">' + esc(C.brl(t.saldo_onus)) + '</td></tr>' : '') +
+          (D.av.vlf_ativo && t.vlf ? '<tr><td>Valor de liquidação forçada dos bens próprios (informativo)</td><td class="r">' + esc(C.brl(t.vlf)) + '</td></tr>' : '') +
+          '</tbody></table></div>';
+      }
+      h += '<div class="avl-card"><h3>Valor por bem</h3><div class="avl-table-wrap"><table class="avl-table"><thead><tr><th>Nº</th><th>Bem</th><th>Método</th><th class="r">Valor un.</th><th class="r">Qtd</th><th class="r">Total</th><th>Grau</th></tr></thead><tbody>';
+      r.itens.forEach(function (i) {
+        var b = i.bem, x = i.res;
+        h += '<tr' + (i.proprio ? '' : ' class="off"') + '><td>' + esc(b.numero) + '</td><td><a href="bem.html?av=' + AV_ID + '&id=' + b.id + '">' + esc(b.descricao || "(sem descrição)") + '</a></td><td>' + esc(metodoCurto(b.metodo)) + '</td>' +
+          '<td class="r">' + esc(C.brl(x.valor)) + '</td><td class="r">' + x.qtd + '</td><td class="r">' + esc(C.brl(x.valor_total)) + '</td><td>' + (x.grau.grau || "—") + '</td></tr>';
+      });
+      h += '<tr class="total"><td colspan="5">Total (bens próprios)</td><td class="r">' + esc(C.brl(t.proprios)) + '</td><td></td></tr></tbody></table></div></div>';
+      var comAl = r.itens.filter(function (i) { return i.res.alertas.length; });
+      h += '<div class="avl-card"><h3>Pendências e alertas (' + comAl.length + ' bem/bens)</h3>';
+      if (!comAl.length) h += '<p>Nenhum alerta. 👍</p>';
+      comAl.forEach(function (i) {
+        h += '<p style="margin:8px 0 2px;"><b><a href="bem.html?av=' + AV_ID + '&id=' + i.bem.id + '">' + esc(i.bem.numero + " — " + (i.bem.descricao || "sem descrição")) + '</a></b></p><ul class="avl-alerts">' +
+          i.res.alertas.map(function (a) { return '<li>' + esc(a) + '</li>'; }).join("") + '</ul>';
+      });
+      h += '</div><a class="avl-btn gold" href="laudo.html?id=' + AV_ID + '" style="width:100%;">Abrir laudo para imprimir / salvar em PDF</a>';
+      return h;
+    }
+
+    window.avlAposSync = async function () {
+      var ae = document.activeElement;
+      if (ae && /^(INPUT|TEXTAREA|SELECT)$/.test(ae.tagName) && document.getElementById("painel").contains(ae)) return; // não atrapalhar a digitação
+      await carregar(); render();
+    };
+    carregar().then(function (ok) { if (ok) { selecionarAba(["bens", "resumo", "dados"].indexOf(aba) >= 0 ? aba : "bens"); avlIniciarPagina(); } });
+  </script>
+</body>
+</html>
