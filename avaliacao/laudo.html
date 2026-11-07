@@ -71,6 +71,7 @@
   <div class="sheet" id="sheet"></div>
 
   <script src="calc.js"></script>
+  <script src="checklist.js"></script>
   <script src="sync.js"></script>
   <script src="_shared.js"></script>
   <script>
@@ -168,7 +169,7 @@
             row("Estado de conservação", ESTADO_NOME[b.estado] || "") + row("Funcionamento", FUNC[b.funcionamento] || "") +
             row("Manutenção / regime", [b.manutencao, b.regime].filter(Boolean).join(" · ")) + row("Reformas / retrofit", b.retrofit) +
             row("NR-12", ({ conforme: "Conforme", nao_conforme: "Não conforme" + (C.num(b.nr12_custo) ? " — adequação estimada em " + C.brl(C.num(b.nr12_custo)) : ""), nao_avaliado: "Não avaliada", nao_aplica: "Não se aplica" })[b.nr12] || "") +
-            row("Obsolescência", b.obsolescencia) + row("Fotos (arquivos)", (b.fotos_nomes || []).join(", ") || (b.fotos_qtd ? b.fotos_qtd + " foto(s)" : "")) + row("Observações", b.observacoes) +
+            row("Obsolescência", b.obsolescencia) + row("Fotos (arquivos)", (b.fotos_nomes || []).join(", ") || (b.fotos_qtd ? b.fotos_qtd + " foto(s)" : "")) + row("Observações", b.observacoes) + chkLinhaLaudo(b) +
             '</tbody></table>' + avlMemoriaHtml(b, x);
           if (cs.length) {
             h += '<table class="t"><thead><tr><th>Dado</th><th>Fonte</th><th>Referência</th><th>Data</th><th>Descrição</th></tr></thead><tbody>' +
@@ -180,6 +181,11 @@
       }
       h += '</td></tr></tbody></table><img class="tb scr" src="assets/timbrado-rodape.jpg" alt="">';
       document.getElementById("sheet").innerHTML = h;
+    }
+    function chkLinhaLaudo(b) {
+      var r = AVLCHECK.resumo(b.checklist); if (!r.respondidos) return "";
+      var nc = AVLCHECK.textoNC(b.checklist);
+      return row("Checklist de vistoria", r.respondidos + " de " + r.total + " itens verificados; " + (nc.length ? nc.length + " não conformidade(s): " + nc.join("; ") : "nenhuma não conformidade registrada") + ".");
     }
     function row(k, v) { return (v === null || v === undefined || String(v).trim() === "") ? "" : "<tr><td>" + esc(k) + "</td><td>" + esc(v) + "</td></tr>"; }
     function metodoCurto(m) { return ({ comparativo: "Comparativo", ibape: "Curva IBAPE", rossheidecke: "Ross-Heidecke", linear: "Linear", sucata: "Sucata", manual: "Arbitrado" })[m] || m; }

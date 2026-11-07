@@ -2,10 +2,10 @@
 // Guarda o "app shell" para o levantamento em campo funcionar sem internet.
 // NUNCA intercepta chamadas ao Supabase (outra origem): os dados vivem no
 // IndexedDB e sincronizam pelo código da página.
-var CACHE = "avl-shell-v1";
+var CACHE = "avl-shell-v2";
 var SHELL = [
   "./", "index.html", "login.html", "avaliacao.html", "bem.html", "laudo.html",
-  "calc.js", "sync.js", "_shared.js", "assets/avaliacao.css",
+  "calc.js", "checklist.js", "sync.js", "_shared.js", "assets/avaliacao.css",
   "assets/timbrado-topo.jpg", "assets/timbrado-rodape.jpg"
 ];
 

@@ -36,7 +36,7 @@ function ok(c, m) { if (!c) { falhas.push(m); console.log('  FAIL ' + m); } else
     return route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify(rows) });
   });
   const page = await ctx.newPage();
-  const erros = []; page.on('pageerror', e => erros.push(e.message)); page.on('console', m => { if (m.type() === 'error' && !/Failed to load resource/.test(m.text())) erros.push(m.text()); });
+  const erros = []; page.on('pageerror', e => erros.push(e.message + ' @ ' + page.url() + ' ' + (e.stack||'').split('\n').slice(1,3).join('|'))); page.on('console', m => { if (m.type() === 'error' && !/Failed to load resource/.test(m.text())) erros.push(m.text()); });
   const B = 'http://localhost:8765/avaliacao/';
 
   console.log('Login');
@@ -93,6 +93,14 @@ function ok(c, m) { if (!c) { falhas.push(m); console.log('  FAIL ' + m); } else
   await page.selectOption('[data-f="propriedade"]', 'propria'); await page.selectOption('[data-f="onus"]', 'alienacao_fiduciaria'); await page.fill('[data-f="onus_saldo"]', '20000'); await page.fill('[data-f="onus_credor"]', 'Banco X');
   await page.waitForTimeout(300);
   const t2 = await page.textContent('#resultado'); ok(/R\$\s*[\d.]+,\d{2}/.test(t2) && !/NaN|undefined/.test(t2), 'compressor tem valor e sem NaN');
+  console.log('Checklist de vistoria (compressor)');
+  await page.click('#ck-id_placa .avl-ck-b.ok'); await page.click('#ck-est_vazamento .avl-ck-b.nc');
+  await page.fill('#ck-est_vazamento .avl-ck-n', 'óleo no cabeçote'); await page.click('#ck-nr_emerg .avl-ck-b.nc');
+  ok(/2 não conforme/.test(await page.textContent('#ck-topo')) && /3\/48/.test(await page.textContent('#sec-chk > summary')), 'resumo do checklist atualiza (2 NC)');
+  await page.click('text=Marcar NR-12 como'); ok(await page.inputValue('[data-f="nr12"]') === 'nao_conforme', 'atalho aplica NR-12 não conforme na ficha');
+  await page.click('text=Copiar não conformidades'); ok(/óleo no cabeçote/.test(await page.inputValue('[data-f="observacoes"]')), 'não conformidades copiadas para as observações');
+  await page.click('#ck-id_placa .avl-ck-b.ok'); ok(!(await page.getAttribute('#ck-id_placa .avl-ck-b.ok', 'class')).includes('on'), 'tocar de novo desmarca');
+  await page.click('#ck-id_placa .avl-ck-b.ok');
   await page.screenshot({ path: OUT + '/avl-bem.png', fullPage: true });
   await page.waitForTimeout(900);
 
@@ -116,6 +124,9 @@ function ok(c, m) { if (!c) { falhas.push(m); console.log('  FAIL ' + m); } else
   ok(Object.keys(tabelas.avl_avaliacoes).length === 1, '1 avaliação no servidor');
   const b1 = Object.values(tabelas.avl_bens).find(b => b.descricao === 'Torno CNC');
   ok(b1 && b1.fotos_nomes.length === 4 && b1.ano_fabricacao === 2016 && b1.owner_id === 'u1', 'campos do bem chegam corretos ao servidor (tipos e owner_id)');
+  const b2 = Object.values(tabelas.avl_bens).find(b => /ompressor/.test(b.descricao));
+  ok(b2 && b2.checklist.est_vazamento && b2.checklist.est_vazamento.s === 'nc' && b2.checklist.est_vazamento.n === 'óleo no cabeçote' && b2.checklist.id_placa.s === 'ok', 'checklist chega ao servidor como jsonb');
+  ok(b1.checklist && Object.keys(b1.checklist).length === 0, 'bem sem checklist envia objeto vazio');
   ok(!Object.keys(b1).some(k => k.startsWith('_')), 'campos locais não vazam para o servidor');
 
   console.log('Offline');
@@ -140,6 +151,7 @@ function ok(c, m) { if (!c) { falhas.push(m); console.log('  FAIL ' + m); } else
   ok(/LAUDO DE AVALIAÇÃO/.test(laudo) && /Alfa Usinagem Ltda/.test(laudo), 'laudo traz título e empresa');
   ok(/reais/.test(laudo), 'laudo traz valor por extenso');
   ok(/CREA-SC 182876-8/.test(laudo), 'laudo traz o responsável técnico');
+  ok(/Checklist de vistoria/.test(laudo) && /óleo no cabeçote/.test(laudo), 'laudo traz o checklist com as não conformidades');
   ok(/Anexo A/.test(laudo) && /Torno CNC/.test(laudo), 'anexo com memória de cálculo');
   ok(!/NaN|undefined|\[object/.test(laudo), 'laudo sem NaN/undefined');
   await page.screenshot({ path: OUT + '/avl-laudo-tela.png', fullPage: true });

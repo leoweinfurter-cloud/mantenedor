@@ -27,6 +27,10 @@ var av = S.avlNovaAvaliacao(), bem = S.avlNovoBem(av.id, 1), cot = S.avlNovaCota
     assert.deepStrictEqual(extras, []);
   });
 });
+test("bem novo traz checklist vazio (objeto) e a coluna é jsonb", function () {
+  assert.deepStrictEqual(bem.checklist, {});
+  assert.ok(/checklist\s+jsonb/.test(ddl));
+});
 test("a sincronização usa as mesmas tabelas da migração", function () {
   sync.TABELAS.forEach(function (t) { assert.ok(ddl.indexOf("public." + t.table) >= 0, t.table); });
 });

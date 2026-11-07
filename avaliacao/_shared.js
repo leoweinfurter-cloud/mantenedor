@@ -180,7 +180,7 @@ function avlNovoBem(avId, numero) {
     valor_aquisicao: null, valor_contabil: null, vida_util_ref: "", vida_util_anos: null, residual_pct: 10,
     valor_novo: null, custos_adicionais: null, valor_novo_fonte: "", metodo: "comparativo",
     valor_manual: null, justificativa_manual: "", peso_kg: null, preco_sucata_kg: null,
-    fotos_qtd: 0, fotos_nomes: [], observacoes: "", excluido: false, criado_em: new Date().toISOString()
+    fotos_qtd: 0, fotos_nomes: [], checklist: {}, observacoes: "", excluido: false, criado_em: new Date().toISOString()
   };
 }
 function avlNovaCotacao(avId, bemId, tipo) {

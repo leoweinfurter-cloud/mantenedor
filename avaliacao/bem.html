@@ -22,6 +22,7 @@
   </div>
 
   <script src="calc.js"></script>
+  <script src="checklist.js"></script>
   <script src="sync.js"></script>
   <script src="_shared.js"></script>
   <script>
@@ -49,8 +50,8 @@
     }
 
     // ── FORMULÁRIO ──────────────────────────────────────────────────────
-    function sec(titulo, corpo, aberto, badge) {
-      return '<details class="avl-sec"' + (aberto ? " open" : "") + '><summary>' + esc(titulo) + (badge ? '<span class="avl-sec-badge">' + esc(badge) + '</span>' : '') + '</summary><div class="avl-sec-body">' + corpo + '</div></details>';
+    function sec(titulo, corpo, aberto, badge, id) {
+      return '<details class="avl-sec"' + (id ? ' id="' + id + '"' : "") + (aberto ? " open" : "") + '><summary>' + esc(titulo) + (badge ? '<span class="avl-sec-badge">' + esc(badge) + '</span>' : '') + '</summary><div class="avl-sec-body">' + corpo + '</div></details>';
     }
     function renderForm() {
       var b = bem, h = "";
@@ -71,6 +72,8 @@
         avlCampo("Localização na planta", "localizacao", b.localizacao) +
         avlSelect("Instalação", "integracao", b.integracao, [["isolada", "Máquina isolada"], ["linha", "Integrada a linha de produção"]], { vazio: false, cls: "span2" }) +
         '</div>', true);
+
+      h += sec("Checklist de vistoria", chkHtml(), true, chkBadge(), "sec-chk");
 
       h += sec("2. Condição e funcionamento", '<div class="avl-grid c2">' +
         avlSelect("Funcionamento", "funcionamento", b.funcionamento, [["nao_observado", "Não observado"], ["observado", "Observado em operação"], ["completo", "Observado + produção, eficiência e manutenção relatadas"]], { vazio: false, cls: "span2" }) +
@@ -100,7 +103,7 @@
         avlCampo("Valor contábil (R$)", "valor_contabil", b.valor_contabil, { tipo: "number" }) +
         '</div>', false);
 
-      h += sec("5. Fotos (nomes dos arquivos)", fotosHtml(), false, (b.fotos_qtd || 0) + " foto(s)");
+      h += sec("5. Fotos (nomes dos arquivos)", fotosHtml(), false, (b.fotos_qtd || 0) + " foto(s)", "sec-fotos");
 
       h += sec("6. Valor e método de cálculo", '<div class="avl-grid c2">' +
         avlSelect("Método", "metodo", b.metodo, OP_METODO, { vazio: false, cls: "span2" }) +
@@ -120,6 +123,67 @@
       document.getElementById("form").innerHTML = h;
     }
 
+
+    // ── CHECKLIST DE VISTORIA ───────────────────────────────────────────
+    var CK = AVLCHECK;
+    function chkBadge() { var r = CK.resumo(bem.checklist); return r.respondidos + "/" + r.total + (r.nc ? " · " + r.nc + " NC" : ""); }
+    function chkLinha(i) {
+      var x = (bem.checklist || {})[i.id] || {}, s = x.s || "";
+      function bt(v, rot, cls) { return '<button type="button" class="avl-ck-b ' + cls + (s === v ? " on" : "") + '" onclick="chkSet(\'' + i.id + '\',\'' + v + '\')" aria-pressed="' + (s === v) + '">' + rot + '</button>'; }
+      return '<div class="avl-ck-i' + (s ? " r-" + s : "") + '" id="ck-' + i.id + '"><div class="avl-ck-t">' + esc(i.t) + '</div><div class="avl-ck-bs">' +
+        bt("ok", "Conforme", "ok") + bt("nc", "Não conforme", "nc") + bt("na", "N/A", "na") + '</div>' +
+        (s === "nc" ? '<input type="text" class="avl-ck-n" placeholder="Descreva o problema…" value="' + esc(x.n || "") + '" oninput="chkNota(\'' + i.id + '\', this.value)">' : "") + '</div>';
+    }
+    function chkGrupoBadge(g) { var r = CK.resumo(bem.checklist).grupos[g.cod]; return r.resp + "/" + r.total + (r.nc ? " · " + r.nc + " NC" : ""); }
+    function chkTopo() {
+      var r = CK.resumo(bem.checklist), sug = CK.sugestaoNR12(bem.checklist), atual = bem.nr12;
+      var h = '<div class="avl-ck-top"><div><b>' + r.respondidos + ' de ' + r.total + '</b> itens verificados · <span class="nc">' + r.nc + ' não conforme(s)</span></div>' +
+        '<div class="avl-ck-barra"><i style="width:' + Math.round(100 * r.respondidos / r.total) + '%"></i></div>';
+      if (sug && sug !== atual) h += '<button type="button" class="avl-btn ghost" onclick="chkAplicarNR12(\'' + sug + '\')">Marcar NR-12 como “' + ({ conforme: "Conforme", nao_conforme: "Não conforme", nao_aplica: "Não se aplica" })[sug] + '” na ficha</button>';
+      if (r.nc) h += '<button type="button" class="avl-btn ghost" onclick="chkParaObservacoes()">Copiar não conformidades para as observações</button>';
+      return h + '</div>';
+    }
+    function chkHtml() {
+      var h = '<div id="ck-topo">' + chkTopo() + '</div>';
+      CK.GRUPOS.forEach(function (g) {
+        h += '<details class="avl-ck-g" open><summary>' + esc(g.nome) + '<span class="avl-sec-badge" id="ckb-' + g.cod + '">' + esc(chkGrupoBadge(g)) + '</span></summary>' + g.itens.map(function (i) { return chkLinha(i); }).join("") + '</details>';
+      });
+      return h + '<button type="button" class="avl-btn ghost" onclick="chkLimpar()">Limpar checklist</button>';
+    }
+    function chkAtualiza(id) {
+      var it = CK.ITENS.filter(function (i) { return i.id === id; })[0];
+      var el = document.getElementById("ck-" + id); if (el) el.outerHTML = chkLinha(it);
+      var g = CK.GRUPOS.filter(function (x) { return x.cod === it.grupo; })[0];
+      var b = document.getElementById("ckb-" + g.cod); if (b) b.textContent = chkGrupoBadge(g);
+      var t = document.getElementById("ck-topo"); if (t) t.innerHTML = chkTopo();
+      var bb = document.querySelector("#sec-chk > summary .avl-sec-badge"); if (bb) bb.textContent = chkBadge();
+    }
+    function chkSet(id, s) {
+      var atual = ((bem.checklist || {})[id] || {}).s;
+      bem.checklist = CK.definir(bem.checklist, id, atual === s ? "" : s); // tocar de novo desmarca
+      chkAtualiza(id); agendarSalvar();
+    }
+    function chkNota(id, v) { bem.checklist = CK.definir(bem.checklist, id, ((bem.checklist || {})[id] || {}).s || "nc", v); agendarSalvar(); }
+    function chkAplicarNR12(v) {
+      bem.nr12 = v; var el = document.querySelector('[data-f="nr12"]'); if (el) el.value = v;
+      document.getElementById("ck-topo").innerHTML = chkTopo(); agendarSalvar(); renderResultado();
+    }
+    function chkParaObservacoes() {
+      var linhas = CK.textoNC(bem.checklist); if (!linhas.length) return;
+      var bloco = "Não conformidades na vistoria: " + linhas.join("; ") + ".";
+      var ant = (bem.observacoes || "").replace(/Não conformidades na vistoria:[^\n]*\.?/, "").trim();
+      bem.observacoes = (ant ? ant + "\n" : "") + bloco;
+      var el = document.querySelector('[data-f="observacoes"]'); if (el) el.value = bem.observacoes;
+      agendarSalvar();
+    }
+    function chkLimpar() {
+      if (!confirm("Limpar todas as respostas do checklist deste bem?")) return;
+      bem.checklist = {};
+      document.querySelector("#sec-chk .avl-sec-body").innerHTML = chkHtml();
+      document.querySelector("#sec-chk > summary .avl-sec-badge").textContent = chkBadge();
+      agendarSalvar();
+    }
+
     // Fotos: só registramos a quantidade e o nome dos arquivos
     function proxNomeFoto() {
       var n = (bem.fotos_nomes || []).length + 1, num = String(bem.numero || 0).padStart(3, "0");
@@ -135,7 +199,7 @@
         '<div class="avl-grid c2" style="margin-top:10px;">' + avlCampo("Quantidade de fotos", "fotos_qtd", bem.fotos_qtd, { tipo: "number", conv: "int", ajuda: "Atualiza sozinha ao adicionar nomes." }) + '</div>';
     }
     function refazFotos() {
-      var d = document.querySelectorAll("details.avl-sec")[4];
+      var d = document.getElementById("sec-fotos");
       d.querySelector(".avl-sec-body").innerHTML = fotosHtml();
       d.querySelector(".avl-sec-badge").textContent = (bem.fotos_qtd || 0) + " foto(s)";
       agendarSalvar(); renderResultado();
@@ -160,7 +224,7 @@
           var campo = document.querySelector('[data-f="vida_util_anos"]'); if (campo) campo.value = vi.anos;
         }
       }
-      if (f === "fotos_qtd") { var s = document.querySelector("details.avl-sec:nth-of-type(5) .avl-sec-badge"); if (s) s.textContent = (bem.fotos_qtd || 0) + " foto(s)"; }
+      if (f === "fotos_qtd") { var s = document.querySelector("#sec-fotos .avl-sec-badge"); if (s) s.textContent = (bem.fotos_qtd || 0) + " foto(s)"; }
       agendarSalvar(); renderResultado();
     }
     document.getElementById("form").addEventListener("input", aoEditarBem);
@@ -281,7 +345,7 @@
     }
     async function duplicar() {
       await salvarAgora();
-      var n = Object.assign({}, bem, { id: avlUuid(), numero: await proximoNumero(), serie: "", tag: "", fotos_nomes: [], fotos_qtd: 0, criado_em: new Date().toISOString() });
+      var n = Object.assign({}, bem, { id: avlUuid(), numero: await proximoNumero(), serie: "", tag: "", checklist: {}, fotos_nomes: [], fotos_qtd: 0, criado_em: new Date().toISOString() });
       delete n._dirty; delete n._local_ts; delete n.atualizado_em;
       await avlSalvar("bens", n);
       for (var i = 0; i < cots.length; i++) {

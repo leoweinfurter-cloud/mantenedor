@@ -102,11 +102,15 @@ CREATE TABLE IF NOT EXISTS public.avl_bens (
   preco_sucata_kg    numeric,
   fotos_qtd          integer DEFAULT 0,
   fotos_nomes        jsonb DEFAULT '[]'::jsonb,     -- nomes dos arquivos (as fotos ficam fora do sistema)
+  checklist          jsonb DEFAULT '{}'::jsonb,     -- checklist de vistoria: {item: {s: ok|nc|na, n: nota}}
   observacoes        text DEFAULT '',
   excluido           boolean NOT NULL DEFAULT false,
   criado_em          timestamptz NOT NULL DEFAULT now(),
   atualizado_em      timestamptz NOT NULL DEFAULT now()
 );
+
+-- Bancos criados antes do checklist de vistoria:
+ALTER TABLE public.avl_bens ADD COLUMN IF NOT EXISTS checklist jsonb DEFAULT '{}'::jsonb;
 
 -- ── 3. COTAÇÕES / DADOS DE MERCADO ──────────────────────────────────────
 CREATE TABLE IF NOT EXISTS public.avl_cotacoes (
