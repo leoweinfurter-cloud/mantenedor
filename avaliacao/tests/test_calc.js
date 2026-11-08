@@ -223,5 +223,13 @@ test("valor por extenso", function () {
   assert.strictEqual(C.extenso(1234567.89), "um milhão, duzentos e trinta e quatro mil, quinhentos e sessenta e sete reais e oitenta e nove centavos");
 });
 
+test("sem data-base na avaliação: sem valor por depreciação e com alerta explicando", function () {
+  var bem = { descricao: "Talha", metodo: "rossheidecke", estado: "a", valor_novo: 14006.4, vida_util_anos: 15, ano_fabricacao: 2026, quantidade: 1 };
+  var r = C.avaliarBem(bem, { data_base: null }, []);
+  assert.strictEqual(r.valor, null);
+  assert.ok(r.alertas.some(function (a) { return /data-base/.test(a); }));
+  assert.ok(C.avaliarBem(bem, { data_base: "2026-11-08" }, []).valor > 0);
+});
+
 console.log("\n" + passed + " passaram, " + failed + " falharam");
 process.exit(failed ? 1 : 0);

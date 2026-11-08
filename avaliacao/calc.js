@@ -326,6 +326,7 @@
     if (bem.estado == null || bem.estado === "") alertas.push("Estado de conservação não informado.");
     if (metodo !== "sucata" && metodo !== "manual") {
       if (num(bem.ano_fabricacao) === null && num(bem.idade_aparente) === null) alertas.push("Sem ano de fabricação (nem idade aparente).");
+      else if (p.x === null) alertas.push("Sem data-base na avaliação: preencha em “Dados da avaliação” para calcular a idade do bem.");
       if (!p.n) alertas.push("Sem vida útil de referência.");
     }
     if (metodo === "comparativo" && !comp.n_validos) alertas.push("Comparativo sem dados de mercado válidos.");
