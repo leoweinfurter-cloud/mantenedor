@@ -244,6 +244,10 @@
     window.addEventListener("pagehide", salvarAgora);
 
     // ── RESULTADO AO VIVO ───────────────────────────────────────────────
+    function usarMetodo(m) {
+      bem.metodo = m; var el = document.querySelector('[data-f="metodo"]'); if (el) el.value = m;
+      agendarSalvar(); renderResultado();
+    }
     function renderResultado() {
       var res = C.avaliarBem(bem, av, cots.filter(function (c) { return !c.excluido; }));
       var h = '<div class="avl-result"><small>Valor adotado — ' + esc((C.METODOS.filter(function (m) { return m.cod === res.metodo; })[0] || {}).nome || "") + '</small>' +
@@ -253,6 +257,13 @@
         (res.conferencia ? '<div><small>Conferência (' + esc(res.conferencia.metodo) + ')</small><br>' + esc(C.brl(res.conferencia.valor)) + (res.conferencia.dif_pct != null ? ' <small>(' + (res.conferencia.dif_pct >= 0 ? "+" : "") + C.pct(res.conferencia.dif_pct) + ')</small>' : '') + '</div>' : '') +
         '</div>';
       if (res.alertas.length) h += '<ul class="avl-alerts">' + res.alertas.map(function (a) { return '<li>' + esc(a) + '</li>'; }).join("") + '</ul>';
+      var sg = C.sugerirMetodo(bem, av, cots.filter(function (c) { return !c.excluido; }));
+      if (sg) {
+        var igual = sg.metodo === bem.metodo || (sg.metodo === "ibape" && bem.metodo === "rossheidecke") || (sg.metodo === "rossheidecke" && bem.metodo === "ibape");
+        var nomeSg = (C.METODOS.filter(function (m) { return m.cod === sg.metodo; })[0] || {}).nome || sg.metodo;
+        h += '<div class="avl-sugestao' + (igual ? " ok" : "") + '"><b>' + (igual ? "✓ Método coerente" : "Sugestão de método") + '</b>: ' + esc(nomeSg) + '<br><small>' + esc(sg.motivo) + '</small>' +
+          (igual ? "" : '<br><button type="button" class="avl-btn ghost" onclick="usarMetodo(\'' + sg.metodo + '\')">Usar este método</button>') + '</div>';
+      }
       h += '<details style="margin-top:10px;"><summary style="cursor:pointer;color:#e6d3a8;">Memória de cálculo</summary><div style="color:var(--avl-ink);margin-top:8px;background:#fff;border-radius:8px;padding:8px;">' + avlMemoriaHtml(bem, res) +
         '<p class="avl-calc">Fundamentação: vistoria ' + res.grau.vistoria + ' · funcionamento ' + res.grau.funcionamento + ' · dados ' + res.grau.dados + ' · depreciação ' + res.grau.depreciacao + ' (3 pts = grau III)</p></div></details></div>';
       var el = document.getElementById("resultado"), aberto = el.querySelector("details") && el.querySelector("details").open;

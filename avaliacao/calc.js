@@ -297,6 +297,26 @@
 
   // ── AVALIAÇÃO DE UM BEM ─────────────────────────────────────────────
 
+
+  // ── SUGESTÃO DE MÉTODO ──────────────────────────────────────────────
+  // Orientação (não regra): NBR 14653-1 dá preferência ao comparativo direto; sem mercado, custo de reedição;
+  // sucata quando o bem não tem mais valor de uso. Retorna { metodo, motivo } ou null (faltam dados).
+  function sugerirMetodo(bem, av, cotsDoBem) {
+    var cots = (cotsDoBem || []).filter(function (c) { return !c.excluido; });
+    var est = estadoInfo(bem.estado), p = parametrosIdade(bem, av);
+    if (bem.estado === "i") return { metodo: "sucata", motivo: "Estado “sem valor”: avalie pelo peso × preço do material (informe peso e preço da sucata)." };
+    var comp = calcComparativo(bem, av, cots), n = comp.n_validos || 0;
+    if (n >= 3) return { metodo: "comparativo", motivo: n + " dado(s) de mercado válidos (≥ 3): o comparativo é o método preferencial. Use o custo de reedição como conferência." };
+    var reed = (est && est.curva === null) ? "rossheidecke" : "ibape";
+    var porque = reed === "rossheidecke" ? "A curva IBAPE não é indicada para estados e–h; Ross-Heidecke considera o estado de conservação." : "Curva IBAPE é a referência usual em perícia de máquinas.";
+    var pre = n > 0 ? "Só " + n + " dado(s) de mercado válido(s) (< 3): insuficiente para o comparativo. " : "Sem ofertas ou transações de usado. ";
+    if (p.x === null) return { metodo: reed, motivo: pre + "Use custo de reedição — informe o ano de fabricação (ou idade aparente) e a data-base da avaliação. " + porque };
+    var extra = "";
+    if (p.x <= 2) extra = " Bem recente: use a nota fiscal como valor do novo.";
+    else if (p.iv !== null && p.iv >= 1.5) extra = " Bem além da vida útil: se não opera nem tem mercado, avalie sucata.";
+    return { metodo: reed, motivo: pre + "Use custo de reedição. " + porque + extra };
+  }
+
   function avaliarBem(bem, av, cotsDoBem) {
     var cots = (cotsDoBem || []).filter(function (c) { return !c.excluido; });
     var metodo = bem.metodo || "comparativo";
@@ -437,7 +457,7 @@
     ibapeK: ibapeK, rossHeidecke: rossHeidecke, linear: linear,
     parametrosIdade: parametrosIdade, valorNovoBase: valorNovoBase,
     calcReedicao: calcReedicao, calcComparativo: calcComparativo, calcGrau: calcGrau, calcVLF: calcVLF,
-    avaliarBem: avaliarBem, avaliarTudo: avaliarTudo,
+    avaliarBem: avaliarBem, avaliarTudo: avaliarTudo, sugerirMetodo: sugerirMetodo,
     brl: brl, pct: pct, fmtNum: fmtNum, extenso: extenso
   };
 });

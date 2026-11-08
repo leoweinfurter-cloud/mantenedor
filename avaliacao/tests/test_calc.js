@@ -231,5 +231,19 @@ test("sem data-base na avaliação: sem valor por depreciação e com alerta exp
   assert.ok(C.avaliarBem(bem, { data_base: "2026-11-08" }, []).valor > 0);
 });
 
+test("sugestão de método", function () {
+  var av = { data_base: "2026-11-08", ff_padrao: 0.9 };
+  var base = { descricao: "X", estado: "c", ano_fabricacao: 2018, valor_novo: 100000, vida_util_anos: 15, quantidade: 1 };
+  function of(p) { return { tipo: "oferta", preco: p, ano: 2018, incluido: true, ff: 0.9, fid: 1, fest: 1, fcap: 1, fop: 1 }; }
+  assert.strictEqual(C.sugerirMetodo({ ...base, estado: "i" }, av, []).metodo, "sucata");
+  assert.strictEqual(C.sugerirMetodo(base, av, [of(70000), of(72000), of(68000)]).metodo, "comparativo");
+  assert.strictEqual(C.sugerirMetodo(base, av, []).metodo, "ibape");
+  assert.strictEqual(C.sugerirMetodo(base, av, [of(70000)]).metodo, "ibape");           // 1 dado: insuficiente
+  assert.strictEqual(C.sugerirMetodo({ ...base, estado: "f" }, av, []).metodo, "rossheidecke"); // curva IBAPE não indicada
+  assert.ok(/nota fiscal/.test(C.sugerirMetodo({ ...base, ano_fabricacao: 2025 }, av, []).motivo));
+  assert.ok(/sucata/.test(C.sugerirMetodo({ ...base, ano_fabricacao: 1995 }, av, []).motivo));
+  assert.ok(/data-base/.test(C.sugerirMetodo(base, { data_base: null }, []).motivo));
+});
+
 console.log("\n" + passed + " passaram, " + failed + " falharam");
 process.exit(failed ? 1 : 0);

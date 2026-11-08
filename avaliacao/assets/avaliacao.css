@@ -165,3 +165,8 @@ table.avl-table { width: 100%; border-collapse: collapse; font-size: .86rem; }
 .avl-ck-b.na.on { background: #777; border-color: #777; color: #fff; }
 .avl-ck-n { width: 100%; margin-top: 6px; padding: 10px; border: 1.5px solid #b23a3a; border-radius: 8px; font: inherit; box-sizing: border-box; }
 .avl-ck-i.r-nc { background: rgba(178,58,58,.06); }
+
+/* Sugestão de método */
+.avl-sugestao { margin-top: 10px; padding: 10px 12px; border-radius: 10px; background: rgba(255,255,255,.92); color: var(--avl-ink); border-left: 4px solid #c9a24b; font-size: .9rem; }
+.avl-sugestao.ok { border-left-color: #3d7a4a; }
+.avl-sugestao small { color: #555; }
