@@ -90,7 +90,7 @@
         avlSelect("NR-12 (segurança em máquinas)", "nr12", b.nr12, [["nao_avaliado", "Não avaliada"], ["conforme", "Conforme"], ["nao_conforme", "Não conforme"], ["nao_aplica", "Não se aplica"]], { vazio: false }) +
         avlCampo("Custo de adequação à NR-12 (R$)", "nr12_custo", b.nr12_custo, { tipo: "number" }) +
         avlCampo("Custo de reparos necessários (R$)", "custo_reparos", b.custo_reparos, { tipo: "number" }) +
-        avlCampo("Fator de obsolescência (≤ 1)", "fobs", b.fobs, { tipo: "number", ajuda: "1,00 = sem obsolescência. Ex.: 0,90 para comando descontinuado." }) +
+        avlCampo("Fator de obsolescência (≤ 1)", "fobs", b.fobs, { tipo: "number", conv: "fator", ajuda: "1,00 = sem obsolescência. Ex.: 0,90 para comando descontinuado." }) +
         avlCampo("Obsolescência (descrever)", "obsolescencia", b.obsolescencia, { cls: "span2", tipo: "textarea", rows: 2, ph: "Peças, suporte do fabricante, eficiência…" }) +
         '</div>', false);
 
@@ -288,8 +288,8 @@
       if (!novo) {
         h += cf(c, "ano", "Ano do bem pesquisado", { num: true, conv: "int" });
         h += '<label class="avl-field"><span>Estado do dado</span><select data-cot="' + c.id + '" data-f="curva" data-t="txt"><option value="bom"' + (c.curva !== "regular" ? " selected" : "") + '>Bom</option><option value="regular"' + (c.curva === "regular" ? " selected" : "") + '>Regular</option></select></label>';
-        h += cf(c, "ff", "Fator de oferta (Ff)", { num: true, ph: "padrão " + (av.ff_padrao || 0.9) }) + cf(c, "fid", "Fator idade (Fid)", { num: true, ph: "automático" }) +
-          cf(c, "fest", "Fator estado (Fest)", { num: true, ph: "1" }) + cf(c, "fcap", "Fator capacidade (Fcap)", { num: true, ph: "1" }) + cf(c, "fop", "Fator opcionais (Fop)", { num: true, ph: "1" });
+        h += cf(c, "ff", "Fator de oferta (Ff)", { num: true, conv: "fator", ph: "padrão " + (av.ff_padrao || 0.9) }) + cf(c, "fid", "Fator idade (Fid)", { num: true, conv: "fator", ph: "automático" }) +
+          cf(c, "fest", "Fator estado (Fest)", { num: true, conv: "fator", ph: "1" }) + cf(c, "fcap", "Fator capacidade (Fcap)", { num: true, conv: "fator", ph: "1" }) + cf(c, "fop", "Fator opcionais (Fop)", { num: true, conv: "fator", ph: "1" });
       } else {
         h += '<label class="avl-check span2"><input type="checkbox" data-cot="' + c.id + '" data-f="direta" data-t="bool"' + (c.direta ? " checked" : "") + '><span>Cotação direta no fabricante (vale Grau III sozinha)</span></label>';
       }

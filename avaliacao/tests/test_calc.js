@@ -28,6 +28,12 @@ test("num aceita pt-BR e ponto decimal", function () {
   assert.strictEqual(C.num("1.234,56"), 1234.56);
   assert.strictEqual(C.num("1234.5"), 1234.5);
   assert.strictEqual(C.num("0,9"), 0.9);
+  assert.strictEqual(C.num("14.006", true), 14006);
+  assert.strictEqual(C.num("1.234.567", true), 1234567);
+  assert.strictEqual(C.num("14.006"), 14.006);        // sem a opção, ponto continua decimal
+  assert.strictEqual(C.num("0.950", true), 0.95);     // começa com 0: é decimal
+  assert.strictEqual(C.num("14006.4", true), 14006.4);
+  assert.strictEqual(C.num("14.5", true), 14.5);
   assert.strictEqual(C.num(""), null);
   assert.strictEqual(C.num(null), null);
   assert.strictEqual(C.num("abc"), null);

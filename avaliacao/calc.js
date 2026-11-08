@@ -75,11 +75,14 @@
 
   // ── UTILIDADES ───────────────────────────────────────────────────────
 
-  function num(v) {
+  // milhar = true: "14.006" (sem vírgula, grupos de 3 dígitos) é lido como 14006, como se digita em pt-BR.
+  // Usado nos campos de valor/quantidade; fatores (0,95; 1,125) ficam de fora porque são ambíguos.
+  function num(v, milhar) {
     if (v === null || v === undefined) return null;
     if (typeof v === "number") return isFinite(v) ? v : null;
     var str = String(v).trim();
     if (str === "") return null;
+    if (milhar && /^[1-9]\d{0,2}(\.\d{3})+$/.test(str)) return parseFloat(str.replace(/\./g, ""));
     // "1.234,56" (pt-BR) -> 1234.56 ; "1234.56" (ponto decimal) -> 1234.56
     var n = str.indexOf(",") !== -1 ? parseFloat(str.replace(/\./g, "").replace(",", ".")) : parseFloat(str);
     return isFinite(n) ? n : null;

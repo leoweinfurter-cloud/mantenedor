@@ -281,7 +281,8 @@ function avlLer(el) {
   var t = el.getAttribute("data-t");
   if (t === "bool") return el.checked;
   var v = el.value;
-  if (t === "num") { var n = AVLCALC.num(v); return n; }
+  if (t === "num") { return AVLCALC.num(v, true); }
+  if (t === "fator") { return AVLCALC.num(v); }
   if (t === "int") { var i = parseInt(v, 10); return isFinite(i) ? i : null; }
   if (t === "date") { return v ? v : null; } // coluna date não aceita ""
   return v;

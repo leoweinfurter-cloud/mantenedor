@@ -110,7 +110,7 @@
         avlSelect("Tipo de valor", "tipo_valor", a.tipo_valor, [["mercado_em_uso", "Valor de mercado — bem instalado e em uso (preço de saída)"], ["mercado_venda", "Valor de mercado para venda (desimobilização)"]], { vazio: false, cls: "span2" }) +
         '</div></div>' +
         '<div class="avl-card"><h2>Parâmetros de cálculo</h2><div class="avl-grid c2">' +
-        avlCampo("Fator de oferta padrão", "ff_padrao", a.ff_padrao, { tipo: "number", ajuda: "Aplicado aos anúncios (ofertas). Usual: 0,85 a 0,95." }) +
+        avlCampo("Fator de oferta padrão", "ff_padrao", a.ff_padrao, { tipo: "number", conv: "fator", ajuda: "Aplicado aos anúncios (ofertas). Usual: 0,85 a 0,95." }) +
         avlCampo("Campo de arbítrio (± %)", "margem_arbitrio", a.margem_arbitrio, { tipo: "number" }) +
         avlCheck("Calcular valor de liquidação forçada (informativo)", "vlf_ativo", a.vlf_ativo, { cls: "span2" }) +
         avlCampo("Custos de venda (%)", "vlf_custos", a.vlf_custos, { tipo: "number" }) +
